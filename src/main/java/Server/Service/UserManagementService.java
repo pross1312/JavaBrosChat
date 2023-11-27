@@ -20,24 +20,71 @@ public class UserManagementService extends Service {
         }
         throw new Error("Can't execute get_info api, token not found");
     }
-    void add_friend(String token, String target) {
-        throw new Error("Unimplemented");
+    void add_friend(String token, String friend) throws SQLException {
+        var acc = Server.accounts.get(token);
+        // TODO: notify friend new friend request if 'friend' is logged in ?
+        if (acc != null) {
+            String username = acc.a;
+            var req_from_friend = FriendRequestDb.query(friend, username);
+            if (req_from_friend == null) {
+                if (!FriendRequestDb.add(username, friend)) throw new Error("Can't execute add_friend api");
+            } else {
+                System.out.println("Checking");
+                Server.db.set_auto_commit(false);
+                FriendRequestDb.remove(friend, username);
+                UserFriendDb.add(username, friend);
+                Server.db.commit();
+                Server.db.set_auto_commit(true);
+            }
+        } else throw new Error("Can't execute add_friend api, token not found");
     }
-    ArrayList<FriendRequest> get_friend_requests(String token, FriendRequest req) {
-        throw new Error("Unimplemented");
+
+    ArrayList<FriendRequest> get_friend_requests(String token) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc != null) {
+            String username = acc.a;
+            return FriendRequestDb.list_request(username);
+        }
+        throw new Error("Can't execute get_friend_request api, token not found");
     }
-    void unfriend(String token, String friend_username) {
-        throw new Error("Unimplemented");
+
+    void unfriend(String token, String friend) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc != null) {
+            String username = acc.a;
+            UserFriendDb.remove(username, friend);
+        } else throw new Error("Can't execute unfriend api, token not found");
     }
-    ArrayList<UserInfo> list_active_friends(String token) {
-        throw new Error("Unimplemented");
+
+    ArrayList<Pair<UserInfo, Boolean>> list_friends(String token) throws SQLException {
+        var account = Server.accounts.get(token);
+        if (account != null) {
+            String username = account.a;
+            var infos = UserFriendDb.list_friends_info(username);
+            var result = new ArrayList<Pair<UserInfo, Boolean>>(infos.size());
+            for (int i = 0; i < infos.size(); i++) {
+                var data = new Pair<UserInfo, Boolean>(infos.get(i), false);
+                for (var acc : Server.accounts.entrySet()) {
+                    if (acc.getValue().a.compareTo(infos.get(i).username) == 0) {
+                        data.b = true;
+                        break;
+                    }
+                }
+                result.add(data);
+            }
+            return result;
+        }
+        throw new Error("Can't execute list_friends api, token not found");
     }
+
     ArrayList<UserInfo> find_users(String token, String pattern) {
         throw new Error("Unimplemented");
     }
+
     void report_spam(String token, SpamReport report) {
         throw new Error("Unimplemented");
     }
+
     void block_user(String token, String target_username) {
         throw new Error("Unimplemented");
     }
