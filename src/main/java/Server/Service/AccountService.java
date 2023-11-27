@@ -25,53 +25,52 @@ class Helper {
 }
 
 public class AccountService extends Service {
-     Pair<String, AccountType> login(String username, String pass) throws Exception { // return a token from Account
-        try {
-            var account = AccountDb.query(username);
-            if (account == null) throw new Error("Invalid account.");
-            var hash_pass = Helper.hash_password(pass + username);
-            if (account.hashed_pass.compareTo(hash_pass) == 0) {
-                var token_raw = String.format("%s:%s", username, hash_pass);
-                var token = Base64.getEncoder().encodeToString(token_raw.getBytes());
-                if (Server.accounts.containsKey(token)) {
-                    // TODO: handle this case properly
-                    LoginRecordDb.add(username);
-                    Server.accounts.put(token, new Pair(username, account.type));
-                    return new Pair<String, AccountType>(token, account.type);
-                } else {
-                    LoginRecordDb.add(username);
-                    Server.accounts.put(token, new Pair(username, account.type));
-                    return new Pair<String, AccountType>(token, account.type);
-                }
+    Pair<String, AccountType> login(String username, String pass) throws SQLException { // return a token from Account
+        var account = AccountDb.query(username);
+        if (account == null) throw new Error("Invalid username or password");
+        var hash_pass = Helper.hash_password(pass + username);
+        if (account.hashed_pass.compareTo(hash_pass) == 0) {
+            var token_raw = String.format("%s:%s", username, hash_pass);
+            var token = Base64.getEncoder().encodeToString(token_raw.getBytes());
+            if (Server.accounts.containsKey(token)) { // TODO: notify user's ?
+                // TODO: handle this case properly
+                LoginRecordDb.add(username);
+                Server.accounts.put(token, new Pair<String, AccountType>(username, account.type));
+                return new Pair<String, AccountType>(token, account.type);
             } else {
-                throw new Error("Invalid username or password");
+                LoginRecordDb.add(username);
+                Server.accounts.put(token, new Pair<String, AccountType>(username, account.type));
+                return new Pair<String, AccountType>(token, account.type);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new Exception("Server error, can't query database");
+        } else {
+            throw new Error("Invalid username or password");
         }
     }
-    void register(String username, String pass, UserInfo info) throws Exception {
-        try {
-            if (username.compareTo(info.username) != 0) {
-                throw new Error("Can't register account with different username and info.username");
+
+    void logout(String token) throws SQLException { // return a token from Account
+        var acc = Server.accounts.get(token);
+        if (acc != null) {
+            Server.accounts.remove(token); // TODO: notify user's ?
+        } else throw new Error("Can't execute logout api, token not found");
+    }
+
+    void register(String username, String pass, UserInfo info) throws SQLException {
+        if (username.compareTo(info.username) != 0) {
+            throw new Error("Can't register account with different username and info.username");
+        }
+        if (AccountDb.query(username) == null) {
+            AccountDb.add(new AccountDb(username, Helper.hash_password(pass + username), AccountType.User, false));
+            if (!UserInfoDb.add(info)) {
+                System.out.println("Failed userinfo");
             }
-            if (AccountDb.query(username) == null) {
-                AccountDb.add(new AccountDb(username, Helper.hash_password(pass + username), AccountType.User, false));
-                if (!UserInfoDb.add(info)) {
-                    System.out.println("Failed userinfo");
-                }
-                if (!RegistrationRecordDb.add(username)) {
-                    System.out.println("Failed register");
-                }
-            } else {
-                throw new Error(String.format("Username '%s' existed", username));
+            if (!RegistrationRecordDb.add(username)) {
+                System.out.println("Failed register");
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new Exception("Server error, can't query database.");
+        } else {
+            throw new Error(String.format("Username '%s' existed", username));
         }
     }
+
     void recover_pass(String username) {
         throw new Error("Unimplemented");
     }
