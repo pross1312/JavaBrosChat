@@ -34,7 +34,7 @@ public class NotificationServer {
                         System.out.println("[INFO] Try adding client to notification list");
                         if (obj instanceof String token) {
                             if (Server.accounts.containsKey(token)) {
-                                var username = Server.accounts.get(token).username;
+                                String username = Server.accounts.get(token).a; // username
                                 System.out.printf("[INFO] '%s' is now listening to notification.\n", username);
                                 clients.put(username, conn);
                                 conn.send(Result.ok(null));

@@ -8,6 +8,11 @@ public class UserInfo implements Serializable {
     public enum Gender {
         Male(0), Female(1);
         public int val;
+        public static Gender from(int val) {
+            if (val == 1) return Gender.Female;
+            else if (val == 0) return Gender.Male;
+            else throw new RuntimeException(String.format("Can't regconize gender value %d", val));
+        }
         private Gender(int v) { val = v; }
     }
     public String username, fullname, address, email;

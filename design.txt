@@ -1,0 +1,209 @@
+//---------------------------------Object------------------------------------//
+
+class DatabaseConnection {
+}
+
+enum AccountType {
+    Admin, User,
+}
+
+class Account {
+    String username;
+    String password;
+    AccountType type;
+    boolean is_locked;
+}
+
+class UserInfo {
+    String username, fullname, address, email;
+    Date birthdate;
+}
+
+class SpamReport {
+    String reporter; // username
+    String target;
+    String reason;
+    Date date;
+}
+
+class LoginRecord {
+    String username;
+    Date date;
+}
+
+class RegistrationRecord {
+    String username;
+    Date date;
+}
+class GroupMember {
+    String username;
+    Date date_joined;
+    int start_history_msg;
+    int last_read_msg;
+    boolean is_admin;
+}
+class GroupMessage {
+    int id;
+    String group_id;
+    String sender; // username
+    Date date_sent;
+    String text;
+    Optional<String> media_id;
+}
+class GroupInfo {
+    String id;
+    String name;
+    ArrayList<GroupMember> members;
+    Date created_date;
+}
+
+class Media {
+    String id;
+    Date date_created;
+    String uploader; // username
+    String group_id;
+    ByteBuffer data; // ??? or use link and store data somewhere else cause sql can't store bytes array
+}
+class NewMsgNotify {
+    String group_id;
+    int count;
+}
+class FriendRequest {
+    String sender;
+    Date date_sent;
+    String target;
+}
+
+//----------------------------------Service-----------------------------------//
+
+//--------------------------------ADMIN-ACTIONS-----------------------------------//
+// Quản lý Danh sách Người dùng:
+//      Xem danh sách người dùng với khả năng lọc theo tên, tên đăng nhập, và trạng thái.
+//      Thêm, cập nhật, xoá người dùng.
+//      Khoá/mở khóa tài khoản người dùng.
+//      Cập nhật mật khẩu của người dùng.
+//      Xem lịch sử đăng nhập của người dùng.
+//      Xem danh sách bạn bè của người dùng.
+//
+// Xem Danh sách Đăng nhập theo Thời gian:
+//      Xem danh sách các sự kiện đăng nhập được sắp xếp theo thời gian. ---- Gộp vào tính năng Filter Xem danh sách người                                                                                dùng 
+//
+// Xem Danh sách Nhóm Chat:
+//      Sắp xếp danh sách nhóm chat theo tên hoặc thời gian tạo.
+//      Lọc danh sách nhóm chat theo tên.
+//      Xem danh sách thành viên trong một nhóm chat.
+//      Xem danh sách admin của một nhóm chat.
+//
+// Xem Danh sách Báo cáo Spam:
+//      Sắp xếp danh sách báo cáo spam theo thời gian hoặc tên đăng nhập.
+//      Lọc danh sách báo cáo spam theo thời gian hoặc tên đăng nhập.
+//      Khóa tài khoản người dùng dựa trên báo cáo spam.
+//
+// Xem Danh sách Người dùng Đăng ký mới:
+//      Chọn khoảng thời gian và hiển thị danh sách người dùng đăng ký mới.
+//      Sắp xếp danh sách theo tên hoặc thời gian tạo.
+//
+// Biểu đồ Số lượng Người đăng ký mới theo Năm:
+//      Chọn năm và vẽ biểu đồ với trục hoành là tháng và trục tung là số lượng người đăng ký mới.
+//
+// Xem Danh sách Người dùng và Số lượng Bạn bè: -- Gộp vào Filter xem danh sách người dùng 
+//      Sắp xếp danh sách theo tên hoặc thời gian tạo.
+//      Lọc danh sách theo tên.                     // duplicate: Xem danh sách người dùng với khả năng lọc theo tên, tên đăng nhập, và trạng thái.
+//      Lọc theo số lượng bạn bè trực tiếp (bằng, nhỏ hơn, lớn hơn một số nhập vào).
+//
+// Xem Danh sách Người dùng Hoạt động: -- Gộp vào Filter của xem danh sách người dùng 
+//      Chọn khoảng thời gian và hiển thị danh sách người dùng hoạt động.
+//      Sắp xếp danh sách theo tên hoặc thời gian tạo.
+//      Lọc danh sách theo tên hoặc số lượng hoạt động (bằng, nhỏ hơn, lớn hơn một số nhập vào).
+//
+// Biểu đồ Số lượng Người hoạt động theo Năm:
+//      Chọn năm và vẽ biểu đồ với trục hoành là tháng và trục tung là số lượng người hoạt động.
+//------------------------------------------------------------------------------------------------//
+class AdminService { // can only be called by admin
+    // user-operations
+    UserInfo[] list_users(String token); // filter will be done on client side
+    UserInfo[] list_active_users(String token, Date from, Date to); // sort by name or created time on client side
+    void add_user(String token, String username, String pass, Optional<UserInfo> user_info);
+    void update_user(String token, String username, UserInfo user_info);
+    void del_user(String token, String username);
+    void change_user_pass(String token, String username, String new_pass);
+    LoginRecord[] get_login_log(String token, String username); // sort by time
+    LoginRecord[] get_login_log(String token); // all users, sort by time
+    UserInfo[] list_user_friends(String token, String username);
+    // group-operations
+    GroupInfo[] list_groups(String token, String pattern); // sort and filter on client side
+    UserInfo[] list_group_members(String token, String group_id); // filter out admins on client side (admin is also member)
+    // spam-operations
+    SpamReport[] list_spam_reports(String token) // all reports, sort by username or reported time on client side
+    SpamReport[] list_spam_reports(String token, Date from, Date to) // list report made between [from, to]
+    SpamReport[] list_spam_filter_name(String token, String pattern) // list report filter by username
+    void lock_user(String token, String username) // confirm spam-report and lock user using this api
+    // new-registration 
+    RegistrationRecord[] list_registers(String token, Date from, Date to) // list user-registrations made between [from, to]
+                                                                                   // order by name or time on client side
+}
+
+// Đăng ký tài khoản.
+// Khởi tạo lại mật khẩu: mật khẩu sẽ được random và gởi tới email.
+//    Đăng nhập.
+//    Danh sách bạn bè:
+//    Thêm bạn bằng tên đăng nhập
+//    Huỷ kết bạn
+//    Danh sách bạn bè đang online
+//    Tìm người dựa vào tên đăng nhập hoặc tên. Sau đó có thể chat.
+//    Báo cáo spam khi người đó chat với mình và mình không thích.
+//    Block tài khoản 1 người nào đó.
+//    Chat với bạn
+//          Nếu bạn đang online thì phải thấy phản hồi thời gian thực
+//          Nếu bạn đang offline thì gởi tin nhắn bạn xem sau
+//          Xem được lịch sử chat
+//          Xoá lịch sử chat
+//    Tìm kiếm chuỗi trong lịch sử chat:
+//          Tìm kiếm trong lịch sử chat với 1 người
+//          Tìm kiếm trong lịch sử chat với tất cả mọi người
+// Nhóm chat
+//    Tạo nhóm: khi tạo cho thêm tối thiểu 1 tên đăng nhập
+//    Đổi tên nhóm chat
+//    Thêm thành viên
+//    Gán quyền admin nhóm cho thành viên
+//    Xoá thành viên: chỉ admin mới được quyền xoá
+//    Chat
+//    Mã hóa nhóm (tham khảo tính năng nhóm chat được mã hóa của facebook)
+
+class AccountService {
+    Pair<String, AccountType> login(String username, String pass); // return a token from AccountInfo
+                                                // after login, client must open a connection to notification-server
+                                                // so that it could recv notification(new msg, friend request, invitation ...)
+    void register(String username, String pass, UserInfo info);
+    void recover_pass(String username);
+}
+
+// user-api, 
+class UserManagementService {
+    void get_info(String token);
+    void add_friend(String token, String target);
+    FriendRequest[] get_friend_requests(String token, FriendRequest req);
+    void unfriend(String token, String friend_username);
+    UserInfo[] list_active_friends(String token);
+    UserInfo[] find_users(String token, String pattern);
+    void report_spam(String token, SpamReport report);
+    void block_user(String token, String target_username);
+}
+
+class UserGroupChatService {
+    String create_group_chat(String token, String group_name, String[] usernames); // return group_id
+    void rename_group_chat(String token, String group_id, String new_name);
+    void remove_member(String token, String group_id, String target_username);
+    void add_member(String token, String group_id, String target_username);
+    void set_admin(String token, String group_id, String target_username);
+    void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
+    void send_msg(String token, String text, Optional<String> media_id, String group_id);
+    GroupMessage[] search_msg(String token, String group_id);
+//**void encrypt_group()*// need further research
+}
+
+// optional
+class UserMediaService { // for file, voice, ...
+    String upload_media(String token, String group_id, ByteBuffer media);
+    void download_media(String token, String group_id, String media_id);
+}
