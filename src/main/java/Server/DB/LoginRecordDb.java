@@ -13,7 +13,7 @@ public class LoginRecordDb {
     public Date ts;
     static {
         try {
-            insert_sm = db.conn.prepareStatement("INSERT INTO LoginRecord VALUES(?, ?);");
+            insert_sm = db.conn.prepareStatement("INSERT INTO LoginRecord(username, ts) VALUES(?, ?);");
             last_login_query = db.conn.prepareStatement("SELECT * FROM LoginRecord WHERE username = ? ORDER BY ts DESC");
         } catch (Exception e) {
             // TODO: properly handle exception
@@ -35,7 +35,9 @@ public class LoginRecordDb {
         ResultSet logins = last_login_query.executeQuery();
         if (logins == null) throw new SQLException("Can't query");
         if (logins.next()) {
-            return new LoginRecordDb(logins.getString(1), new java.util.Date(logins.getTimestamp(2).getTime()));
+            var record = new LoginRecordDb(logins.getString("username"), new java.util.Date(logins.getTimestamp("ts").getTime()));
+            logins.close();
+            return record;
         }
         return null;
     }

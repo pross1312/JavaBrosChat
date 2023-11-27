@@ -11,13 +11,14 @@ import Server.Server;
 
 public class UserManagementService extends Service {
     UserInfo get_info(String token) throws SQLException {
-        if (Server.accounts.containsKey(token)) {
-            String username = Server.accounts.get(token).a;
+        var acc = Server.accounts.get(token);
+        if (acc != null) {
+            String username = acc.a;
             var info = UserInfoDb.query(username);
-            if (info == null) throw new Error("No user with username " + username);
+            if (info == null) throw new Error(username + " has no info.");
             return info;
         }
-        throw new Error("Account is not logged in, token not found");
+        throw new Error("Can't execute get_info api, token not found");
     }
     void add_friend(String token, String target) {
         throw new Error("Unimplemented");

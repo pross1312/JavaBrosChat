@@ -1,6 +1,7 @@
 package Server.DB;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import Utils.UserInfo;
@@ -19,17 +20,23 @@ public class UserInfoDb {
             System.exit(1);
         }
     }
-    public static UserInfo query(String username) throws SQLException {
-        query_sm.setString(1, username);
-        var result = query_sm.executeQuery();
-        if (result == null) throw new RuntimeException("Result set of query operation can't be null");
-        if (!result.next()) return null;
+    public static UserInfo parse_row(ResultSet result) throws SQLException { // parse a row
+        var username = result.getString("username");
         var fullname = result.getString("fullname");
         var address = result.getString("address");
         var email = result.getString("email");
         var birthdate = result.getDate("birthdate");
         var gender = Gender.from(result.getInt("gender"));
         return new UserInfo(username, fullname, address, email, birthdate, gender);
+    }
+    public static UserInfo query(String username) throws SQLException {
+        query_sm.setString(1, username);
+        var result = query_sm.executeQuery();
+        if (result == null) throw new RuntimeException("Result set of query operation can't be null");
+        if (!result.next()) return null;
+        var info = parse_row(result);
+        result.close();
+        return info;
     }
     public static boolean add(UserInfo info) throws SQLException {
         insert_sm.setString(1, info.username);

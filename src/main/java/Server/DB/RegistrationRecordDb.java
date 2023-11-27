@@ -13,7 +13,7 @@ public class RegistrationRecordDb {
     public Date ts;
     static {
         try {
-            insert_sm = db.conn.prepareStatement("INSERT INTO RegistrationRecord VALUES(?, ?);");
+            insert_sm = db.conn.prepareStatement("INSERT INTO RegistrationRecord(username, ts) VALUES(?, ?);");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
