@@ -121,25 +121,25 @@ class FriendRequest {
 //------------------------------------------------------------------------------------------------//
 class AdminService { // can only be called by admin
     // user-operations
-    UserInfo[] list_users(String token); // filter will be done on client side
-    UserInfo[] list_active_users(String token, Date from, Date to); // sort by name or created time on client side
+    ArrayList<UserInfo> list_users(String token); // filter will be done on client side
+    ArrayList<UserInfo> list_active_users(String token, Date from, Date to); // sort by name or created time on client side
     void add_user(String token, String username, String pass, Optional<UserInfo> user_info);
     void update_user(String token, String username, UserInfo user_info);
     void del_user(String token, String username);
     void change_user_pass(String token, String username, String new_pass);
-    LoginRecord[] get_login_log(String token, String username); // sort by time
-    LoginRecord[] get_login_log(String token); // all users, sort by time
-    UserInfo[] list_user_friends(String token, String username);
+    ArrayList<LoginRecord> get_login_log(String token, String username); // sort by time
+    ArrayList<LoginRecord> get_login_log(String token); // all users, sort by time
+    ArrayList<UserInfo> list_user_friends(String token, String username);
     // group-operations
-    GroupInfo[] list_groups(String token, String pattern); // sort and filter on client side
-    UserInfo[] list_group_members(String token, String group_id); // filter out admins on client side (admin is also member)
+    ArrayList<GroupInfo> list_groups(String token, String pattern); // sort and filter on client side
+    ArrayList<UserInfo> list_group_members(String token, String group_id); // filter out admins on client side (admin is also member)
     // spam-operations
-    SpamReport[] list_spam_reports(String token) // all reports, sort by username or reported time on client side
-    SpamReport[] list_spam_reports(String token, Date from, Date to) // list report made between [from, to]
-    SpamReport[] list_spam_filter_name(String token, String pattern) // list report filter by username
+    ArrayList<SpamReport> list_spam_reports(String token) // all reports, sort by username or reported time on client side
+    ArrayList<SpamReport> list_spam_reports(String token, Date from, Date to) // list report made between [from, to]
+    ArrayList<SpamReport> list_spam_filter_name(String token, String pattern) // list report filter by username
     void lock_user(String token, String username) // confirm spam-report and lock user using this api
     // new-registration 
-    RegistrationRecord[] list_registers(String token, Date from, Date to) // list user-registrations made between [from, to]
+    ArrayList<RegistrationRecord> list_registers(String token, Date from, Date to) // list user-registrations made between [from, to]
                                                                                    // order by name or time on client side
 }
 
@@ -176,29 +176,30 @@ class AccountService {
                                                 // so that it could recv notification(new msg, friend request, invitation ...)
     void register(String username, String pass, UserInfo info);
     void recover_pass(String username);
+    void logout(String token);
 }
 
 // user-api, 
 class UserManagementService {
     void get_info(String token);
     void add_friend(String token, String target);
-    FriendRequest[] get_friend_requests(String token, FriendRequest req);
+    ArrayList<FriendRequest> get_all_friend_requests(String token);
     void unfriend(String token, String friend_username);
-    UserInfo[] list_active_friends(String token);
-    UserInfo[] find_users(String token, String pattern);
+    ArrayList<Pair<UserInfo, Boolean>> list_friends(String token); // send back info and active or not
+    ArrayList<UserInfo> find_users(String token, String pattern);
     void report_spam(String token, SpamReport report);
     void block_user(String token, String target_username);
 }
 
 class UserGroupChatService {
-    String create_group_chat(String token, String group_name, String[] usernames); // return group_id
+    ArrayList<String create_group_chat(String token, String group_name, String> usernames); // return group_id
     void rename_group_chat(String token, String group_id, String new_name);
     void remove_member(String token, String group_id, String target_username);
     void add_member(String token, String group_id, String target_username);
     void set_admin(String token, String group_id, String target_username);
     void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
     void send_msg(String token, String text, Optional<String> media_id, String group_id);
-    GroupMessage[] search_msg(String token, String group_id);
+    ArrayList<GroupMessage> search_msg(String token, String group_id);
 //**void encrypt_group()*// need further research
 }
 
