@@ -45,6 +45,7 @@ public class AccountDb {
         var hashed_pass = result.getString("password");
         var type = AccountType.from(result.getInt("type"));
         var is_locked = result.getBoolean("is_locked");
+        result.close();
         return new AccountDb(username, hashed_pass, type, is_locked);
     }
 }

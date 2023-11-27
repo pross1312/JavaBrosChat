@@ -50,8 +50,6 @@ public class ApiServer implements ConnectionHandler {
             var api = (ApiCall)obj;
             System.out.printf("[INFO] Client invoke '%s' api of '%s' with %s\n", api.name, api.service, api.args.toString());
             Result response = null;
-    // public String service, name;
-    // public ArrayList<Object>  args;
             if (services.containsKey(api.service)) {
                 try {
                     var result = services.get(api.service).invoke(api.name, api.args.toArray());
@@ -59,7 +57,7 @@ public class ApiServer implements ConnectionHandler {
                 } catch (NoSuchMethodException e) { // can't find api
                     response = Result.error(
                             String.format("Could not invoke function '%s' of '%s' with %s",
-                                    api.service, api.name, api.args.toString()));
+                                    api.name, api.service, api.args.toString()));
                 } catch (Error e) { // api exception
                     response = Result.error(e.getMessage());
                 } catch (Throwable e) {

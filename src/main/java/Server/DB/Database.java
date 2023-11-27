@@ -30,6 +30,12 @@ public class Database {
         } catch (SQLException ignored) {}
         return false;
     }
+    public void set_auto_commit(boolean val) throws SQLException {
+        conn.setAutoCommit(val);
+    }
+    public void commit() throws SQLException {
+        conn.commit();
+    }
     public boolean reconnect() {
         if (is_connected()) return true;
         try {
