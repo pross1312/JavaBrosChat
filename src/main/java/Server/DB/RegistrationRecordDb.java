@@ -9,8 +9,6 @@ import java.util.Date;
 public class RegistrationRecordDb {
     private static Database db = Server.Server.db;
     private static PreparedStatement insert_sm;
-    public String username;
-    public Date ts;
     static {
         try {
             insert_sm = db.conn.prepareStatement("INSERT INTO RegistrationRecord(username, ts) VALUES(?, ?);");
@@ -19,10 +17,6 @@ public class RegistrationRecordDb {
             e.printStackTrace();
             System.exit(1);
         }
-    }
-    private RegistrationRecordDb(String username, java.util.Date ts) {
-        this.username = username;
-        this.ts = ts;
     }
     public static boolean add(String username) throws SQLException {
         insert_sm.setString(1, username);

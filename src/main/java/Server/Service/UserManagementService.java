@@ -81,8 +81,14 @@ public class UserManagementService extends Service {
         throw new Error("Unimplemented");
     }
 
-    void report_spam(String token, SpamReport report) {
-        throw new Error("Unimplemented");
+    void report_spam(String token, String target, String reason) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute report_spam api, token not found");
+        var username = acc.a;
+        var report = new SpamReport(username, target, reason, new java.util.Date());
+        if (!SpamReportDb.add(report)) {
+            throw new RuntimeException("Can't execute report_spam api");
+        }
     }
 
     void block_user(String token, String target_username) {

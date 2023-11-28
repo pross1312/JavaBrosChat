@@ -44,12 +44,15 @@ public class AccountService extends Service {
         }
         if (AccountDb.query(username) == null) {
             AccountDb.add(new AccountDb(username, Helper.hash_password(pass + username), AccountType.User, false));
+            Server.db.set_auto_commit(false);
             if (!UserInfoDb.add(info)) {
-                System.out.println("Failed userinfo");
+                throw new RuntimeException("Can't execute register api");
             }
             if (!RegistrationRecordDb.add(username)) {
-                System.out.println("Failed register");
+                throw new RuntimeException("Can't execute register api");
             }
+            Server.db.commit();
+            Server.db.set_auto_commit(true);
         } else {
             throw new Error(String.format("Username '%s' existed", username));
         }

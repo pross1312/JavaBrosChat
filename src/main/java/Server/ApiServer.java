@@ -63,7 +63,7 @@ public class ApiServer implements ConnectionHandler {
                     response = Result.error(e.getMessage());
                 } catch (Throwable e) {
                     e.printStackTrace();
-                    response = Result.error("Internal server error");
+                    response = Result.error("Something went wronggggg.");
                 }
             } else {
                 response = Result.error(String.format("Service not found %s", api.service));
