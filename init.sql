@@ -54,7 +54,7 @@ go
 create table UserFriend(
 	username varchar(50),
 	friend varchar(50),
-	primary key(username)
+	primary key(username, friend)
 )
 go
 alter table UserFriend
