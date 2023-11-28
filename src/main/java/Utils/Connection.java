@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.security.KeyStore;
 
 import javax.net.SocketFactory;
@@ -85,5 +86,12 @@ public class Connection implements Closeable {
     }
     public boolean is_connected() {
         return sock.isConnected();
+    }
+    public boolean set_timeout(int timeout) {
+        try {
+            sock.setSoTimeout(timeout);
+            return true;
+        } catch(SocketException ignored) {}
+        return false;
     }
 }

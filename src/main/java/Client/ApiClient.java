@@ -11,24 +11,29 @@ import Utils.Result;
 public class ApiClient {
     String addr;
     int port;
+    Connection conn = null;
     ApiClient(String addr, int port) {
         this.addr = addr;
         this.port = port;
     }
     Result invoke_api(String service, String name, Object... args) throws RuntimeException, IOException {
-        Connection conn;
-        conn = new Connection(addr, port);
+        if (conn == null || !conn.is_connected()) conn = new Connection(addr, port);
         var api = new ApiCall(service, name, args);
-        conn.send(api);
-        Object result = conn.read();
-        conn.close();
-        if (result != null && !(result instanceof Result)) {
-            throw new RuntimeException(
-                String.format("Expected Result but received invalid result of class '%s'",
-                    result != null ? result.getClass().getName() : "null")
-            );
+        if (!conn.send(api)) { // send failed
+            conn.close();
+            throw new IOException("Can't send ApiCall");
+        } else {
+            Object result = conn.read();
+            if (result != null) {
+                if (result instanceof Result res) return res;
+                // else
+                throw new RuntimeException(
+                        String.format("Expected Result but received invalid result of class '%s'",
+                            result != null ? result.getClass().getName() : "null"));
+            }
+            conn.close();
         }
-        return (Result)result;
+        throw new IOException("Can't read result");
     }
     Thread async_invoke_api(Consumer<Result> handler, String service, String name, Object... args) throws RuntimeException, IOException {
         Connection conn;

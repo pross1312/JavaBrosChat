@@ -44,34 +44,43 @@ public class ApiServer implements ConnectionHandler {
     }
 
     @Override public void handle(Connection conn) {
-        var obj = conn.read();
-        if (obj == null) { // receive nothing ???
-            // TODO: do something ?
-        } else if (obj instanceof ApiCall) {
-            var api = (ApiCall)obj;
-            System.out.printf("[INFO] Client invoke '%s' api of '%s' with %s\n", api.name, api.service, api.args.toString());
-            Result response = null;
-            if (services.containsKey(api.service)) {
-                try {
-                    var result = services.get(api.service).invoke(api.name, api.args.toArray());
-                    response = Result.ok(result);
-                } catch (NoSuchMethodException e) { // can't find api
-                    response = Result.error(
-                            String.format("Could not invoke function '%s' of '%s' with %s",
+        boolean has_timeout = conn.set_timeout(1000);
+         // NOTE: keep reading if client request api continuously because ssl handshake takes time
+         // close when can't read data
+        do {
+            var obj = conn.read();
+            if (obj == null) { // receive nothing ???
+                conn.close();
+                break;
+            } else if (obj instanceof ApiCall) {
+                var api = (ApiCall)obj;
+                System.out.printf("[INFO] Client invoke '%s' api of '%s' with %s\n", api.name, api.service, api.args.toString());
+                Result response = null;
+                if (services.containsKey(api.service)) {
+                    try {
+                        var result = services.get(api.service).invoke(api.name, api.args.toArray());
+                        response = Result.ok(result);
+                    } catch (NoSuchMethodException e) { // can't find api
+                        response = Result.error(
+                                String.format("Could not invoke function '%s' of '%s' with %s",
                                     api.name, api.service, api.args.toString()));
-                } catch (Error e) { // api exception
-                    response = Result.error(e.getMessage());
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    response = Result.error("Something went wronggggg.");
+                    } catch (Error e) { // api exception
+                        response = Result.error(e.getMessage());
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                        response = Result.error("Something went wronggggg.");
+                    }
+                } else {
+                    response = Result.error(String.format("Service not found %s", api.service));
                 }
-            } else {
-                response = Result.error(String.format("Service not found %s", api.service));
+                if (!conn.send(response)) {
+                    conn.close();
+                    break;
+                }
+            } else { // not api call ???
+                System.out.printf("[ERROR] Could not handle '%s', data: %s\n", obj.getClass().getName(), obj.toString());
             }
-            conn.send(response);
-        } else { // not api call ???
-            System.out.printf("[ERROR] Could not handle '%s', data: %s\n", obj.getClass().getName(), obj.toString());
-        }
+        } while (has_timeout);
         conn.close();
     }
     public void close() {
