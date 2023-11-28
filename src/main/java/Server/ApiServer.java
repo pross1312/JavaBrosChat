@@ -26,6 +26,7 @@ public class ApiServer implements ConnectionHandler {
         // register all service here
         services.put("UserManagementService", new UserManagementService());
         services.put("AccountService", new AccountService());
+        services.put("AdminService", new AdminService());
         // ...........................................
     }
     void start_listening(boolean on_new_thread) {
