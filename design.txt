@@ -127,7 +127,7 @@ class AdminService { // can only be called by admin
     void update_user(String token, String username, UserInfo user_info);
     void del_user(String token, String username);
     void change_user_pass(String token, String username, String new_pass);
-    ArrayList<LoginRecord> get_login_log(String token, String username); // sort by time
+    ArrayList<Date> get_login_log(String token, String username); // sort by time
     ArrayList<LoginRecord> get_login_log(String token); // all users, sort by time
     ArrayList<UserInfo> list_user_friends(String token, String username);
     // group-operations
