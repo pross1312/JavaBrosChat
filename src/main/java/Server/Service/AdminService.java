@@ -18,11 +18,11 @@ public class AdminService extends Service {
         return user;
     }
 
-    ArrayList<UserInfo> list_active_users(String token, Date from, Date to){ // sort by name or created time on client side
+    ArrayList<UserInfo> list_active_users(String token, Date from, Date to) throws SQLException{ // sort by name or created time on client side
         var acc = Server.accounts.get(token);
         if(acc.b == AccountType.User)
             throw new Error("Users are not allowed to get the user's list");
-        ArrayList<UserInfo> user = UserInfoDb.list_users();
+        ArrayList<UserInfo> user = LoginRecordDb.get_list_active_users(from, to);
         return user;
     }
 //    void add_user(String token, String username, String pass, Optional<UserInfo> user_info);

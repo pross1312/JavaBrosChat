@@ -1,19 +1,23 @@
 package Server.DB;
 
+import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import Utils.UserInfo;
 import Utils.UserInfo.Gender;
 
 public class UserInfoDb {
     private static Database db = Server.Server.db;
-    private static PreparedStatement insert_sm, query_sm;
+
+    private static PreparedStatement insert_sm, query_sm, query_all_sm;
     static {
         try {
             insert_sm = db.conn.prepareStatement("INSERT INTO UserInfo(username, fullname, email, address, birthdate, gender) VALUES(?, ?, ?, ?, ?, ?)");
             query_sm = db.conn.prepareStatement("SELECT * FROM UserInfo WHERE username = ?");
+            query_all_sm = db.conn.prepareStatement("SELECT * FROM UserInfo");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -46,5 +50,18 @@ public class UserInfoDb {
         insert_sm.setDate(5, new java.sql.Date(info.birthdate.getTime()));
         insert_sm.setInt(6, info.gender.val);
         return insert_sm.executeUpdate() == 1;
+    }
+
+    public static ArrayList<UserInfo> list_users() throws SQLException{
+        ArrayList<UserInfo> arr = new ArrayList<UserInfo>();
+        var result = query_all_sm.executeQuery();
+        if(result == null)
+            throw new RuntimeException("Result set of query operation can't be null");
+        while(result.next()){
+            var info = parse_row(result);
+            arr.add(info);
+        }
+        result.close();
+        return arr;
     }
 }
