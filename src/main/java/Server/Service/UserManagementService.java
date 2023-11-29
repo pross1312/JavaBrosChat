@@ -29,7 +29,6 @@ public class UserManagementService extends Service {
             if (req_from_friend == null) {
                 if (!FriendRequestDb.add(username, friend)) throw new Error("Can't execute add_friend api");
             } else {
-                System.out.println("Checking");
                 Server.db.set_auto_commit(false);
                 FriendRequestDb.remove(friend, username);
                 UserFriendDb.add(username, friend);
