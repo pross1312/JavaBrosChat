@@ -196,12 +196,13 @@ class UserManagementService {
 
 class GroupChatService {
     // need more than 2 people to create group chat -> usernames.size() >= 3
-    String create_group_chat(String token, String group_name, ArrayList<String> usernames); // return group_id
-    ArrayList<GroupChatInfo> list_user_groups(String token); // list all groups that user are in
+    String create_group(String token, String group_name, ArrayList<String> usernames); // return group_id
+    ArrayList<GroupChatInfo> list_groups(String token); // list all groups that user are in
     void rename_group_chat(String token, String group_id, String new_name);
     void remove_member(String token, String group_id, String target_username)
     void add_member(String token, String group_id, String target_username);
     void set_admin(String token, String group_id, String target_username);
+    ArrayLists<GroupChatMessage> get_unread_msg(String token, String group_id);
     void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
     void send_msg_to_group(String token, String text, String media_id, String group_id);
     void send_msg_to_group(String token, String text, String group_id);

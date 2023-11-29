@@ -52,6 +52,15 @@ public class UserFriendDb {
         if (is_auto_commit) db.commit();
         db.set_auto_commit(is_auto_commit);
     }
+    public static boolean is_friend(String username, String friend) throws SQLException {
+        var st = db.conn.createStatement();
+        var result = st.executeQuery(String.format("SELECT * FROM UserFriend WHERE username = '%s' AND friend = '%s'", username, friend));
+        if (result == null) throw new RuntimeException("Result set of query operation can't be null");
+        boolean res = false;
+        if (result.next()) res = true;
+        st.close();
+        return res;
+    }
     public static ArrayList<UserInfo> list_friends_info(String username) throws SQLException {
         get_all_friends_sm.setString(1, username);
         var result = get_all_friends_sm.executeQuery();

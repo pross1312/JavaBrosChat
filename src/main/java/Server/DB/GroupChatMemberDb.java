@@ -4,6 +4,7 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 import Utils.GroupChatMemberInfo;
 
@@ -27,6 +28,13 @@ public class GroupChatMemberDb {
         insert_sm.setTimestamp(3, new Timestamp(member.joined_date.getTime()));
         insert_sm.setBoolean(4, member.is_admin);
         insert_sm.execute();
+    }
+    public static ArrayList<String> list_members(String group_id) throws SQLException {
+        list_sm.setString(1, group_id);
+        var result = list_sm.executeQuery();
+        var members = new ArrayList<String>();
+        while (result.next()) members.add(result.getString("username"));
+        return members;
     }
     public static boolean check_in_group(String username, String group_id) throws SQLException {
         list_sm.setString(1, group_id);
