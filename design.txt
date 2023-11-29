@@ -1,5 +1,7 @@
 //---------------------------------Object------------------------------------//
-
+****
+TODO: observe performance of prepared statement and make the decision
+****
 class DatabaseConnection {
 }
 
@@ -35,26 +37,27 @@ class RegistrationRecord {
     String username;
     Date date;
 }
-class GroupMember {
+class GroupChatMemberInfo {
+    String group_id;
     String username;
-    Date date_joined;
-    int start_history_msg;
-    int last_read_msg;
+    Date joined_date;
     boolean is_admin;
 }
-class GroupMessage {
+
+class GroupChatMessage {
     int id;
     String group_id;
     String sender; // username
-    Date date_sent;
-    String text;
-    Optional<String> media_id;
+    Date sent_date;
+    String msg;
+    String media_id;
 }
-class GroupInfo {
+
+class GroupChatInfo {
     String id;
     String name;
-    ArrayList<GroupMember> members;
     Date created_date;
+    ArrayList<String username> members;
 }
 
 class Media {
@@ -123,7 +126,7 @@ class AdminService { // can only be called by admin
     // user-operations
     ArrayList<UserInfo> list_users(String token); // filter will be done on client side
     ArrayList<UserInfo> list_active_users(String token, Date from, Date to); // sort by name or created time on client side
-    void add_user(String token, String username, String pass, Optional<UserInfo> user_info);
+    void add_user(String token, String username, String pass, UserInfo user_info);
     void update_user(String token, String username, UserInfo user_info);
     void del_user(String token, String username);
     void change_user_pass(String token, String username, String new_pass);
@@ -131,8 +134,8 @@ class AdminService { // can only be called by admin
     ArrayList<LoginRecord> get_login_log(String token); // all users, sort by time
     ArrayList<UserInfo> list_user_friends(String token, String username);
     // group-operations
-    ArrayList<GroupInfo> list_groups(String token, String pattern); // sort and filter on client side
-    ArrayList<UserInfo> list_group_members(String token, String group_id); // filter out admins on client side (admin is also member)
+    ArrayList<GroupChatInfo> list_groups(String token, String pattern); // sort and filter on client side
+    ArrayList<GroupChatMemberInfo> list_group_members(String token, String group_id); // filter out admins on client side (admin is also member)
     // spam-operations
     ArrayList<SpamReport> list_spam_reports(String token) // all reports, sort by username or reported time on client side
     ArrayList<SpamReport> list_spam_reports(String token, Date from, Date to) // list report made between [from, to]
@@ -187,18 +190,23 @@ class UserManagementService {
     void unfriend(String token, String friend_username);
     ArrayList<Pair<UserInfo, Boolean>> list_friends(String token); // send back info and active or not
     ArrayList<UserInfo> find_users(String token, String pattern);
-    void report_spam(String token, SpamReport report);
+    void report_spam(String token, String target, String reason);
     void block_user(String token, String target_username);
 }
 
-class UserGroupChatService {
-    ArrayList<String create_group_chat(String token, String group_name, String> usernames); // return group_id
+class GroupChatService {
+    // need more than 2 people to create group chat -> usernames.size() >= 3
+    String create_group_chat(String token, String group_name, ArrayList<String> usernames); // return group_id
+    ArrayList<GroupChatInfo> list_user_groups(String token); // list all groups that user are in
     void rename_group_chat(String token, String group_id, String new_name);
-    void remove_member(String token, String group_id, String target_username);
+    void remove_member(String token, String group_id, String target_username)
     void add_member(String token, String group_id, String target_username);
     void set_admin(String token, String group_id, String target_username);
     void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
-    void send_msg(String token, String text, Optional<String> media_id, String group_id);
+    void send_msg_to_group(String token, String text, String media_id, String group_id);
+    void send_msg_to_group(String token, String text, String group_id);
+    void send_msg_to_friend(String token, String text, String media_id, String username);
+    void send_msg_to_friend(String token, String text, String username);
     ArrayList<GroupMessage> search_msg(String token, String group_id);
 //**void encrypt_group()*// need further research
 }
