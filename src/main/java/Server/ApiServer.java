@@ -49,9 +49,8 @@ public class ApiServer implements ConnectionHandler {
          // NOTE: keep reading if client request api continuously because ssl handshake takes time
          // close when can't read data
         var obj = conn.read();
-        if (obj == null) { // receive nothing ???
-            conn.close();
-            break;
+        if (obj == null) {
+             // receive nothing ???
         } else if (obj instanceof ApiCall) {
             var api = (ApiCall)obj;
             System.out.printf("[INFO] Client invoke '%s' api of '%s' with %s\n", api.name, api.service, api.args.toString());
@@ -78,8 +77,6 @@ public class ApiServer implements ConnectionHandler {
             }
             if (!conn.send(response)) {
                 System.out.println("[ERROR] Can't send result back to client");
-                conn.close();
-                break;
             }
         } else { // not api call ???
             System.out.printf("[ERROR] Could not handle '%s', data: %s\n", obj.getClass().getName(), obj.toString());

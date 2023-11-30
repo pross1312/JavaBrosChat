@@ -33,6 +33,12 @@ public class Server {
             System.exit(1);
         }
     }
+    public static boolean is_user_login(String username) {
+        return Server.accounts.searchValues(1000, x -> {
+            if (x.a.compareTo(username) == 0) return true;
+            return null;
+        });
+    }
     public static void main(String[] args) {
         notification_server.start_listening();
         api_server.start_listening(false);
