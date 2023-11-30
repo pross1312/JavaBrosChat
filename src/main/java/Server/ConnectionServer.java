@@ -34,10 +34,12 @@ public class ConnectionServer {
     }
     public void start_listening(ConnectionHandler handler) {
         while (!server.isClosed()) {
-            try (Connection conn = accept()) {
+            try {
+                Connection conn = accept();
                 new Thread(new Runnable() {
                     @Override public void run() {
                     handler.handle(conn);
+                    conn.close();
                     }
                 }).run();
             } catch (IOException e) {

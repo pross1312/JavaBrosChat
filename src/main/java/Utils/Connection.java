@@ -16,7 +16,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-public class Connection implements Closeable {
+public class Connection {
     private static SocketFactory factory = SocketFactory.getDefault();
     public static void init_ssl(String trust_file, String trust_pass) throws Exception {
         KeyStore trustStore = KeyStore.getInstance("PKCS12");
@@ -85,7 +85,7 @@ public class Connection implements Closeable {
         }
     }
     public boolean is_connected() {
-        return sock.isConnected();
+        return !sock.isClosed() && sock.isConnected();
     }
     public boolean set_timeout(int timeout) {
         try {

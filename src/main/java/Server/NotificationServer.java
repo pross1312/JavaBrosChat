@@ -1,8 +1,10 @@
 package Server;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import Utils.Notify;
 import Utils.Result;
 import Utils.Connection;
 
@@ -14,7 +16,13 @@ public class NotificationServer {
         server = new ConnectionServer(addr, port);
         clients = new ConcurrentHashMap<String, Connection>();
     }
-    public boolean notify(String username, Object notification) {
+    // this one ignored failure
+    public void notify(List<String> usernames, Notify notification) {
+        clients.forEachValue(1000, conn -> {
+            conn.send(notification);
+        });
+    }
+    public boolean notify(String username, Notify notification) {
         var conn = clients.get(username);
         if (conn == null) {
             return false;
@@ -29,15 +37,19 @@ public class NotificationServer {
             @Override
             public void run() {
                 while (!server.is_closed()) {
-                    try (var conn = server.accept()) {
-                        var obj = conn.read();
+                    try {
+                        var conn = server.accept();
                         System.out.println("[INFO] Try adding client to notification list");
-                        if (obj instanceof String token) {
+                        var obj = conn.read();
+                        if (obj == null) {
+                            conn.close();
+                            continue;
+                        } else if (obj instanceof String token) {
                             if (Server.accounts.containsKey(token)) {
                                 String username = Server.accounts.get(token).a; // username
                                 System.out.printf("[INFO] '%s' is now listening to notification.\n", username);
                                 clients.put(username, conn);
-                                conn.send(Result.ok(null));
+                                conn.send(Result.ok("OK"));
                             } else {
                                 conn.send(Result.error(String.format("Can't add %s to notification list", token)));
                             }

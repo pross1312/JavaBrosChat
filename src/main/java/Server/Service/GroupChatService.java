@@ -59,7 +59,12 @@ public class GroupChatService extends Service {
             if (members == null) {
                 members = GroupChatMemberDb.list_members(group_id);
             }
-            Server.notification_server.notify(members, new NewMsgNotify(group_id, 1)); //
+            for (var x : members) {
+                if (x.compareTo(username) != 0) {
+                    Server.notification_server.notify(x,
+                            new NewMsgNotify(group_id, GroupChatMessageDb.get_count_unread(x, group_id)));
+                }
+            }
             GroupChatMessageDb.add(username, text, new Date(), null, group_id);
 
         } else {

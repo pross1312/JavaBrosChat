@@ -15,12 +15,13 @@ import Utils.GroupChatMessage;
 public class GroupChatMessageDb {
     private static Database db = Server.Server.db;
     private static CallableStatement insert_sm, update_read_sm;
-    private static PreparedStatement get_unread_sm;
+    private static PreparedStatement get_unread_sm, get_count_unread_sm;
     static {
         try {
             insert_sm = db.conn.prepareCall("{CALL add_msg_to_group(?, ?, ?, ?, ?)}");
             update_read_sm = db.conn.prepareCall("{CALL update_last_read(?, ?)}");
             get_unread_sm = db.conn.prepareStatement("select * from get_unread_msg(?, ?)");
+            get_count_unread_sm = db.conn.prepareStatement("select count(id) as count from get_unread_msg(?, ?)");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -60,5 +61,13 @@ public class GroupChatMessageDb {
         update_read_sm.setString(1, username);
         update_read_sm.setString(2, group_id);
         if (update_read_sm.executeUpdate() != 1) throw new RuntimeException("Expected this update to affect 1 row at least");
+    }
+    public static int get_count_unread(String username, String group_id) throws SQLException {
+        get_count_unread_sm.setString(1, username);
+        get_count_unread_sm.setString(2, group_id);
+        var result = get_count_unread_sm.executeQuery();
+        if (result == null) throw new RuntimeException("Result set of query operation can't be null");
+        if (!result.next()) throw new RuntimeException("Select count can't return no rows");
+        return result.getInt("count");
     }
 }
