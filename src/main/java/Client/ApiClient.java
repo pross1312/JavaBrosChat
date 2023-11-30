@@ -11,13 +11,12 @@ import Utils.Result;
 public class ApiClient {
     String addr;
     int port;
-    Connection conn = null;
     ApiClient(String addr, int port) {
         this.addr = addr;
         this.port = port;
     }
     Result invoke_api(String service, String name, Object... args) throws RuntimeException, IOException {
-        if (conn == null || !conn.is_connected()) conn = new Connection(addr, port);
+        var conn = new Connection(addr, port);
         var api = new ApiCall(service, name, args);
         if (!conn.send(api)) { // send failed
             conn.close();
