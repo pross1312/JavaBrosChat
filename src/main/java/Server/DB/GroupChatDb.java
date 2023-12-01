@@ -3,6 +3,7 @@ package Server.DB;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,5 +44,11 @@ public class GroupChatDb {
             groups.add(parse_group_info(result));
         }
         return groups;
+    }
+    public static void rename(String group_id, String new_name) throws SQLException {
+        Statement st = db.conn.createStatement();
+        st.executeUpdate(String.format("UPDATE GroupChat SET name = '%s' WHERE id = '%s'",
+                                    new_name, group_id));
+        st.close();
     }
 }

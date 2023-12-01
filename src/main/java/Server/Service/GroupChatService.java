@@ -113,7 +113,32 @@ public class GroupChatService extends Service {
         GroupChatMemberDb.remove(target_username, group_id);
     }
     void add_member(String token, String group_id, String target_username) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute add_member api, token not found");
+        var username = acc.a;
+        if (GroupChatMemberDb.check_in_group(target_username, group_id))
+            throw new Error(String.format("'%s' is already in group", target_username));
+        if (!UserFriendDb.is_friend(username, target_username))
+            throw new Error("Can't add people that are not your friends to group");
+        GroupChatMemberDb.add(new GroupChatMemberInfo(group_id, target_username, new Date(), false));
     }
-    void set_admin(String token, String group_id, String target_username) throws SQLException {
+    void set_admin(String token, String group_id, String target_username, Boolean is_admin) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute set_admin api, token not found");
+        var username = acc.a;
+        if (!GroupChatMemberDb.is_admin(username, group_id))
+            throw new Error(String.format("Can't set admin '%s' is not admin of the group", username));
+        if (!GroupChatMemberDb.check_in_group(target_username, group_id))
+            throw new Error(String.format("Can't set admin, '%s' is not in group", target_username));
+        GroupChatMemberDb.set_admin(target_username, group_id, is_admin);
+    }
+    void rename(String token, String group_id, String new_name) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute rename api, token not found");
+        var username = acc.a;
+        if (!GroupChatMemberDb.check_in_group(username, group_id))
+            throw new Error(String.format("Can't rename '%s' is not in group", username));
+        GroupChatDb.rename(group_id, new_name);
+    }
     }
 }

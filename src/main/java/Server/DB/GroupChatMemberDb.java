@@ -63,4 +63,10 @@ public class GroupChatMemberDb {
         }
         return false;
     }
+    public static void set_admin(String username, String group_id, boolean is_admin) throws SQLException {
+        Statement st = db.conn.createStatement();
+        st.executeUpdate(String.format("UPDATE GroupChatMember SET is_admin = '%s' WHERE username = '%s' AND group_id = '%s'",
+                                    is_admin, username, group_id));
+        st.close();
+    }
 }
