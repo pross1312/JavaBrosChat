@@ -12,12 +12,14 @@ import Utils.UserInfo.Gender;
 public class UserInfoDb {
     private static Database db = Server.Server.db;
 
-    private static PreparedStatement insert_sm, query_sm, query_all_sm;
+    private static PreparedStatement insert_sm, query_sm, query_all_sm, update_sm, delete_sm;
     static {
         try {
             insert_sm = db.conn.prepareStatement("INSERT INTO UserInfo(username, fullname, email, address, birthdate, gender) VALUES(?, ?, ?, ?, ?, ?)");
             query_sm = db.conn.prepareStatement("SELECT * FROM UserInfo WHERE username = ?");
             query_all_sm = db.conn.prepareStatement("SELECT * FROM UserInfo");
+            update_sm = db.conn.prepareStatement("UPDATE UserInfo SET fullname = ?, email = ?, address = ?, birthdate = ?, gender = ? WHERE username = ?");
+            delete_sm = db.conn.prepareStatement("DELETE FROM UserInfo WHERE username = ?");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -63,5 +65,20 @@ public class UserInfoDb {
         }
         result.close();
         return arr;
+    }
+
+    public static boolean update(UserInfo info, String username) throws SQLException {
+        update_sm.setString(1, info.fullname);
+        update_sm.setString(2, info.email);
+        update_sm.setString(3, info.address);
+        update_sm.setDate(4, new java.sql.Date(info.birthdate.getTime()));
+        update_sm.setInt(5, info.gender.val);
+        update_sm.setString(6, username);
+        return update_sm.executeUpdate() == 1;
+    }
+
+    public static boolean delete(String username) throws SQLException {
+        delete_sm.setString(1, username);
+        return delete_sm.executeUpdate() == 1;
     }
 }
