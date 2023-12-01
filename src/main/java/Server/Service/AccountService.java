@@ -60,6 +60,7 @@ public class AccountService extends Service {
         }
         if (AccountDb.query(username) == null) {
             AccountDb.add(new AccountDb(username, Helper.hash_password(pass + username), AccountType.User, false));
+            UserInfoDb.add(info); // add userinfo
             if (!UserInfoDb.add(info)) {
                 System.out.println("Failed userinfo");
             }

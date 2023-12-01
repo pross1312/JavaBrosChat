@@ -4,6 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import Utils.AccountType;
+import Utils.UserInfo;
+import com.microsoft.sqlserver.jdbc.SQLServerException;
 
 public class AccountDb {
     public String username;
@@ -11,7 +13,7 @@ public class AccountDb {
     public AccountType type;
     public boolean is_locked;
     private static Database db = Server.Server.db;
-    private static PreparedStatement query_sm, insert_sm;
+    private static PreparedStatement query_sm, insert_sm, delete_sm, change_password;
     public AccountDb(String username, String hashed_pass, AccountType type, boolean is_locked) {
         this.username = username;
         this.hashed_pass = hashed_pass;
@@ -23,6 +25,8 @@ public class AccountDb {
         try {
             query_sm = db.conn.prepareStatement("SELECT * FROM Account WHERE username = ?;");
             insert_sm = db.conn.prepareStatement("INSERT INTO Account VALUES(?, ?, ?, ?);");
+            delete_sm = db.conn.prepareStatement("DELETE FROM Account WHERE username = ?");
+            change_password = db.conn.prepareStatement("UPDATE Account SET password = ? WHERE username = ?");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -47,5 +51,14 @@ public class AccountDb {
         var is_locked = result.getBoolean("is_locked");
         result.close();
         return new AccountDb(username, hashed_pass, type, is_locked);
+    }
+    public static boolean delete(String username) throws SQLException {
+        delete_sm.setString(1, username);
+        return delete_sm.executeUpdate() == 1;
+    }
+    public static boolean change_pass(String username, String new_pass) throws SQLException {
+        change_password.setString(1, new_pass);
+        change_password.setString(2, username);
+        return change_password.executeUpdate() == 1;
     }
 }
