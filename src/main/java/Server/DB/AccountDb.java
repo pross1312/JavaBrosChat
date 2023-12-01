@@ -12,7 +12,7 @@ public class AccountDb {
     public String hashed_pass;
     public AccountType type;
     public boolean is_locked;
-    private static Database db = Server.Server.db;
+    private static Database db = Server.Main.db;
     private static PreparedStatement query_sm, insert_sm, delete_sm, change_password;
     public AccountDb(String username, String hashed_pass, AccountType type, boolean is_locked) {
         this.username = username;

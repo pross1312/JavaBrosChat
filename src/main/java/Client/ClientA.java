@@ -18,8 +18,7 @@ import Utils.UserInfo;
 public class ClientA {
     static NotifyClient notify;
     static ApiClient api_c;
-    static final int API_PORT = 13123;
-    static final int NOTIFY_PORT = 13122;
+    static final int SERVER_PORT = 13123;
     static String authen_token;
     static String cur_group_id;
     static ArrayList<GroupChatInfo> groups;
@@ -35,7 +34,7 @@ public class ClientA {
     }
     public static void main(String[] args) throws Exception {
         System.out.println(args[0]);
-        api_c = new ApiClient("localhost", API_PORT);
+        api_c = new ApiClient("localhost", SERVER_PORT);
         var result = api_c.invoke_api("AccountService", "register", args[0], "123",
                 new UserInfo(args[0], "tuong321", "1j2oi", "123tuong@gmail.com", new java.util.Date(), UserInfo.Gender.Female));
         if (result instanceof ResultError err) {
@@ -48,7 +47,7 @@ public class ClientA {
             System.out.println(err.msg());
         } else if (result instanceof ResultOk ok) {
             authen_token = ((Pair<String, AccountType>)ok.data()).a;
-            notify = new NotifyClient(authen_token, "localhost", NOTIFY_PORT);
+            notify = new NotifyClient(authen_token, "localhost", SERVER_PORT);
             System.out.println(authen_token);
             shell();
         }
@@ -69,7 +68,7 @@ public class ClientA {
                     authen_token = ((Pair<String, AccountType>)ok.data()).a;
                     System.out.println(authen_token);
                     if (notify != null) notify.close();
-                    notify = new NotifyClient(authen_token, "localhost", NOTIFY_PORT);
+                    notify = new NotifyClient(authen_token, "localhost", SERVER_PORT);
                 }
             } else if (tokens.get(0).compareTo("/listfriend") == 0) {
                 var result = api_c.invoke_api("UserManagementService", "list_friends", authen_token);

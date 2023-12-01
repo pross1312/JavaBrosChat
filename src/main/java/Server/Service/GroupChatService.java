@@ -7,7 +7,7 @@ import java.util.Base64;
 
 import Server.DB.*;
 import Utils.NewGroupMsg;
-import Server.Server;
+import Server.Main;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,7 @@ public class GroupChatService extends Service {
         group_users = new ConcurrentHashMap<String, List<String>>();
     }
     String create(String token, String group_name, ArrayList<String> users_list) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute create api, token not found");
         var username = acc.a;
         users_list.removeIf(x -> x.compareTo(username) == 0); // NOTE: remove if users_list contains username to manage this easier
@@ -40,19 +40,19 @@ public class GroupChatService extends Service {
         if (!user_friends.containsAll(users_list))
             throw new Error("Can't create group chat with people that are not friends");
         GroupChatDb.add(group);
-        Server.db.set_auto_commit(false);
+        Main.db.set_auto_commit(false);
         for (var member : users_list) {
             GroupChatMemberDb.add(new GroupChatMemberInfo(group_id, member, date, false));
         }
         GroupChatMemberDb.add(new GroupChatMemberInfo(group_id, username, date, true));
-        Server.db.commit();
-        Server.db.set_auto_commit(true);
+        Main.db.commit();
+        Main.db.set_auto_commit(true);
         users_list.add(username);
         group_users.put(group_id, users_list);
         return group_id;
     }
     void send_msg(String token, String text, String group_id) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute send_msg api, token not found");
         var username = acc.a;
         if (GroupChatMemberDb.check_in_group(username, group_id)) {
@@ -63,7 +63,7 @@ public class GroupChatService extends Service {
             }
             for (var x : members) {
                 if (x.compareTo(username) != 0) {
-                    Server.api_server.notify(x,
+                    Main.server.notify(x,
                             new NewGroupMsg(group_id, GroupChatMessageDb.get_count_unread(x, group_id)));
                 }
             }
@@ -74,7 +74,7 @@ public class GroupChatService extends Service {
         }
     }
     ArrayList<ChatMessage> get_unread_msg(String token, String group_id) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute get_unread_msg api, token not found");
         var username = acc.a;
         if (!GroupChatMemberDb.check_in_group(username, group_id)) throw new Error("Can't get message of group that you are not in");
@@ -84,7 +84,7 @@ public class GroupChatService extends Service {
         return result;
     }
     ArrayList<GroupChatInfo> list_groups(String token) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute list_user_groups api, token not found");
         var username = acc.a;
         var result = GroupChatDb.list_groups(username);
@@ -95,7 +95,7 @@ public class GroupChatService extends Service {
         return result;
     }
     void remove_member(String token, String group_id, String target_username) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute remove_member api, token not found");
         var username = acc.a;
         var group = group_users.get(group_id);
@@ -113,7 +113,7 @@ public class GroupChatService extends Service {
         GroupChatMemberDb.remove(target_username, group_id);
     }
     void add_member(String token, String group_id, String target_username) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute add_member api, token not found");
         var username = acc.a;
         if (GroupChatMemberDb.check_in_group(target_username, group_id))
@@ -123,7 +123,7 @@ public class GroupChatService extends Service {
         GroupChatMemberDb.add(new GroupChatMemberInfo(group_id, target_username, new Date(), false));
     }
     void set_admin(String token, String group_id, String target_username, Boolean is_admin) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute set_admin api, token not found");
         var username = acc.a;
         if (!GroupChatMemberDb.is_admin(username, group_id))
@@ -133,7 +133,7 @@ public class GroupChatService extends Service {
         GroupChatMemberDb.set_admin(target_username, group_id, is_admin);
     }
     void rename(String token, String group_id, String new_name) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute rename api, token not found");
         var username = acc.a;
         if (!GroupChatMemberDb.check_in_group(username, group_id))

@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 public class RegistrationRecordDb {
-    private static Database db = Server.Server.db;
+    private static Database db = Server.Main.db;
     private static PreparedStatement insert_sm;
     static {
         try {

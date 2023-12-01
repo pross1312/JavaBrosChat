@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.Base64;
 import java.util.Date;
 
-import Server.Server;
 import Server.DB.*;
 
 public class AccountService extends Service {
@@ -16,14 +15,14 @@ public class AccountService extends Service {
         if (account.hashed_pass.compareTo(hash_pass) == 0) {
             var token_raw = String.format("%s:%s", username, hash_pass);
             var token = Base64.getEncoder().encodeToString(token_raw.getBytes());
-            if (Server.accounts.containsKey(token)) { // TODO: notify user's ?
+            if (Server.Main.accounts.containsKey(token)) { // TODO: notify user's ?
                 // TODO: handle this case properly
                 LoginRecordDb.add(username);
-                Server.accounts.put(token, new Pair<String, AccountType>(username, account.type));
+                Server.Main.accounts.put(token, new Pair<String, AccountType>(username, account.type));
                 return new Pair<String, AccountType>(token, account.type);
             } else {
                 LoginRecordDb.add(username);
-                Server.accounts.put(token, new Pair<String, AccountType>(username, account.type));
+                Server.Main.accounts.put(token, new Pair<String, AccountType>(username, account.type));
                 return new Pair<String, AccountType>(token, account.type);
             }
         } else {
@@ -32,9 +31,9 @@ public class AccountService extends Service {
     }
 
     void logout(String token) throws SQLException { // return a token from Account
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc != null) {
-            Server.accounts.remove(token); // TODO: notify user's ?
+            Server.Main.accounts.remove(token); // TODO: notify user's ?
         } else throw new Error("Can't execute logout api, token not found");
     }
 
@@ -44,15 +43,15 @@ public class AccountService extends Service {
         }
         if (AccountDb.query(username) == null) {
             AccountDb.add(new AccountDb(username, Helper.hash_password(pass + username), AccountType.User, false));
-            Server.db.set_auto_commit(false);
+            Server.Main.db.set_auto_commit(false);
             if (!UserInfoDb.add(info)) {
                 throw new RuntimeException("Can't execute register api");
             }
             if (!RegistrationRecordDb.add(username)) {
                 throw new RuntimeException("Can't execute register api");
             }
-            Server.db.commit();
-            Server.db.set_auto_commit(true);
+            Server.Main.db.commit();
+            Server.Main.db.set_auto_commit(true);
         } else {
             throw new Error(String.format("Username '%s' existed", username));
         }

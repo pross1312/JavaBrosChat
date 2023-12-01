@@ -8,11 +8,10 @@ import java.util.stream.Collectors;
 import Server.Service.Service;
 import Server.DB.*;
 import Utils.*;
-import Server.Server;
 
 public class UserManagementService extends Service {
     UserInfo get_info(String token) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc != null) {
             String username = acc.a;
             var info = UserInfoDb.query(username);
@@ -22,7 +21,7 @@ public class UserManagementService extends Service {
         throw new Error("Can't execute get_info api, token not found");
     }
     void add_friend(String token, String friend) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         // TODO: notify friend new friend request if 'friend' is logged in ?
         if (acc != null) {
             String username = acc.a;
@@ -32,17 +31,17 @@ public class UserManagementService extends Service {
             if (req_from_friend == null) {
                 if (!FriendRequestDb.add(username, friend)) throw new Error("Can't execute add_friend api");
             } else {
-                Server.db.set_auto_commit(false);
+                Server.Main.db.set_auto_commit(false);
                 FriendRequestDb.remove(friend, username);
                 UserFriendDb.add(username, friend);
-                Server.db.commit();
-                Server.db.set_auto_commit(true);
+                Server.Main.db.commit();
+                Server.Main.db.set_auto_commit(true);
             }
         } else throw new Error("Can't execute add_friend api, token not found");
     }
 
     ArrayList<FriendRequest> get_friend_requests(String token) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc != null) {
             String username = acc.a;
             var result = FriendRequestDb.list_request(username);
@@ -53,7 +52,7 @@ public class UserManagementService extends Service {
     }
 
     void unfriend(String token, String friend) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc != null) {
             String username = acc.a;
             UserFriendDb.remove(username, friend);
@@ -61,12 +60,12 @@ public class UserManagementService extends Service {
     }
 
     ArrayList<Pair<UserInfo, Boolean>> list_friends(String token) throws SQLException {
-        var account = Server.accounts.get(token);
+        var account = Server.Main.accounts.get(token);
         if (account != null) {
             String username = account.a;
             var infos = UserFriendDb.list_friends_info(username);
             var result = infos.stream()
-                        .map(x -> new Pair<UserInfo, Boolean>(x, Server.is_user_login(x.username)))
+                        .map(x -> new Pair<UserInfo, Boolean>(x, Server.Main.is_user_login(x.username)))
                         .collect(Collectors.toCollection(ArrayList::new));
             result.trimToSize();
             return result;
@@ -79,7 +78,7 @@ public class UserManagementService extends Service {
     }
 
     void report_spam(String token, String target, String reason) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute report_spam api, token not found");
         var username = acc.a;
         var report = new SpamReport(username, target, reason, new java.util.Date());

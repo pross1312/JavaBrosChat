@@ -13,7 +13,7 @@ import Utils.GroupChatInfo;
 import Utils.ChatMessage;
 
 public class GroupChatMessageDb {
-    private static Database db = Server.Server.db;
+    private static Database db = Server.Main.db;
     private static CallableStatement insert_sm, update_read_sm;
     private static PreparedStatement get_unread_sm, get_count_unread_sm;
     static {

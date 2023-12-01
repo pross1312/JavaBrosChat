@@ -1,7 +1,6 @@
 package Server.Service;
 
 import Utils.*;
-import Server.Server;
 import Server.DB.*;
 
 import java.sql.SQLException;
@@ -11,7 +10,7 @@ import java.util.Optional;
 
 public class AdminService extends Service {
     ArrayList<UserInfo> list_users(String token) throws SQLException { // filter will be done on client side
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute list_users api, token not found");
         if(acc.b == AccountType.User)
             throw new Error("Only admin is allowed to get the user's list");
@@ -21,7 +20,7 @@ public class AdminService extends Service {
     }
 
     ArrayList<UserInfo> list_active_users(String token, Date from, Date to) throws SQLException{ // sort by name or created time on client side
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute list_users api, token not found");
         if(acc.b == AccountType.User)
             throw new Error("Only admin is allowed to get the user's active list");
@@ -30,7 +29,7 @@ public class AdminService extends Service {
         return user;
     }
     void add_user(String token, String username, String pass, UserInfo user_info) throws SQLException{
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if(acc.a == null)
             throw new Error("Empty token");
         if(acc.b == AccountType.User)
@@ -39,7 +38,7 @@ public class AdminService extends Service {
         as.register(username, pass, user_info);
     }
     void update_user(String token, String username, UserInfo user_info) throws SQLException{
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if(acc.a == null)
             throw new Error("Empty token");
         if(acc.b == AccountType.User)
@@ -51,7 +50,7 @@ public class AdminService extends Service {
         UserInfoDb.update(user_info, username);
     }
     void del_user(String token, String username) throws SQLException{
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if(acc.a == null)
             throw new Error("Empty token");
         if(acc.b == AccountType.User)
@@ -62,7 +61,7 @@ public class AdminService extends Service {
         AccountDb.delete(username);
     }
     void change_user_pass(String token, String username, String new_pass) throws SQLException{
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if(acc.a == null)
             throw new Error("Empty token");
         if(acc.b == AccountType.User)

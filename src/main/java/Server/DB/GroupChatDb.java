@@ -11,7 +11,7 @@ import java.util.Date;
 import Utils.GroupChatInfo;
 
 public class GroupChatDb {
-    private static Database db = Server.Server.db;
+    private static Database db = Server.Main.db;
     private static PreparedStatement insert_sm, list_sm;
     static {
         try {

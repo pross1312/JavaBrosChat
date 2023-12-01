@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import Utils.UserInfo;
 
 public class UserFriendDb {
-    private static Database db = Server.Server.db;
+    private static Database db = Server.Main.db;
     private static PreparedStatement insert_sm, remove_sm, get_all_friends_sm;
     public String username;
     public String friend;

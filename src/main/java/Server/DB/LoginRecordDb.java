@@ -13,7 +13,7 @@ import Utils.LoginRecord;
 
 
 public class LoginRecordDb {
-    private static Database db = Server.Server.db;
+    private static Database db = Server.Main.db;
     private static PreparedStatement insert_sm, last_login_query, query_active_sm;
     static {
         try {

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import Utils.GroupChatMemberInfo;
 
 public class GroupChatMemberDb {
-    private static Database db = Server.Server.db;
+    private static Database db = Server.Main.db;
     private static CallableStatement insert_sm;
     private static PreparedStatement list_sm;
     static {

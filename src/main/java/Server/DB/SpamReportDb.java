@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import Utils.SpamReport;
 
 public class SpamReportDb {
-    private static Database db = Server.Server.db;
+    private static Database db = Server.Main.db;
     private static PreparedStatement insert_sm;
     static {
         try {
