@@ -27,7 +27,7 @@ public class NotificationServer {
         if (conn == null) {
             return false;
         } else if (conn.is_connected()) {
-            return conn.send(notification);
+            if (conn.send(notification)) return true;
         }
         clients.remove(username);
         return false;

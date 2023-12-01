@@ -9,7 +9,7 @@ import java.util.Scanner;
 import Utils.AccountType;
 import Utils.Connection;
 import Utils.GroupChatInfo;
-import Utils.GroupChatMessage;
+import Utils.ChatMessage;
 import Utils.Pair;
 import Utils.ResultError;
 import Utils.ResultOk;

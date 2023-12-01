@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Base64;
 
 import Server.DB.*;
-import Utils.NewMsgNotify;
+import Utils.NewGroupMsg;
 import Server.Server;
 import java.util.Date;
 import java.util.List;
@@ -21,14 +21,15 @@ public class GroupChatService extends Service {
     public GroupChatService() {
         group_users = new ConcurrentHashMap<String, List<String>>();
     }
-    String create_group(String token, String group_name, ArrayList<String> users_list) throws SQLException {
+    String create(String token, String group_name, ArrayList<String> users_list) throws SQLException {
         var acc = Server.accounts.get(token);
-        if (acc == null) throw new Error("Can't execute create_group_chat api, token not found");
+        if (acc == null) throw new Error("Can't execute create api, token not found");
         var username = acc.a;
         users_list.removeIf(x -> x.compareTo(username) == 0); // NOTE: remove if users_list contains username to manage this easier
         if (users_list.size() < 1) throw new Error("Can't create group with you only");
         var date = new java.util.Date();
         var group_id = Base64.getEncoder().encodeToString((group_name + date.toString()).getBytes());
+        if (group_id.length() > 256) throw new RuntimeException("Group id can have atmost 256 chars");
         // TODO: review how to create group_id
         var group = new GroupChatInfo(group_id, group_name, date);
         // TODO: caching ? for both this service and usermanagement service
@@ -58,11 +59,12 @@ public class GroupChatService extends Service {
             var members = group_users.get(group_id);
             if (members == null) {
                 members = GroupChatMemberDb.list_members(group_id);
+                group_users.put(group_id, members);
             }
             for (var x : members) {
                 if (x.compareTo(username) != 0) {
                     Server.notification_server.notify(x,
-                            new NewMsgNotify(group_id, GroupChatMessageDb.get_count_unread(x, group_id)));
+                            new NewGroupMsg(group_id, GroupChatMessageDb.get_count_unread(x, group_id)));
                 }
             }
             GroupChatMessageDb.add(username, text, new Date(), null, group_id);
@@ -71,9 +73,9 @@ public class GroupChatService extends Service {
             throw new Error("Can't send message to group that you are not in");
         }
     }
-    ArrayList<GroupChatMessage> get_unread_msg(String token, String group_id) throws SQLException {
+    ArrayList<ChatMessage> get_unread_group_msg(String token, String group_id) throws SQLException {
         var acc = Server.accounts.get(token);
-        if (acc == null) throw new Error("Can't execute list_user_groups api, token not found");
+        if (acc == null) throw new Error("Can't execute get_unread_group_msg api, token not found");
         var username = acc.a;
         if (!GroupChatMemberDb.check_in_group(username, group_id)) throw new Error("Can't get message of group that you are not in");
         var result = GroupChatMessageDb.get_unread_msg(username, group_id);
@@ -96,15 +98,18 @@ public class GroupChatService extends Service {
         var acc = Server.accounts.get(token);
         if (acc == null) throw new Error("Can't execute remove_member api, token not found");
         var username = acc.a;
+        var group = group_users.get(group_id);
+        assert group != null : "Group cache must contain active group";
+        if (group.size() == 1) throw new Error("Can't remove last member in group");
         if (!GroupChatMemberDb.check_in_group(target_username, group_id)) {
             throw new Error(String.format("'%s' is not in group", target_username));
         }
         if (!GroupChatMemberDb.is_admin(username, group_id)) {
             throw new Error(String.format("'%s' is not admin of the group", username));
         }
-        var group = group_users.get(group_id);
-        assert group != null : "Group cache must contain active group";
-        assert group.remove(target_username) : "Group cache must contain correct members";
+        if (group.remove(target_username) == false) {
+            throw new RuntimeException("Can't remove member");
+        }
         GroupChatMemberDb.remove(target_username, group_id);
     }
     void add_member(String token, String group_id, String target_username) throws SQLException {
