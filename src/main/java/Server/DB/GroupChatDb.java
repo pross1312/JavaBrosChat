@@ -11,11 +11,12 @@ import Utils.GroupChatInfo;
 
 public class GroupChatDb {
     private static Database db = Server.Server.db;
-    private static PreparedStatement insert_sm, list_sm;
+    private static PreparedStatement insert_sm, list_sm, list_all_sm;
     static {
         try {
             insert_sm = db.conn.prepareStatement("INSERT INTO GroupChat(id, name, date) VALUES(?, ?, ?);");
             list_sm = db.conn.prepareStatement("SELECT * FROM list_group_of_user(?)");
+            list_all_sm = db.conn.prepareStatement("SELECT * FROM GroupChat");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -42,6 +43,18 @@ public class GroupChatDb {
         while (result.next()) {
             groups.add(parse_group_info(result));
         }
+        result.close();
+        return groups;
+    }
+    public static ArrayList<GroupChatInfo> list_all_group_chats() throws SQLException {
+        var result = list_all_sm.executeQuery();
+        if (result == null)
+            throw new RuntimeException("Result set of query operation can't be null");
+        var groups = new ArrayList<GroupChatInfo>();
+        while(result.next()){
+            groups.add(parse_group_info(result));
+        }
+        result.close();
         return groups;
     }
 }
