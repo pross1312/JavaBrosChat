@@ -15,7 +15,7 @@ create table Account(
 )
 go
 insert into Account values('admin', '2CSU8F1pF7oC96qilonMtES7c/IDgIdssF0fN1N7eJI=', 1, 0)
-
+insert into Account values('__REMOVED__', '', 0, 1)/** TRASH ACCOUNT **/
 go
 
 create table UserInfo(
@@ -27,6 +27,9 @@ create table UserInfo(
 	gender int not null
 )
 go
+insert into UserInfo values('__REMOVED__', '', '', '', '', 0) /** TRASH ACCOUNT **/
+
+
 alter table UserInfo
 add constraint FK_USERINFO_ACCOUNT
 	foreign key(username) references Account
@@ -110,7 +113,8 @@ create table GroupChatMessage(
 go
 alter table GroupChatMessage
 add constraint FK_GCMSG_GROUPCHAT foreign key(group_id) references GroupChat,
-	constraint FK_GCMSG_USER foreign key(group_id, sender) references GroupChatMember(group_id, username)
+	constraint FK_GCMSG_USER foreign key(sender) references UserInfo(username)
+	
 go
 
 create table SpamReport(
@@ -169,7 +173,7 @@ RETURN
 	from GroupChat gc JOIN GroupChatMember gcm on gc.id = gcm.group_id
 	where gcm.username = @usr
 go
-CREATE FUNCTION get_unread_msg(@username varchar(50), @group_id varchar(50)) 
+CREATE FUNCTION get_unread_msg(@username varchar(50), @group_id varchar(256)) 
 RETURNS TABLE AS
 RETURN
 	select gcmsg.*

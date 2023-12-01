@@ -45,7 +45,9 @@ public class UserManagementService extends Service {
         var acc = Server.accounts.get(token);
         if (acc != null) {
             String username = acc.a;
-            return FriendRequestDb.list_request(username);
+            var result = FriendRequestDb.list_request(username);
+            result.trimToSize();
+            return result;
         }
         throw new Error("Can't execute get_friend_request api, token not found");
     }
@@ -63,9 +65,11 @@ public class UserManagementService extends Service {
         if (account != null) {
             String username = account.a;
             var infos = UserFriendDb.list_friends_info(username);
-            return infos.stream()
+            var result = infos.stream()
                         .map(x -> new Pair<UserInfo, Boolean>(x, Server.is_user_login(x.username)))
                         .collect(Collectors.toCollection(ArrayList::new));
+            result.trimToSize();
+            return result;
         }
         throw new Error("Can't execute list_friends api, token not found");
     }

@@ -54,7 +54,14 @@ public class GroupChatMessageDb {
         var result = get_unread_sm.executeQuery();
         if (result == null) throw new RuntimeException("Result set of query operation can't be null");
         var msgs = new ArrayList<GroupChatMessage>();
-        while (result.next()) msgs.add(parse_row(result));
+        while (result.next()) {
+            var msg = parse_row(result);
+            if (msg.sender.equals("__REMOVED__")) {
+                msg.msg = null;
+                msg.media_id = null;
+            }
+            msgs.add(msg);
+        }
         return msgs;
     }
     public static void update_last_read(String username, String group_id) throws SQLException {

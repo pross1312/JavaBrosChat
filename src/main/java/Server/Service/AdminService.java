@@ -16,6 +16,7 @@ public class AdminService extends Service {
         if (acc.b == AccountType.User)
             throw new Error("Users are not allowed to get the user's list");
         ArrayList<UserInfo> user = UserInfoDb.list_users();
+        user.trimToSize();
         return user;
     }
 
@@ -25,6 +26,7 @@ public class AdminService extends Service {
         if(acc.b == AccountType.User)
             throw new Error("Users are not allowed to get the user's list");
         ArrayList<UserInfo> user = LoginRecordDb.get_list_active_users(from, to);
+        user.trimToSize();
         return user;
     }
 //    void add_user(String token, String username, String pass, Optional<UserInfo> user_info);

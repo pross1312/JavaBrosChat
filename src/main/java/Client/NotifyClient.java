@@ -60,6 +60,8 @@ public class NotifyClient {
                                 if (x instanceof ResultOk ok) {
                                     var msgs = (ArrayList<GroupChatMessage>)ok.data();
                                     msgs.forEach(msg -> System.out.println(msg.msg));
+                                } else if (x instanceof ResultError err) {
+                                    System.out.println(err.msg());
                                 }
                             }, "GroupChatService", "get_unread_msg", token, noti.group_id);
                         } catch (IOException e) {
