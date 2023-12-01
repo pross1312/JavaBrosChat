@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import Utils.Connection;
 import Utils.ChatMessage;
+import Utils.NewFriendMsg;
 import Utils.NewGroupMsg;
 import Utils.Notify;
 import Utils.ResultError;
@@ -64,6 +65,19 @@ public class NotifyClient {
                                     System.out.println(err.msg());
                                 }
                             }, "GroupChatService", "get_unread_group_msg", token, noti.group_id);
+                        } catch (IOException e) {
+                            System.out.println(e);
+                        }
+                    } else if (result instanceof NewFriendMsg noti) {
+                        try {
+                            ClientA.api_c.async_invoke_api(x -> {
+                                if (x instanceof ResultOk ok) {
+                                    var msgs = (ArrayList<ChatMessage>)ok.data();
+                                    msgs.forEach(msg -> System.out.println(msg.msg));
+                                } else if (x instanceof ResultError err) {
+                                    System.out.println(err.msg());
+                                }
+                            }, "GroupChatService", "get_unread_friend_msg", token, noti.sender);
                         } catch (IOException e) {
                             System.out.println(e);
                         }

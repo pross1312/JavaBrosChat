@@ -15,7 +15,7 @@ public class UserFriendDb {
     public String friend;
     static {
         try {
-            insert_sm = db.conn.prepareStatement("INSERT INTO UserFriend(username, friend) VALUES(?, ?);");
+            insert_sm = db.conn.prepareStatement("INSERT INTO UserFriend(username, friend, start_history_msg, last_read_msg) VALUES(?, ?, 0, 0);");
             remove_sm = db.conn.prepareStatement("DELETE FROM UserFriend WHERE username = ? AND friend = ?");
             get_all_friends_sm = db.conn.prepareStatement("SELECT * FROM list_friends_info(?)");
         } catch (Exception e) {

@@ -26,7 +26,7 @@ public class GroupChatService extends Service {
         if (acc == null) throw new Error("Can't execute create api, token not found");
         var username = acc.a;
         users_list.removeIf(x -> x.compareTo(username) == 0); // NOTE: remove if users_list contains username to manage this easier
-        if (users_list.size() < 1) throw new Error("Can't create group with you only");
+        if (users_list.size() <= 1) throw new Error("Can only create group with 3 or more people");
         var date = new java.util.Date();
         var group_id = Base64.getEncoder().encodeToString((group_name + date.toString()).getBytes());
         if (group_id.length() > 256) throw new RuntimeException("Group id can have atmost 256 chars");
@@ -140,5 +140,24 @@ public class GroupChatService extends Service {
             throw new Error(String.format("Can't rename '%s' is not in group", username));
         GroupChatDb.rename(group_id, new_name);
     }
+    void send_msg_to_friend(String token, String text, String friend) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute send_msg_to_friend api, token not found");
+        var username = acc.a;
+        if (!UserFriendDb.is_friend(username, friend))
+            throw new Error(String.format("'%s' is not your friend", friend));
+        Server.notification_server.notify(friend, new NewFriendMsg(username, 1));
+        FriendChatDb.add(username, text, new Date(), null, friend);
+    }
+    ArrayList<ChatMessage> get_unread_friend_msg(String token, String friend) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute get_unread_friend_msg api, token not found");
+        var username = acc.a;
+        if (!UserFriendDb.is_friend(username, friend))
+            throw new Error(String.format("'%s' is not your friend", friend));
+        var result = FriendChatDb.get_unread_msg(username, friend);
+        FriendChatDb.update_last_read(username, friend);
+        result.trimToSize();
+        return result;
     }
 }

@@ -9,19 +9,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 
-import Utils.GroupChatInfo;
 import Utils.ChatMessage;
 
-public class GroupChatMessageDb {
+public class FriendChatDb {
     private static Database db = Server.Server.db;
     private static CallableStatement insert_sm, update_read_sm;
     private static PreparedStatement get_unread_sm, get_count_unread_sm;
     static {
         try {
-            insert_sm = db.conn.prepareCall("{CALL add_msg_to_group(?, ?, ?, ?, ?)}");
-            update_read_sm = db.conn.prepareCall("{CALL update_group_chat_last_read(?, ?)}");
-            get_unread_sm = db.conn.prepareStatement("select * from get_unread_group_msg(?, ?)");
-            get_count_unread_sm = db.conn.prepareStatement("select count(id) as count from get_unread_group_msg(?, ?)");
+            insert_sm = db.conn.prepareCall("{CALL add_msg_to_friend(?, ?, ?, ?, ?)}");
+            update_read_sm = db.conn.prepareCall("{CALL update_friend_chat_last_read(?, ?)}");
+            get_count_unread_sm = db.conn.prepareStatement("select count(id) as count from get_unread_friend_msg(?, ?)");
+            get_unread_sm = db.conn.prepareStatement("select * from get_unread_friend_msg(?, ?)");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -30,9 +29,9 @@ public class GroupChatMessageDb {
     }
      // this also increment last read of sender
      // done in sql
-    public static void add(String sender, String text, Date date, String media_id, String group_id) throws SQLException {
-        insert_sm.setString(1, group_id);
-        insert_sm.setString(2, sender);
+    public static void add(String sender, String text, Date date, String media_id, String friend) throws SQLException {
+        insert_sm.setString(1, sender);
+        insert_sm.setString(2, friend);
         insert_sm.setTimestamp(3, new Timestamp(date.getTime()));
         insert_sm.setString(4, text);
         if (media_id != null) insert_sm.setString(5, media_id);
@@ -42,15 +41,28 @@ public class GroupChatMessageDb {
     public static ChatMessage parse_row(ResultSet result) throws SQLException {
         var id = result.getInt("id");
         var sender = result.getString("sender");
-        var target = result.getString("group_id");
+        var target = result.getString("friend");
         var sent_date = new java.util.Date(result.getTimestamp("sent_date").getTime());
         var msg = result.getString("msg");
         var media_id = result.getString("media_id");
         return new ChatMessage(id, target, sender, sent_date, msg, media_id);
     }
-    public static ArrayList<ChatMessage> get_unread_msg(String username, String group_id) throws SQLException {
+    public static void update_last_read(String username, String friend) throws SQLException {
+        update_read_sm.setString(1, username);
+        update_read_sm.setString(2, friend);
+        if (update_read_sm.executeUpdate() != 1) throw new RuntimeException("Expected this update to affect 1 row at least");
+    }
+    public static int get_count_unread(String username, String friend) throws SQLException {
+        get_count_unread_sm.setString(1, username);
+        get_count_unread_sm.setString(2, friend);
+        var result = get_count_unread_sm.executeQuery();
+        if (result == null) throw new RuntimeException("Result set of query operation can't be null");
+        if (!result.next()) throw new RuntimeException("Select count can't return no rows");
+        return result.getInt("count");
+    }
+    public static ArrayList<ChatMessage> get_unread_msg(String username, String friend) throws SQLException {
         get_unread_sm.setString(1, username);
-        get_unread_sm.setString(2, group_id);
+        get_unread_sm.setString(2, friend);
         var result = get_unread_sm.executeQuery();
         if (result == null) throw new RuntimeException("Result set of query operation can't be null");
         var msgs = new ArrayList<ChatMessage>();
@@ -63,18 +75,5 @@ public class GroupChatMessageDb {
             msgs.add(msg);
         }
         return msgs;
-    }
-    public static void update_last_read(String username, String group_id) throws SQLException {
-        update_read_sm.setString(1, username);
-        update_read_sm.setString(2, group_id);
-        if (update_read_sm.executeUpdate() != 1) throw new RuntimeException("Expected this update to affect 1 row at least");
-    }
-    public static int get_count_unread(String username, String group_id) throws SQLException {
-        get_count_unread_sm.setString(1, username);
-        get_count_unread_sm.setString(2, group_id);
-        var result = get_count_unread_sm.executeQuery();
-        if (result == null) throw new RuntimeException("Result set of query operation can't be null");
-        if (!result.next()) throw new RuntimeException("Select count can't return no rows");
-        return result.getInt("count");
     }
 }

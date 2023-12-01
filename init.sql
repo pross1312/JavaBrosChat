@@ -32,7 +32,7 @@ insert into UserInfo values('__REMOVED__', '', '', '', '', 0) /** TRASH ACCOUNT 
 
 alter table UserInfo
 add constraint FK_USERINFO_ACCOUNT
-	foreign key(username) references Account
+	foreign key(username) references Account(username)
 go
 
 create table LoginRecord(
@@ -43,7 +43,7 @@ create table LoginRecord(
 go
 alter table LoginRecord
 add constraint FK_LOGINRECORD_ACCOUNT
-	foreign key(username) references Account
+	foreign key(username) references Account(username)
 go
 create table RegistrationRecord(
 	username varchar(50) primary key,
@@ -57,13 +57,15 @@ go
 create table UserFriend(
 	username varchar(50),
 	friend varchar(50),
+	start_history_msg int not null, /**TODO: reconsider, for friend message table **/
+	last_read_msg int not null,     /**TODO: reconsider, for friend message table **/
 	primary key(username, friend)
 )
 go
 alter table UserFriend
 add constraint UF_check_valid check(username <> friend),
-	constraint FK_USERFRIEND_USER1 foreign key(username) references UserInfo,
-	constraint FK_USERFRIEND_USER2 foreign key(friend) references UserInfo
+	constraint FK_USERFRIEND_USER1 foreign key(username) references UserInfo(username),
+	constraint FK_USERFRIEND_USER2 foreign key(friend) references UserInfo(username)
 go
 create table FriendRequest(
 	initiator varchar(50),
@@ -73,8 +75,8 @@ create table FriendRequest(
 )
 go
 alter table FriendRequest
-add constraint FK_FR_USER1 foreign key(initiator) references UserInfo,
-	constraint FK_FR_USER2 foreign key(target) references UserInfo,
+add constraint FK_FR_USER1 foreign key(initiator) references UserInfo(username),
+	constraint FK_FR_USER2 foreign key(target) references UserInfo(username),
 	constraint FK_CHECK_VALID CHECK(initiator <> target)
 	
 go
@@ -97,8 +99,8 @@ create table GroupChatMember(
 )
 go
 alter table GroupChatMember
-add constraint FK_GCM_GROUPCHAT foreign key(group_id) references GroupChat,
-	constraint FK_GCM_USER foreign key(username) references UserInfo,
+add constraint FK_GCM_GROUPCHAT foreign key(group_id) references GroupChat(id),
+	constraint FK_GCM_USER foreign key(username) references UserInfo(username),
 	constraint FK_MSG_HISTORY_VALID CHECK(last_read_msg >= start_history_msg)
 go
 create table GroupChatMessage(
@@ -112,11 +114,26 @@ create table GroupChatMessage(
 )
 go
 alter table GroupChatMessage
-add constraint FK_GCMSG_GROUPCHAT foreign key(group_id) references GroupChat,
+add constraint FK_GCMSG_GROUPCHAT foreign key(group_id) references GroupChat(id),
 	constraint FK_GCMSG_USER foreign key(sender) references UserInfo(username)
 	
 go
+create table FriendChat(
+	id int,
+	sender varchar(50),
+	friend varchar(50),
+	sent_date datetime not null,
+	msg varchar(MAX) not null,
+	media_id varchar(50),
+	primary key(id, sender, friend)
+)
+go
+alter table FriendChat
+add constraint FK_FC_USER1 foreign key(sender) references UserInfo(username),
+	constraint FK_FC_USER2 foreign key(friend) references UserInfo(username),
+	constraint FC_VALID CHECK(sender <> friend)
 
+go
 create table SpamReport(
 	reporter varchar(50),
 	target varchar(50),
@@ -127,8 +144,8 @@ create table SpamReport(
 go
 alter table SpamReport
 add constraint VALID CHECK(target <> reporter),
-	constraint FK_SPAMREPORT_USER1 foreign key(reporter) references UserInfo,
-	constraint FK_SPAMREPORT_USER2 foreign key(target) references UserInfo
+	constraint FK_SPAMREPORT_USER1 foreign key(reporter) references UserInfo(username),
+	constraint FK_SPAMREPORT_USER2 foreign key(target) references UserInfo(username)
 
 go
 
@@ -173,7 +190,7 @@ RETURN
 	from GroupChat gc JOIN GroupChatMember gcm on gc.id = gcm.group_id
 	where gcm.username = @usr
 go
-CREATE FUNCTION get_unread_msg(@username varchar(50), @group_id varchar(256)) 
+CREATE FUNCTION get_unread_group_msg(@username varchar(50), @group_id varchar(256)) 
 RETURNS TABLE AS
 RETURN
 	select gcmsg.*
@@ -182,7 +199,7 @@ RETURN
 		  gcm.username = @username and gcm.group_id = @group_id
 	where gcmsg.id > gcm.last_read_msg
 go
-CREATE PROCEDURE update_last_read
+CREATE PROCEDURE update_group_chat_last_read
 	@username varchar(50),
 	@group_id varchar(256)
 AS BEGIN
@@ -194,4 +211,46 @@ AS BEGIN
 	end
 	update GroupChatMember set last_read_msg = @cur where username = @username and group_id = @group_id
 END
+go
+CREATE PROCEDURE update_friend_chat_last_read
+	@username varchar(50),
+	@friend varchar(50)
+AS BEGIN
+	declare @cur int = 0
+	select @cur = max(id) from FriendChat
+	where (sender = @username and friend = @friend) or (sender = @friend and friend = @username) 
+	if @cur is null
+	begin
+		set @cur = 0
+	end
+	update UserFriend set last_read_msg = @cur where username = @username and friend = @friend
+END
+go
+CREATE FUNCTION get_unread_friend_msg(@username varchar(50), @friend varchar(50)) 
+RETURNS TABLE AS
+RETURN
+	select fc.*
+	from FriendChat fc
+	join UserFriend uf on uf.username = @username and uf.friend = @friend
+	where fc.sender = @friend and fc.friend = @username and fc.id > uf.last_read_msg
+go
+CREATE PROCEDURE add_msg_to_friend
+	@sender varchar(50),
+	@friend varchar(50),
+	@sent_date datetime,
+	@msg varchar(MAX),
+	@media_id varchar(50)
+AS
+	declare @id int
+	select @id = max(id) from FriendChat
+	where (sender = @sender and friend = @friend) or (sender = @friend and friend = @sender)
+	if @id is null
+	begin
+		set @id = 0;
+	end
+	set @id = @id + 1
+   	insert into FriendChat VALUES(@id, @sender, @friend, @sent_date, @msg, @media_id)
+   	update UserFriend set last_read_msg = last_read_msg + 1 where username = @sender and friend = @friend
+GO
+
 	

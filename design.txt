@@ -203,11 +203,12 @@ class GroupChatService {
     void add_member(String token, String group_id, String target_username);
     void set_admin(String token, String group_id, String target_username, boolean is_admin);
     ArrayLists<ChatMessage> get_unread_group_msg(String token, String group_id);
+    ArrayLists<ChatMessage> get_unread_friend_msg(String token, String friend);
     void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
     void send_msg_to_group(String token, String text, String media_id, String group_id);
     void send_msg_to_group(String token, String text, String group_id);
-    void send_msg_to_friend(String token, String text, String media_id, String username);
-    void send_msg_to_friend(String token, String text, String username);
+    void send_msg_to_friend(String token, String text, String media_id, String friend);
+    void send_msg_to_friend(String token, String text, String friend);
     ArrayList<GroupMessage> search_msg(String token, String group_id);
 //**void encrypt_group()*// need further research
 }
