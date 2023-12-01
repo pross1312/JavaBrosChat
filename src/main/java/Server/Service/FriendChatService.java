@@ -13,7 +13,7 @@ public class FriendChatService extends Service {
         var username = acc.a;
         if (!UserFriendDb.is_friend(username, friend))
             throw new Error(String.format("'%s' is not your friend", friend));
-        Server.notification_server.notify(friend, new NewFriendMsg(username, 1));
+        Server.api_server.notify(friend, new NewFriendMsg(username, 1));
         FriendChatDb.add(username, text, new Date(), null, friend);
     }
     ArrayList<ChatMessage> get_unread_msg(String token, String friend) throws SQLException {

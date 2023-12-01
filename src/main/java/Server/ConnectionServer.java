@@ -39,7 +39,6 @@ public class ConnectionServer {
                 new Thread(new Runnable() {
                     @Override public void run() {
                     handler.handle(conn);
-                    conn.close();
                     }
                 }).run();
             } catch (IOException e) {

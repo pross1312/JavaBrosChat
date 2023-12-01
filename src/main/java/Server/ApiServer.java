@@ -4,11 +4,15 @@ import java.io.NotSerializableException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import Utils.Connection;
+import Utils.Notify;
+import Utils.NotifyConnect;
 import Server.Service.*;
 import Api.ApiCall;
 import Utils.Result;
@@ -19,9 +23,11 @@ public class ApiServer implements ConnectionHandler {
     private ConnectionServer server;
     private HashMap<String, Service> services;
     private Thread listening_thread;
+    private ConcurrentHashMap<String, Connection> clients;
 
     ApiServer(String addr, int port) throws IOException {
         server = new ConnectionServer(addr, port);
+        clients = new ConcurrentHashMap<String, Connection>();
 
         services = new HashMap<String, Service>();
         // register all service here
@@ -31,6 +37,22 @@ public class ApiServer implements ConnectionHandler {
         services.put("GroupChatService", new GroupChatService());
         services.put("FriendChatService", new FriendChatService());
         // ...........................................
+    }
+    // this one ignored failure
+    public void notify(List<String> usernames, Notify notification) {
+        clients.forEachValue(1000, conn -> {
+            conn.send(notification);
+        });
+    }
+    public boolean notify(String username, Notify notification) {
+        var conn = clients.get(username);
+        if (conn == null) {
+            return false;
+        } else if (conn.is_connected()) {
+            if (conn.send(notification)) return true;
+        }
+        clients.remove(username);
+        return false;
     }
     void start_listening(boolean on_new_thread) {
         if (on_new_thread) {
@@ -78,6 +100,17 @@ public class ApiServer implements ConnectionHandler {
             }
             if (!conn.send(response)) {
                 System.out.println("[ERROR] Can't send result back to client");
+            }
+        } else if (obj instanceof NotifyConnect data) {
+            String token = data.token;
+            if (Server.accounts.containsKey(token)) {
+                String username = Server.accounts.get(token).a; // username
+                System.out.printf("[INFO] '%s' is now listening to notification.\n", username);
+                clients.put(username, conn);
+                conn.send(Result.ok("OK"));
+                return; // dont close connection
+            } else {
+                conn.send(Result.error(String.format("Can't add %s to notification list", token)));
             }
         } else { // not api call ???
             System.out.printf("[ERROR] Could not handle '%s', data: %s\n", obj.getClass().getName(), obj.toString());

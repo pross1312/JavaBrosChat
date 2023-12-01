@@ -63,7 +63,7 @@ public class GroupChatService extends Service {
             }
             for (var x : members) {
                 if (x.compareTo(username) != 0) {
-                    Server.notification_server.notify(x,
+                    Server.api_server.notify(x,
                             new NewGroupMsg(group_id, GroupChatMessageDb.get_count_unread(x, group_id)));
                 }
             }
