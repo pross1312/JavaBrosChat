@@ -51,9 +51,9 @@ public class GroupChatService extends Service {
         group_users.put(group_id, users_list);
         return group_id;
     }
-    void send_msg_to_group(String token, String text, String group_id) throws SQLException {
+    void send_msg(String token, String text, String group_id) throws SQLException {
         var acc = Server.accounts.get(token);
-        if (acc == null) throw new Error("Can't execute send_msg_to_group api, token not found");
+        if (acc == null) throw new Error("Can't execute send_msg api, token not found");
         var username = acc.a;
         if (GroupChatMemberDb.check_in_group(username, group_id)) {
             var members = group_users.get(group_id);
@@ -73,9 +73,9 @@ public class GroupChatService extends Service {
             throw new Error("Can't send message to group that you are not in");
         }
     }
-    ArrayList<ChatMessage> get_unread_group_msg(String token, String group_id) throws SQLException {
+    ArrayList<ChatMessage> get_unread_msg(String token, String group_id) throws SQLException {
         var acc = Server.accounts.get(token);
-        if (acc == null) throw new Error("Can't execute get_unread_group_msg api, token not found");
+        if (acc == null) throw new Error("Can't execute get_unread_msg api, token not found");
         var username = acc.a;
         if (!GroupChatMemberDb.check_in_group(username, group_id)) throw new Error("Can't get message of group that you are not in");
         var result = GroupChatMessageDb.get_unread_msg(username, group_id);
@@ -139,25 +139,5 @@ public class GroupChatService extends Service {
         if (!GroupChatMemberDb.check_in_group(username, group_id))
             throw new Error(String.format("Can't rename '%s' is not in group", username));
         GroupChatDb.rename(group_id, new_name);
-    }
-    void send_msg_to_friend(String token, String text, String friend) throws SQLException {
-        var acc = Server.accounts.get(token);
-        if (acc == null) throw new Error("Can't execute send_msg_to_friend api, token not found");
-        var username = acc.a;
-        if (!UserFriendDb.is_friend(username, friend))
-            throw new Error(String.format("'%s' is not your friend", friend));
-        Server.notification_server.notify(friend, new NewFriendMsg(username, 1));
-        FriendChatDb.add(username, text, new Date(), null, friend);
-    }
-    ArrayList<ChatMessage> get_unread_friend_msg(String token, String friend) throws SQLException {
-        var acc = Server.accounts.get(token);
-        if (acc == null) throw new Error("Can't execute get_unread_friend_msg api, token not found");
-        var username = acc.a;
-        if (!UserFriendDb.is_friend(username, friend))
-            throw new Error(String.format("'%s' is not your friend", friend));
-        var result = FriendChatDb.get_unread_msg(username, friend);
-        FriendChatDb.update_last_read(username, friend);
-        result.trimToSize();
-        return result;
     }
 }

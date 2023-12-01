@@ -8,6 +8,7 @@ import Utils.ChatMessage;
 import Utils.NewFriendMsg;
 import Utils.NewGroupMsg;
 import Utils.Notify;
+import Utils.NotifyConnect;
 import Utils.ResultError;
 import Utils.ResultOk;
 import Utils.Connection;
@@ -33,7 +34,7 @@ public class NotifyClient {
             conn = new Connection(addr, port);
             System.out.println("Connected");
         }
-        if (!conn.send(token)) {
+        if (!conn.send(new NotifyConnect(token))) {
             throw new IOException("Handshake to notification server failed");
         }
         var result = conn.read();
@@ -64,7 +65,7 @@ public class NotifyClient {
                                 } else if (x instanceof ResultError err) {
                                     System.out.println(err.msg());
                                 }
-                            }, "GroupChatService", "get_unread_group_msg", token, noti.group_id);
+                            }, "GroupChatService", "get_unread_msg", token, noti.group_id);
                         } catch (IOException e) {
                             System.out.println(e);
                         }
@@ -77,7 +78,7 @@ public class NotifyClient {
                                 } else if (x instanceof ResultError err) {
                                     System.out.println(err.msg());
                                 }
-                            }, "GroupChatService", "get_unread_friend_msg", token, noti.sender);
+                            }, "FriendChatService", "get_unread_msg", token, noti.sender);
                         } catch (IOException e) {
                             System.out.println(e);
                         }

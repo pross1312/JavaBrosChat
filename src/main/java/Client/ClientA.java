@@ -114,14 +114,14 @@ public class ClientA {
             } else if (tokens.get(0).compareTo("/sendfriend") == 0) {
                 System.out.print("MSG: ");
                 var text = scanner.nextLine();
-                var result = api_c.invoke_api("GroupChatService", "send_msg_to_friend", authen_token, text, tokens.get(1));
+                var result = api_c.invoke_api("FriendChatService", "send_msg", authen_token, text, tokens.get(1));
                 if (result instanceof ResultError err) {
                     System.out.println(err.msg());
                 }
             } else if (tokens.get(0).compareTo("/send") == 0) {
                 System.out.print("MSG: ");
                 var text = scanner.nextLine();
-                var result = api_c.invoke_api("GroupChatService", "send_msg_to_group", authen_token, text, cur_group_id);
+                var result = api_c.invoke_api("GroupChatService", "send_msg", authen_token, text, cur_group_id);
                 if (result instanceof ResultError err) {
                     System.out.println(err.msg());
                 }

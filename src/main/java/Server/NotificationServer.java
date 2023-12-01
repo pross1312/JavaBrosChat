@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Utils.Notify;
+import Utils.NotifyConnect;
 import Utils.Result;
 import Utils.Connection;
 
@@ -44,7 +45,8 @@ public class NotificationServer {
                         if (obj == null) {
                             conn.close();
                             continue;
-                        } else if (obj instanceof String token) {
+                        } else if (obj instanceof NotifyConnect data) {
+                            String token = data.token;
                             if (Server.accounts.containsKey(token)) {
                                 String username = Server.accounts.get(token).a; // username
                                 System.out.printf("[INFO] '%s' is now listening to notification.\n", username);
