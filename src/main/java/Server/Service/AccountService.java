@@ -11,6 +11,7 @@ public class AccountService extends Service {
     Pair<String, AccountType> login(String username, String pass) throws SQLException { // return a token from Account
         var account = AccountDb.query(username);
         if (account == null) throw new Error("Invalid username or password");
+        if (account.is_locked) throw new Error("Can't log in, account is locked");
         var hash_pass = Helper.hash_password(pass + username);
         if (account.hashed_pass.compareTo(hash_pass) == 0) {
             var token_raw = String.format("%s:%s", username, hash_pass);

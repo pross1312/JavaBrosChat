@@ -1,8 +1,10 @@
 package Utils;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class GroupChatMemberInfo {
+public class GroupChatMemberInfo implements Serializable {
+    private static final long serialVersionUID = 1L; // version for compatibility
     public String group_id;
     public String username;
     public Date joined_date;
