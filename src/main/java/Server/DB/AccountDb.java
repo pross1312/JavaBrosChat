@@ -13,7 +13,7 @@ public class AccountDb {
     public AccountType type;
     public boolean is_locked;
     private static Database db = Server.Server.db;
-    private static PreparedStatement query_sm, insert_sm, delete_sm, change_password;
+    private static PreparedStatement query_sm, insert_sm, delete_sm, change_password, lock_user;
     public AccountDb(String username, String hashed_pass, AccountType type, boolean is_locked) {
         this.username = username;
         this.hashed_pass = hashed_pass;
@@ -27,6 +27,7 @@ public class AccountDb {
             insert_sm = db.conn.prepareStatement("INSERT INTO Account VALUES(?, ?, ?, ?);");
             delete_sm = db.conn.prepareStatement("DELETE FROM Account WHERE username = ?");
             change_password = db.conn.prepareStatement("UPDATE Account SET password = ? WHERE username = ?");
+            lock_user = db.conn.prepareStatement("UPDATE Account SET is_locked = ? WHERE username = ?");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -60,5 +61,10 @@ public class AccountDb {
         change_password.setString(1, new_pass);
         change_password.setString(2, username);
         return change_password.executeUpdate() == 1;
+    }
+    public static boolean lock_user(String username) throws SQLException {
+        lock_user.setBoolean(1, true);
+        lock_user.setString(2, username);
+        return lock_user.executeUpdate() == 1;
     }
 }

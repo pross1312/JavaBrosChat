@@ -115,10 +115,45 @@ public class AdminService extends Service {
         return GroupChatMemberDb.list_all_members(group_id);
     }
     // spam-operations
-//    ArrayList<SpamReport> list_spam_reports(String token) // all users
-//    ArrayList<SpamReport> list_spam_reports(String token, Date from, Date to) // list report made between [from, to]
-//    ArrayList<SpamReport> list_spam_filter_name(String token, String username) // list report filter by username
-//    void lock_user(String token, String username) // confirm spam-report and lock user using this api
+    ArrayList<SpamReport> list_spam_reports(String token) throws SQLException{
+        var acc = Server.accounts.get(token);
+        if (acc == null)
+            throw new Error("Can't execute list_spam_reports api, token not found");
+        if (acc.b == AccountType.User)
+            throw new Error("Only admin is allowed to list all the spam reports");
+        return SpamReportDb.list_all_spam_reports();
+    }
+    ArrayList<SpamReport> list_spam_reports(String token, Date from, Date to) throws SQLException{
+        var acc = Server.accounts.get(token);
+        if (acc == null)
+            throw new Error("Can't execute list_spam_reports api, token not found");
+        if (acc.b == AccountType.User)
+            throw new Error("Only admin is allowed to list all the spam reports");
+        return SpamReportDb.list_spam_from_to(from, to);
+    }
+    ArrayList<SpamReport> list_spam_filter_name(String token, String username) throws SQLException{
+        var acc = Server.accounts.get(token);
+        if (acc == null)
+            throw new Error("Can't execute list_spam_filter_name api, token not found");
+        if (acc.b == AccountType.User)
+            throw new Error("Only admin is allowed to list all the spam reports of a specific user");
+        return SpamReportDb.list_spam_username(username);
+    }
+    void lock_user(String token, String username) throws SQLException{
+        var acc = Server.accounts.get(token);
+        if(acc == null)
+            throw new Error("Can't execute list_spam_filter_name api, token not found");
+        if (acc.b == AccountType.User)
+            throw new Error("Only admin is allowed to list all the spam reports of a specific user");
+        AccountDb.lock_user(username);
+    }
     // new-registration
-//    ArrayList<RegistrationRecord> list_registers(String token, Date from, Date to) // list user-registrations made between [from, to] order by name or time on client side
+    ArrayList<RegistrationRecord> list_registers(String token, Date from, Date to) throws SQLException {
+        var acc = Server.accounts.get(token);
+        if (acc == null)
+            throw new Error("Can't execute list_spam_filter_name api, token not found");
+        if (acc.b == AccountType.User)
+            throw new Error("Only admin is allowed to list all the spam reports of a specific user");
+        return RegistrationRecordDb.list_registration_record(from, to);
+    }
 }

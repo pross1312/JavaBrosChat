@@ -1,8 +1,10 @@
 package Utils;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class SpamReport {
+public class SpamReport implements Serializable {
+    private static final long serialVersionUID = 1L; // version for compatibility
     public String reporter; // username
     public String target;
     public String reason;
