@@ -1,4 +1,4 @@
-package Utils;
+package Utils.Notify;
 
 import java.io.Serializable;
 

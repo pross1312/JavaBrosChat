@@ -123,7 +123,7 @@ public class AdminService extends Service {
     }
     // spam-operations
     ArrayList<SpamReport> list_spam_reports(String token) throws SQLException{
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null)
             throw new Error("Can't execute list_spam_reports api, token not found");
         if (acc.b == AccountType.User)
@@ -133,7 +133,7 @@ public class AdminService extends Service {
         return result;
     }
     ArrayList<SpamReport> list_spam_reports(String token, Date from, Date to) throws SQLException{
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null)
             throw new Error("Can't execute list_spam_reports api, token not found");
         if (acc.b == AccountType.User)
@@ -141,7 +141,7 @@ public class AdminService extends Service {
         return SpamReportDb.list_spam_from_to(from, to);
     }
     ArrayList<SpamReport> list_spam_filter_name(String token, String username) throws SQLException{
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null)
             throw new Error("Can't execute list_spam_filter_name api, token not found");
         if (acc.b == AccountType.User)
@@ -151,7 +151,7 @@ public class AdminService extends Service {
         return result;
     }
     void lock_user(String token, String username) throws SQLException{
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if(acc == null)
             throw new Error("Can't execute list_spam_filter_name api, token not found");
         if (acc.b == AccountType.User)
@@ -160,7 +160,7 @@ public class AdminService extends Service {
     }
     // new-registration
     ArrayList<RegistrationRecord> list_registers(String token, Date from, Date to) throws SQLException {
-        var acc = Server.accounts.get(token);
+        var acc = Server.Main.accounts.get(token);
         if (acc == null)
             throw new Error("Can't execute list_spam_filter_name api, token not found");
         if (acc.b == AccountType.User)

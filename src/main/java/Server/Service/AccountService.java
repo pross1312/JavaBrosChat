@@ -1,5 +1,6 @@
 package Server.Service;
 import Utils.*;
+import Utils.Notify.NewFriendLogin;
 
 import java.sql.SQLException;
 import java.util.Base64;
@@ -22,6 +23,9 @@ public class AccountService extends Service {
                 Server.Main.accounts.put(token, new Pair<String, AccountType>(username, account.type));
                 return new Pair<String, AccountType>(token, account.type);
             } else {
+                UserFriendDb.list_friends_info(username).forEach(x -> {
+                    Server.Main.server.notify(x.username, new NewFriendLogin(username));
+                });
                 LoginRecordDb.add(username);
                 Server.Main.accounts.put(token, new Pair<String, AccountType>(username, account.type));
                 return new Pair<String, AccountType>(token, account.type);

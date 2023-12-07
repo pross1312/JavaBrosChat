@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import Server.DB.*;
 import Utils.*;
+import Utils.Notify.*;
 
 public class FriendChatService extends Service {
     void send_msg(String token, String text, String friend) throws SQLException {

@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import Utils.Connection;
-import Utils.Notify;
+import Utils.Notify.*;
 import Utils.NotifyConnect;
 import Server.Service.*;
 import Api.ApiCall;
@@ -39,11 +39,6 @@ public class Server implements ConnectionHandler {
         // ...........................................
     }
     // this one ignored failure
-    public void notify(List<String> usernames, Notify notification) {
-        clients.forEachValue(1000, conn -> {
-            conn.send(notification);
-        });
-    }
     public boolean notify(String username, Notify notification) {
         var conn = clients.get(username);
         if (conn == null) {

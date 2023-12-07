@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Base64;
 
 import Server.DB.*;
-import Utils.NewGroupMsg;
+import Utils.Notify.*;
 import Server.Main;
 import java.util.Date;
 import java.util.List;
@@ -139,5 +139,14 @@ public class GroupChatService extends Service {
         if (!GroupChatMemberDb.check_in_group(username, group_id))
             throw new Error(String.format("Can't rename '%s' is not in group", username));
         GroupChatDb.rename(group_id, new_name);
+    }
+    ArrayList<String> list_members(String token, String group_id) throws SQLException {
+        var acc = Server.Main.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute rename api, token not found");
+        var username = acc.a;
+        if (!GroupChatMemberDb.check_in_group(username, group_id)) throw new Error("Can't get list of member of group that you are not in");
+        var result = GroupChatMemberDb.list_members(group_id);
+        result.trimToSize();
+        return result;
     }
 }

@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import Server.Service.Service;
 import Server.DB.*;
 import Utils.*;
+import Utils.Notify.NewFriend;
+import Utils.Notify.NewFriendRequest;
 
 public class UserManagementService extends Service {
     UserInfo get_info(String token) throws SQLException {
@@ -22,7 +24,6 @@ public class UserManagementService extends Service {
     }
     void add_friend(String token, String friend) throws SQLException {
         var acc = Server.Main.accounts.get(token);
-        // TODO: notify friend new friend request if 'friend' is logged in ?
         if (acc != null) {
             String username = acc.a;
             if (UserInfoDb.query(friend) == null) throw new Error(String.format("No username '%s' found", friend));
@@ -30,12 +31,14 @@ public class UserManagementService extends Service {
             var req_from_friend = FriendRequestDb.query(friend, username);
             if (req_from_friend == null) {
                 if (!FriendRequestDb.add(username, friend)) throw new Error("Can't execute add_friend api");
+                Server.Main.server.notify(friend, new NewFriendRequest(username));
             } else {
                 Server.Main.db.set_auto_commit(false);
                 FriendRequestDb.remove(friend, username);
                 UserFriendDb.add(username, friend);
                 Server.Main.db.commit();
                 Server.Main.db.set_auto_commit(true);
+                Server.Main.server.notify(friend, new NewFriend(username)); // notify friend that they just made a new friend
             }
         } else throw new Error("Can't execute add_friend api, token not found");
     }

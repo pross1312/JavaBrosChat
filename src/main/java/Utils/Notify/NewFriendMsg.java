@@ -1,4 +1,4 @@
-package Utils;
+package Utils.Notify;
 
 public class NewFriendMsg extends Notify {
     public String sender;

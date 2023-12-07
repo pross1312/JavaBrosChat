@@ -5,9 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import Utils.Connection;
 import Utils.ChatMessage;
-import Utils.NewFriendMsg;
-import Utils.NewGroupMsg;
-import Utils.Notify;
+import Utils.Notify.*;
 import Utils.NotifyConnect;
 import Utils.ResultError;
 import Utils.ResultOk;
@@ -82,15 +80,12 @@ public class NotifyClient {
                         } catch (IOException e) {
                             System.out.println(e);
                         }
+                    } else if (result instanceof NewFriendLogin new_login) {
+                        System.out.printf("[%s] just logged in\n", new_login.friend);
                     } else if (result instanceof Notify) {
                         System.out.printf("Unhandled notification type '%s'\n", result.getClass().getName());
                     } else {
                         throw new RuntimeException(String.format("Unable to process type %s from server", result.getClass().getName()));
-                    }
-                    try {
-                        Thread.currentThread().sleep(1000);
-                    } catch(InterruptedException e) {
-                        e.printStackTrace();
                     }
                 }
                 conn.close();

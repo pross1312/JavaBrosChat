@@ -33,9 +33,9 @@ public class Main {
     }
     public static boolean is_user_login(String username) {
         return Main.accounts.searchValues(1000, x -> {
-            if (x.a.compareTo(username) == 0) return true;
+            if (x.a.equals(username)) return true;
             return null;
-        });
+        }) != null;
     }
     public static void main(String[] args) {
         server.start_listening(false);

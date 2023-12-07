@@ -1,4 +1,4 @@
-package Utils;
+package Utils.Notify;
 
 public class NewGroupMsg extends Notify {
     public String group_id;
