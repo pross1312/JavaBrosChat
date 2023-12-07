@@ -115,15 +115,17 @@ create table GroupChatMessage(
 	id int,
 	group_id GROUP_ID_TYPE,
 	sender USERNAME_TYPE,
+	receiver USERNAME_TYPE,
 	sent_date datetime not null,
-	msg varchar(MAX) not null,
+	cipher_msg varbinary(MAX) not null,
 	media_id varchar(50),
-	primary key(id, group_id, sender)
+	primary key(id, group_id, sender, receiver)
 )
 go
 alter table GroupChatMessage
 add constraint FK_GCMSG_GROUPCHAT foreign key(group_id) references GroupChat(id),
-	constraint FK_GCMSG_USER foreign key(sender) references UserInfo(username)
+	constraint FK_GCMSG_USER foreign key(sender) references UserInfo(username),
+	constraint FK_GCMSG_USER2 foreign key(receiver) references UserInfo(username)
 	
 go
 create table FriendChat(
@@ -131,7 +133,7 @@ create table FriendChat(
 	sender USERNAME_TYPE,
 	friend USERNAME_TYPE,
 	sent_date datetime not null,
-	msg varchar(MAX) not null,
+	msg varbinary(MAX) not null,
 	media_id varchar(50),
 	primary key(id, sender, friend)
 )
@@ -157,6 +159,21 @@ add constraint VALID CHECK(target <> reporter),
 
 go
 
+create table KeyBundle(
+	address USERNAME_TYPE not null,
+	regis_id int not null,
+	dev_id int not null,
+	signed_key_id int not null,
+	signed_key_pub varbinary(512) not null,
+	signed_key_sig varbinary(512) not null,
+	identity_pub varbinary(512) not null,
+	primary key(address, dev_id)
+)
+go
+alter table KeyBundle
+add constraint FK_KB_USER foreign key(address) references UserInfo(username)
+go
+
 CREATE FUNCTION list_friends_info(@usr USERNAME_TYPE)
 RETURNS TABLE AS
 RETURN
@@ -168,8 +185,9 @@ go
 CREATE PROCEDURE add_msg_to_group
 	@group_id GROUP_ID_TYPE,
 	@sender USERNAME_TYPE,
+	@receiver USERNAME_TYPE,
 	@sent_date datetime,
-	@msg varchar(MAX),
+	@cipher_msg varbinary(MAX),
 	@media_id varchar(50)
 AS
 	declare @id int
@@ -179,7 +197,7 @@ AS
 		set @id = 0;
 	end
 	set @id = @id + 1
-   	insert into GroupChatMessage VALUES(@id, @group_id, @sender, @sent_date, @msg, @media_id)
+   	insert into GroupChatMessage VALUES(@id, @group_id, @sender, @receiver, @sent_date, @cipher_msg, @media_id)
    	update GroupChatMember set last_read_msg = last_read_msg + 1 where group_id = @group_id and username = @sender
 GO
 CREATE PROCEDURE add_member_to_group 
@@ -205,7 +223,7 @@ RETURN
 	from GroupChatMessage gcmsg
 	join GroupChatMember gcm on gcm.group_id = gcmsg.group_id and
 		  gcm.username = @username and gcm.group_id = @group_id
-	where gcmsg.id > gcm.last_read_msg
+	where gcmsg.id > gcm.last_read_msg and gcmsg.receiver = @username
 go
 CREATE PROCEDURE update_group_chat_last_read
 	@username USERNAME_TYPE,
@@ -246,7 +264,7 @@ CREATE PROCEDURE add_msg_to_friend
 	@sender USERNAME_TYPE,
 	@friend USERNAME_TYPE,
 	@sent_date datetime,
-	@msg varchar(MAX),
+	@cipher_msg varbinary(MAX),
 	@media_id varchar(50)
 AS
 	declare @id int
@@ -257,7 +275,7 @@ AS
 		set @id = 0;
 	end
 	set @id = @id + 1
-   	insert into FriendChat VALUES(@id, @sender, @friend, @sent_date, @msg, @media_id)
+   	insert into FriendChat VALUES(@id, @sender, @friend, @sent_date, @cipher_msg, @media_id)
    	update UserFriend set last_read_msg = last_read_msg + 1 where username = @sender and friend = @friend
 GO
 

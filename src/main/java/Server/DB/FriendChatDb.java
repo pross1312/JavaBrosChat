@@ -29,11 +29,11 @@ public class FriendChatDb {
     }
      // this also increment last read of sender
      // done in sql
-    public static void add(String sender, String text, Date date, String media_id, String friend) throws SQLException {
+    public static void add(String sender, byte[] cipher_msg, Date date, String media_id, String friend) throws SQLException {
         insert_sm.setString(1, sender);
         insert_sm.setString(2, friend);
         insert_sm.setTimestamp(3, new Timestamp(date.getTime()));
-        insert_sm.setString(4, text);
+        insert_sm.setBytes(4, cipher_msg);
         if (media_id != null) insert_sm.setString(5, media_id);
         else insert_sm.setNull(5, java.sql.Types.NULL);
         if (insert_sm.executeUpdate() != 1) throw new RuntimeException("Expected insert to modify aleast 1 row");
@@ -43,9 +43,9 @@ public class FriendChatDb {
         var sender = result.getString("sender");
         var target = result.getString("friend");
         var sent_date = new java.util.Date(result.getTimestamp("sent_date").getTime());
-        var msg = result.getString("msg");
+        var cipher_msg = result.getBytes("msg");
         var media_id = result.getString("media_id");
-        return new ChatMessage(id, target, sender, sent_date, msg, media_id);
+        return new ChatMessage(id, target, sender, sent_date, cipher_msg, media_id);
     }
     public static void update_last_read(String username, String friend) throws SQLException {
         update_read_sm.setString(1, username);
@@ -69,7 +69,7 @@ public class FriendChatDb {
         while (result.next()) {
             var msg = parse_row(result);
             if (msg.sender.equals("__REMOVED__")) {
-                msg.msg = null;
+                msg.cipher_msg = null;
                 msg.media_id = null;
             }
             msgs.add(msg);

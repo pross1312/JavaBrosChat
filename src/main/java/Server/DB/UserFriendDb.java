@@ -1,5 +1,6 @@
 package Server.DB;
 
+import java.sql.Statement;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,13 +11,12 @@ import Utils.UserInfo;
 
 public class UserFriendDb {
     private static Database db = Server.Main.db;
-    private static PreparedStatement insert_sm, remove_sm, get_all_friends_sm;
+    private static PreparedStatement insert_sm, get_all_friends_sm;
     public String username;
     public String friend;
     static {
         try {
             insert_sm = db.conn.prepareStatement("INSERT INTO UserFriend(username, friend, start_history_msg, last_read_msg) VALUES(?, ?, 0, 0);");
-            remove_sm = db.conn.prepareStatement("DELETE FROM UserFriend WHERE username = ? AND friend = ?");
             get_all_friends_sm = db.conn.prepareStatement("SELECT * FROM list_friends_info(?)");
         } catch (Exception e) {
             // TODO: properly handle exception
@@ -41,16 +41,16 @@ public class UserFriendDb {
         db.set_auto_commit(is_auto_commit);
     }
     public static void remove(String username, String friend) throws SQLException {
+        Statement st = db.conn.createStatement();
         boolean is_auto_commit = db.conn.getAutoCommit();
         db.set_auto_commit(false);
-        remove_sm.setString(1, username);
-        remove_sm.setString(2, friend);
-        remove_sm.executeUpdate();
-        remove_sm.setString(1, friend);
-        remove_sm.setString(2, username);
-        remove_sm.executeUpdate();
+        st.execute(String.format("DELETE FROM UserFriend WHERE (username = '%s' AND friend = '%s') OR (username = '%s' AND friend = '%s')",
+                   username, friend, friend, username));
+        st.execute(String.format("DELETE FROM FriendChat WHERE (sender = '%s' AND friend = '%s') OR (sender = '%s' AND friend = '%s')",
+                   username, friend, friend, username));
         if (is_auto_commit) db.commit();
         db.set_auto_commit(is_auto_commit);
+        st.close();
     }
     public static boolean is_friend(String username, String friend) throws SQLException {
         var st = db.conn.createStatement();

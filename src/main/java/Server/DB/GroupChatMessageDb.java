@@ -18,7 +18,7 @@ public class GroupChatMessageDb {
     private static PreparedStatement get_unread_sm, get_count_unread_sm;
     static {
         try {
-            insert_sm = db.conn.prepareCall("{CALL add_msg_to_group(?, ?, ?, ?, ?)}");
+            insert_sm = db.conn.prepareCall("{CALL add_msg_to_group(?, ?, ?, ?, ?, ?)}");
             update_read_sm = db.conn.prepareCall("{CALL update_group_chat_last_read(?, ?)}");
             get_unread_sm = db.conn.prepareStatement("select * from get_unread_group_msg(?, ?)");
             get_count_unread_sm = db.conn.prepareStatement("select count(id) as count from get_unread_group_msg(?, ?)");
@@ -30,13 +30,14 @@ public class GroupChatMessageDb {
     }
      // this also increment last read of sender
      // done in sql
-    public static void add(String sender, String text, Date date, String media_id, String group_id) throws SQLException {
+    public static void add(String receiver, String sender, byte[] cipher_msg, Date date, String media_id, String group_id) throws SQLException {
         insert_sm.setString(1, group_id);
         insert_sm.setString(2, sender);
-        insert_sm.setTimestamp(3, new Timestamp(date.getTime()));
-        insert_sm.setString(4, text);
-        if (media_id != null) insert_sm.setString(5, media_id);
-        else insert_sm.setNull(5, java.sql.Types.NULL);
+        insert_sm.setString(3, receiver);
+        insert_sm.setTimestamp(4, new Timestamp(date.getTime()));
+        insert_sm.setBytes(5, cipher_msg);
+        if (media_id != null) insert_sm.setString(6, media_id);
+        else insert_sm.setNull(6, java.sql.Types.NULL);
         if (insert_sm.executeUpdate() != 1) throw new RuntimeException("Expected insert to modify aleast 1 row");
     }
     public static ChatMessage parse_row(ResultSet result) throws SQLException {
@@ -44,9 +45,9 @@ public class GroupChatMessageDb {
         var sender = result.getString("sender");
         var target = result.getString("group_id");
         var sent_date = new java.util.Date(result.getTimestamp("sent_date").getTime());
-        var msg = result.getString("msg");
+        var cipher_msg = result.getBytes("cipher_msg");
         var media_id = result.getString("media_id");
-        return new ChatMessage(id, target, sender, sent_date, msg, media_id);
+        return new ChatMessage(id, target, sender, sent_date, cipher_msg, media_id);
     }
     public static ArrayList<ChatMessage> get_unread_msg(String username, String group_id) throws SQLException {
         get_unread_sm.setString(1, username);
@@ -57,7 +58,7 @@ public class GroupChatMessageDb {
         while (result.next()) {
             var msg = parse_row(result);
             if (msg.sender.equals("__REMOVED__")) {
-                msg.msg = null;
+                msg.cipher_msg = null;
                 msg.media_id = null;
             }
             msgs.add(msg);

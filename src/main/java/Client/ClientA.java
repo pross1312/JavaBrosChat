@@ -24,6 +24,7 @@ public class ClientA {
     static ArrayList<GroupChatInfo> groups;
     static String username;
     static String password;
+    static MessageClient msg_client;
     static {
         try {
             Connection.init_ssl("/.ssl/root/ca.jks", "changeit");
@@ -48,6 +49,7 @@ public class ClientA {
         } else if (result instanceof ResultOk ok) {
             authen_token = ((Pair<String, AccountType>)ok.data()).a;
             notify = new NotifyClient(authen_token, "localhost", SERVER_PORT);
+            msg_client = new MessageClient(username);
             System.out.println(authen_token);
             shell();
         }
@@ -85,6 +87,11 @@ public class ClientA {
                 if (result instanceof ResultError err) {
                     System.out.println(err.msg());
                 }
+            } else if (tokens.get(0).compareTo("/unfriend") == 0) {
+                var result = api_c.invoke_api("UserManagementService", "unfriend", authen_token, tokens.get(1));
+                if (result instanceof ResultError err) {
+                    System.out.println(err.msg());
+                }
             } else if (tokens.get(0).compareTo("/create") == 0) {
                 var users = Arrays.stream(scanner.nextLine().split(" ")).map(x -> x.trim()).toList();
                 var result = api_c.invoke_api("GroupChatService", "create", authen_token,
@@ -102,7 +109,10 @@ public class ClientA {
                 } else if (result instanceof ResultOk ok) {
                     var msgs = (ArrayList<ChatMessage>)ok.data();
                     for (int i = 0; i < msgs.size(); i++) {
-                        System.out.println(msgs.get(i).msg);
+                        var sender = msgs.get(i).sender;
+                        var msg = msg_client.decrypt(sender, msgs.get(i).cipher_msg);
+                        if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
+                        else System.out.printf("[%s] %s\n", sender, msg.get());
                     }
                 }
             } else if (tokens.get(0).compareTo("/delete") == 0) {
@@ -113,16 +123,14 @@ public class ClientA {
             } else if (tokens.get(0).compareTo("/sendfriend") == 0) {
                 System.out.print("MSG: ");
                 var text = scanner.nextLine();
-                var result = api_c.invoke_api("FriendChatService", "send_msg", authen_token, text, tokens.get(1));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
+                if (!msg_client.send_msg(tokens.get(1), text)) {
+                    System.out.println("[ERROR] Could not send message to " + tokens.get(1));
                 }
             } else if (tokens.get(0).compareTo("/send") == 0) {
                 System.out.print("MSG: ");
                 var text = scanner.nextLine();
-                var result = api_c.invoke_api("GroupChatService", "send_msg", authen_token, text, cur_group_id);
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
+                if (!msg_client.send_group_msg(cur_group_id, text)) {
+                    System.out.println("[ERROR] Could not send message to group");
                 }
             } else if (tokens.get(0).compareTo("/rename") == 0) {
                 var result = api_c.invoke_api("GroupChatService", "rename",

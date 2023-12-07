@@ -14,12 +14,11 @@ import Utils.GroupChatMemberInfo;
 public class GroupChatMemberDb {
     private static Database db = Server.Main.db;
     private static CallableStatement insert_sm;
-    private static PreparedStatement list_sm, query_member_sm;
+    private static PreparedStatement list_sm;
     static {
         try {
             insert_sm = db.conn.prepareCall("{call add_member_to_group(?, ?, ?, ?)}");
             list_sm = db.conn.prepareStatement("SELECT * FROM GroupChatMember WHERE group_id = ?");
-            query_member_sm = db.conn.prepareStatement("SELECT group_id, username, joined_date, is_admin FROM GroupChatMember WHERE group_id = ?");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -74,8 +73,8 @@ public class GroupChatMemberDb {
     }
     public static ArrayList<GroupChatMemberInfo> list_all_members(String group_id) throws SQLException {
         ArrayList<GroupChatMemberInfo> arr = new ArrayList<>();
-        query_member_sm.setString(1, group_id);
-        var result = query_member_sm.executeQuery();
+        list_sm.setString(1, group_id);
+        var result = list_sm.executeQuery();
         if(result == null)
             throw new RuntimeException("Result set of query operation can't be null");
         while(result.next()){

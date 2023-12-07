@@ -15,7 +15,7 @@ public class ApiClient {
         this.addr = addr;
         this.port = port;
     }
-    Result invoke_api(String service, String name, Object... args) throws RuntimeException, IOException {
+    Result invoke_api(String service, String name, Object... args) throws IOException {
         var conn = new Connection(addr, port);
         var api = new ApiCall(service, name, args);
         if (!conn.send(api)) { // send failed

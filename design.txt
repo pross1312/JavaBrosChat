@@ -77,6 +77,20 @@ class FriendRequest {
     String target;
 }
 
+class KeyBundle {
+    public int regis_id;
+    public int dev_id;
+    public int signed_key_id;
+    public byte[] signed_key_pub;
+    public byte[] signed_key_sig;
+    public byte[] identity_pub;
+    public KeyBundle(
+            int regis_id, int dev_id,
+            int signed_key_id, byte[] signed_key_pub,
+            byte[] signed_key_sig, byte[] identity_pub);
+    public KeyBundle(PreKeyBundle bundle);
+    public PreKeyBundle to_pre_key_bundle();
+}
 //----------------------------------Service-----------------------------------//
 
 //--------------------------------ADMIN-ACTIONS-----------------------------------//
@@ -205,18 +219,22 @@ class GroupChatService {
     ArrayLists<ChatMessage> get_unread_msg(String token, String group_id);
     void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
     void send_msg(String token, String text, String media_id, String group_id);
-    void send_msg(String token, String text, String group_id);
+    void send_msg(String token, byte[] cipher_msg, String group_id, String member); // send msg to each member of group cause of end to end (dumb solution) T_T
     ArrayList<ChatMessage> search_msg(String token, String group_id);
-//**void encrypt_group()*// need further research
+    ArrayList<String> list_members(String token, String group_id);
 }
 
 class FriendChatService {
     void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
     ArrayLists<ChatMessage> get_unread_msg(String token, String friend);
     void send_msg(String token, String text, String media_id, String friend);
-    void send_msg(String token, String text, String friend);
+    void send_msg(String token, byte[] cipher_msg, String friend);
     ArrayList<ChatMessage> search_msg(String token, String group_id);
-//**void encrypt_group()*// need further research
+}
+
+class E2EService {
+    void add(String token, KeyBundle bundle); // add a key bundle when create new account
+    KeyBundle get(String token, String name); // get a key bundle of an account
 }
 
 // optional

@@ -36,6 +36,7 @@ public class Server implements ConnectionHandler {
         services.put("AdminService", new AdminService());
         services.put("GroupChatService", new GroupChatService());
         services.put("FriendChatService", new FriendChatService());
+        services.put("E2EService", new E2EService());
         // ...........................................
     }
     // this one ignored failure

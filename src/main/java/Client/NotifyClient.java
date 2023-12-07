@@ -59,7 +59,12 @@ public class NotifyClient {
                             ClientA.api_c.async_invoke_api(x -> {
                                 if (x instanceof ResultOk ok) {
                                     var msgs = (ArrayList<ChatMessage>)ok.data();
-                                    msgs.forEach(msg -> System.out.println(msg.msg));
+                                    msgs.forEach(cipher_msg -> {
+                                        var sender = cipher_msg.sender;
+                                        var msg = ClientA.msg_client.decrypt(sender, cipher_msg.cipher_msg);
+                                        if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
+                                        else System.out.printf("[%s] %s\n", sender, msg.get());
+                                    });
                                 } else if (x instanceof ResultError err) {
                                     System.out.println(err.msg());
                                 }
@@ -72,7 +77,12 @@ public class NotifyClient {
                             ClientA.api_c.async_invoke_api(x -> {
                                 if (x instanceof ResultOk ok) {
                                     var msgs = (ArrayList<ChatMessage>)ok.data();
-                                    msgs.forEach(msg -> System.out.println(msg.msg));
+                                    msgs.forEach(cipher_msg -> {
+                                        var sender = cipher_msg.sender;
+                                        var msg = ClientA.msg_client.decrypt(sender, cipher_msg.cipher_msg);
+                                        if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
+                                        else System.out.printf("[%s] %s\n", sender, msg.get());
+                                    });
                                 } else if (x instanceof ResultError err) {
                                     System.out.println(err.msg());
                                 }
