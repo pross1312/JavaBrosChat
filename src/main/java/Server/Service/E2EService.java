@@ -31,8 +31,6 @@ public class E2EService extends Service {
     public KeyBundle get(String token, String name) throws SQLException { // get a key bundle of an account
         var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute add api, token not found");
-        var username = acc.a;
-        if (!UserFriendDb.is_friend(username, name)) throw new Error("Can't get key bundle of people that are not your friends");
         var bundle = key_bundles.get(name);
         if (bundle != null) return bundle;
         else throw new Error("No key bundle for user " + name);
