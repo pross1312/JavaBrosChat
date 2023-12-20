@@ -9,13 +9,13 @@ import Api.ApiCall;
 import Utils.Result;
 
 public class ApiClient {
-    String addr;
-    int port;
-    ApiClient(String addr, int port) {
+    public String addr;
+    public int port;
+    public ApiClient(String addr, int port) {
         this.addr = addr;
         this.port = port;
     }
-    Result invoke_api(String service, String name, Object... args) throws IOException {
+    public Result invoke_api(String service, String name, Object... args) throws IOException {
         var conn = new Connection(addr, port);
         var api = new ApiCall(service, name, args);
         if (!conn.send(api)) { // send failed
@@ -34,7 +34,7 @@ public class ApiClient {
         }
         throw new IOException("Can't read result");
     }
-    Thread async_invoke_api(Consumer<Result> handler, String service, String name, Object... args) throws RuntimeException, IOException {
+    public Thread async_invoke_api(Consumer<Result> handler, String service, String name, Object... args) throws RuntimeException, IOException {
         Connection conn;
         conn = new Connection(addr, port);
         var thread = new Thread(new Runnable() {

@@ -18,6 +18,14 @@ public class UserInfo implements Serializable {
     public String username, fullname, address, email;
     public Date birthdate;
     public Gender gender;
+    public UserInfo(String username, String email) {
+        this.username = username;
+        this.fullname = "";
+        this.address = "";
+        this.email = email;
+        this.birthdate = new Date();
+        this.gender = Gender.Male;
+    }
     public UserInfo(String username, String fullname, String addr, String email, Date birth, Gender gender) {
         this.username = username;
         this.fullname = fullname;

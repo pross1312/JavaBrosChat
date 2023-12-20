@@ -4,6 +4,11 @@
  */
 package view;
 
+import Client.Client;
+import Utils.*;
+
+import java.io.IOException;
+
 /**
  *
  * @author ADMIN
@@ -81,7 +86,11 @@ public class Signup extends javax.swing.JFrame {
         btnRegister.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnRegister.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                btnRegisterMouseClicked(evt);
+                try {
+                    btnRegisterMouseClicked(evt);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
         btnRegister.addActionListener(new java.awt.event.ActionListener() {
@@ -223,9 +232,21 @@ public class Signup extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnRegisterMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRegisterMouseClicked
+    private void btnRegisterMouseClicked(java.awt.event.MouseEvent evt) throws IOException {//GEN-FIRST:event_btnRegisterMouseClicked
         // TODO add your handling code here:
-       
+        final String username = txtUsername.getText();
+        final String password  = txtPassword.getText();
+        final String email = txtEmail.getText();
+
+        //TODO Validate info
+        var result =  Client.api_c.invoke_api("AccountService", "register", username, password, new UserInfo(username, email));
+        if (result instanceof ResultError err) {
+            System.out.println(err.msg());
+        }
+        else{
+            new Login().setVisible(true);
+            this.dispose();
+        }
     }//GEN-LAST:event_btnRegisterMouseClicked
 
     private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed

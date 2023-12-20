@@ -4,11 +4,15 @@
  */
 package view;
 
-import java.util.prefs.Preferences;
+import java.io.IOException;
 import javax.swing.ImageIcon;
 
 import Client.ApiClient;
+import Client.Client;
+import Utils.AccountType;
+import Utils.Pair;
 import Utils.ResultError;
+import Utils.ResultOk;
 
 /**
  *
@@ -21,7 +25,6 @@ public class Login extends javax.swing.JFrame {
      */
     public Login() {
         initComponents();
-        
         txtFlagUsername.setVisible(false); 
         txtFlagPassword.setVisible(false); 
     }
@@ -133,7 +136,11 @@ public class Login extends javax.swing.JFrame {
         btnLogin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                btnLoginMouseClicked(evt);
+                try {
+                    btnLoginMouseClicked(evt);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
         btnLogin.addActionListener(new java.awt.event.ActionListener() {
@@ -221,7 +228,7 @@ public class Login extends javax.swing.JFrame {
         });
 
         txtFlagPassword.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        txtFlagPassword.setForeground(new java.awt.Color(204, 0, 0));
+        txtFlagPassword.setForeground(new java.awt.Color(0, 0, 0));
         txtFlagPassword.setText("jLabel5");
 
         txtFlagUsername.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -386,14 +393,33 @@ public class Login extends javax.swing.JFrame {
         txtShow.setVisible(false); 
     }//GEN-LAST:event_txtShowMouseClicked
 
-    private void btnLoginMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnLoginMouseClicked
-        // TODO add your handling code here:
-        // var client = new ApiClient("localhost", 13122);
-        // var result = client.invoke_api("AccountService", "login", "admin", "admin");
-        // if (result instanceof ResultError err) {
-        //     System.out.println(err.msg());
-        // }
-    }//GEN-LAST:event_btnLoginMouseClicked
+    private void btnLoginMouseClicked(java.awt.event.MouseEvent evt) throws IOException {//GEN-FIRST:event_btnLoginMouseClicked
+//         TODO add your handling code here:
+        final  String username = txtUsername.getText();
+        final  String pwd = txtPassword.getText();
+
+        var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
+         if (result instanceof ResultError err) {
+             txtFlagPassword.setText(err.msg());
+             txtFlagPassword.show();
+             System.out.println(err.msg());
+         }
+        else if (result instanceof ResultOk success) {
+             var data = (Pair<String, AccountType>)success.data();
+             Client.token = data.a;
+             System.out.println("Token: " + data.a);
+             System.out.print("Type: ");
+             System.out.println(data.b);
+             if(data.b == AccountType.Admin) {
+                 new AdminDashboard().setVisible(true);
+                 this.dispose();
+             }
+             else if(data.b == AccountType.User){
+                 new UserDashboard().setVisible(true);
+                 this.dispose();
+             }
+        }
+        }//GEN-LAST:event_btnLoginMouseClicked
 
     private void txtSignupMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSignupMouseClicked
         // TODO add your handling code here:

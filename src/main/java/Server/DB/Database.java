@@ -12,8 +12,8 @@ public class Database {
         props = new Properties();
         props.setProperty("encrypt", "true");
         props.setProperty("trustServerCertificate", "true");
-        props.setProperty("user", "sa");
-        props.setProperty("password", System.getenv("DBPASS"));
+        props.setProperty("user", "phamhuy");
+        props.setProperty("password", "123456");
         props.setProperty("database", "Java");
         props.setProperty("loginTimeout", "5");
     }
