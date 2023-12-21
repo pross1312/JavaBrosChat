@@ -13,6 +13,8 @@ import Utils.AccountType;
 import Utils.Pair;
 import Utils.ResultError;
 import Utils.ResultOk;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -25,8 +27,7 @@ public class Login extends javax.swing.JFrame {
      */
     public Login() {
         initComponents();
-        txtFlagUsername.setVisible(false); 
-        txtFlagPassword.setVisible(false); 
+        this.txtFlagAccount.setVisible(false); 
     }
     
 
@@ -60,8 +61,7 @@ public class Login extends javax.swing.JFrame {
         txtDisable = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         txtShow = new javax.swing.JLabel();
-        txtFlagPassword = new javax.swing.JLabel();
-        txtFlagUsername = new javax.swing.JLabel();
+        txtFlagAccount = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
@@ -70,7 +70,7 @@ public class Login extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel12.setIcon(new ImageIcon(getClass().getResource("/images/giphy.gif"))); // NOI18N
+        jLabel12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/giphy.gif"))); // NOI18N
 
         jLabel14.setBackground(new java.awt.Color(25, 118, 211));
         jLabel14.setFont(new java.awt.Font("Segoe UI", 1, 32)); // NOI18N
@@ -136,11 +136,7 @@ public class Login extends javax.swing.JFrame {
         btnLogin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnLogin.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                try {
-                    btnLoginMouseClicked(evt);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                btnLoginMouseClicked(evt);
             }
         });
         btnLogin.addActionListener(new java.awt.event.ActionListener() {
@@ -206,7 +202,7 @@ public class Login extends javax.swing.JFrame {
         });
 
         txtDisable.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        txtDisable.setIcon(new ImageIcon(getClass().getResource("/images/icons8-blind-16.png"))); // NOI18N
+        txtDisable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-blind-16.png"))); // NOI18N
         txtDisable.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         txtDisable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -215,11 +211,11 @@ public class Login extends javax.swing.JFrame {
         });
 
         jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel6.setIcon(new ImageIcon(getClass().getResource("/images/icons8-user-16.png"))); // NOI18N
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-user-16.png"))); // NOI18N
         jLabel6.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
         txtShow.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        txtShow.setIcon(new ImageIcon(getClass().getResource("/images/icons8-eye-16 (2).png"))); // NOI18N
+        txtShow.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-eye-16 (2).png"))); // NOI18N
         txtShow.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         txtShow.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -227,13 +223,9 @@ public class Login extends javax.swing.JFrame {
             }
         });
 
-        txtFlagPassword.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        txtFlagPassword.setForeground(new java.awt.Color(0, 0, 0));
-        txtFlagPassword.setText("jLabel5");
-
-        txtFlagUsername.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        txtFlagUsername.setForeground(new java.awt.Color(204, 0, 0));
-        txtFlagUsername.setText("jLabel5");
+        txtFlagAccount.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        txtFlagAccount.setForeground(new java.awt.Color(204, 0, 0));
+        txtFlagAccount.setText("jLabel5");
 
         javax.swing.GroupLayout pnLoginLayout = new javax.swing.GroupLayout(pnLogin);
         pnLogin.setLayout(pnLoginLayout);
@@ -254,9 +246,7 @@ public class Login extends javax.swing.JFrame {
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 466, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnLoginLayout.createSequentialGroup()
                         .addGap(77, 77, 77)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtFlagUsername))
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnLoginLayout.createSequentialGroup()
                         .addGap(372, 372, 372)
                         .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -267,9 +257,7 @@ public class Login extends javax.swing.JFrame {
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnLoginLayout.createSequentialGroup()
                         .addGap(77, 77, 77)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(txtFlagPassword))
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnLoginLayout.createSequentialGroup()
                         .addGap(77, 77, 77)
                         .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -281,17 +269,20 @@ public class Login extends javax.swing.JFrame {
                             .addComponent(txtDisable, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(pnLoginLayout.createSequentialGroup()
                         .addGap(77, 77, 77)
-                        .addComponent(cbRememberPassword)
-                        .addGap(56, 56, 56)
-                        .addComponent(txtForgotPassword))
-                    .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(77, 77, 77)
                         .addComponent(btnLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnLoginLayout.createSequentialGroup()
                         .addGap(119, 119, 119)
                         .addComponent(jLabel8)
                         .addGap(29, 29, 29)
-                        .addComponent(txtSignup)))
+                        .addComponent(txtSignup))
+                    .addGroup(pnLoginLayout.createSequentialGroup()
+                        .addGap(77, 77, 77)
+                        .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtFlagAccount)
+                            .addGroup(pnLoginLayout.createSequentialGroup()
+                                .addComponent(cbRememberPassword)
+                                .addGap(56, 56, 56)
+                                .addComponent(txtForgotPassword)))))
                 .addGap(12, 12, 12))
         );
         pnLoginLayout.setVerticalGroup(
@@ -305,9 +296,7 @@ public class Login extends javax.swing.JFrame {
                 .addGap(7, 7, 7)
                 .addComponent(jLabel4)
                 .addGap(28, 28, 28)
-                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(txtFlagUsername))
+                .addComponent(jLabel1)
                 .addGap(7, 7, 7)
                 .addComponent(jLabel13)
                 .addGap(7, 7, 7)
@@ -317,9 +306,7 @@ public class Login extends javax.swing.JFrame {
                         .addGap(2, 2, 2)
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(16, 16, 16)
-                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(txtFlagPassword))
+                .addComponent(jLabel2)
                 .addGap(10, 10, 10)
                 .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(txtDisable, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -328,7 +315,9 @@ public class Login extends javax.swing.JFrame {
                         .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtShow, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(25, 25, 25)
+                .addGap(5, 5, 5)
+                .addComponent(txtFlagAccount)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cbRememberPassword)
                     .addGroup(pnLoginLayout.createSequentialGroup()
@@ -393,31 +382,35 @@ public class Login extends javax.swing.JFrame {
         txtShow.setVisible(false); 
     }//GEN-LAST:event_txtShowMouseClicked
 
-    private void btnLoginMouseClicked(java.awt.event.MouseEvent evt) throws IOException {//GEN-FIRST:event_btnLoginMouseClicked
-//         TODO add your handling code here:
-        final  String username = txtUsername.getText();
-        final  String pwd = txtPassword.getText();
-
-        var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
-         if (result instanceof ResultError err) {
-             txtFlagPassword.setText(err.msg());
-             txtFlagPassword.show();
-             System.out.println(err.msg());
-         }
-        else if (result instanceof ResultOk success) {
-             var data = (Pair<String, AccountType>)success.data();
-             Client.token = data.a;
-             System.out.println("Token: " + data.a);
-             System.out.print("Type: ");
-             System.out.println(data.b);
-             if(data.b == AccountType.Admin) {
-                 new AdminDashboard().setVisible(true);
-                 this.dispose();
-             }
-             else if(data.b == AccountType.User){
-                 new UserDashboard().setVisible(true);
-                 this.dispose();
-             }
+    private void btnLoginMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnLoginMouseClicked
+        try {
+            //         TODO add your handling code here:
+            final  String username = txtUsername.getText();
+            final  String pwd = txtPassword.getText();
+            
+            var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
+            if (result instanceof ResultError err) {
+                txtFlagAccount.setText(err.msg());
+                txtFlagAccount.show();
+                System.out.println(err.msg());
+            }
+            else if (result instanceof ResultOk success) {
+                var data = (Pair<String, AccountType>)success.data();
+                Client.token = data.a;
+                System.out.println("Token: " + data.a);
+                System.out.print("Type: ");
+                System.out.println(data.b);
+                if(data.b == AccountType.Admin) {
+                    new AdminDashboard().setVisible(true);
+                    this.dispose();
+                }
+                else if(data.b == AccountType.User){
+                    new UserDashboard().setVisible(true);
+                    this.dispose();
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         }
         }//GEN-LAST:event_btnLoginMouseClicked
 
@@ -483,8 +476,7 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel pnLogin;
     private javax.swing.JLabel txtDisable;
-    private javax.swing.JLabel txtFlagPassword;
-    private javax.swing.JLabel txtFlagUsername;
+    private javax.swing.JLabel txtFlagAccount;
     private javax.swing.JLabel txtForgotPassword;
     private javax.swing.JPasswordField txtPassword;
     private javax.swing.JLabel txtShow;
