@@ -134,7 +134,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jLabel12 = new javax.swing.JLabel();
         closeBtn2 = new javax.swing.JLabel();
-        closeBtn3 = new javax.swing.JLabel();
+        btnMinimize = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblUser1 = new javax.swing.JTable();
         btnListFriend1 = new javax.swing.JButton();
@@ -152,12 +152,12 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel17 = new javax.swing.JLabel();
         closeBtn4 = new javax.swing.JLabel();
         cbSortSpam = new javax.swing.JComboBox<>();
-        closeBtn5 = new javax.swing.JLabel();
+        btnMinimizeSpam = new javax.swing.JLabel();
         cbFilterSpam = new javax.swing.JComboBox<>();
         jPanel6 = new javax.swing.JPanel();
         jLabel19 = new javax.swing.JLabel();
         closeBtn6 = new javax.swing.JLabel();
-        closeBtn7 = new javax.swing.JLabel();
+        btnMinimizeNewUser = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
         tblUser3 = new javax.swing.JTable();
         btnAddUser1 = new javax.swing.JButton();
@@ -299,41 +299,41 @@ public class AdminDashboard extends javax.swing.JFrame {
         NavigateLayout.setHorizontalGroup(
             NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, NavigateLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtMangeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(24, 24, 24))
             .addGroup(NavigateLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(NavigateLayout.createSequentialGroup()
-                        .addComponent(jLabel18)
+                        .addGap(6, 6, 6)
+                        .addComponent(jLabel31, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtManageNewUser))
+                        .addComponent(txtManageNewUser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(NavigateLayout.createSequentialGroup()
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtSpamList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(NavigateLayout.createSequentialGroup()
+                                .addComponent(jLabel9)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(NavigateLayout.createSequentialGroup()
+                                .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel18)
+                                    .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING))
+                                    .addComponent(jLabel8))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtManageNewUser)
+                                    .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(txtMangeGroup))
+                                    .addComponent(txtSpamList, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(NavigateLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
                         .addComponent(jLabel30)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel29, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, NavigateLayout.createSequentialGroup()
-                            .addComponent(jLabel9)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, NavigateLayout.createSequentialGroup()
-                            .addComponent(jLabel31)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(txtManageNewUser1))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jLabel29, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         NavigateLayout.setVerticalGroup(
             NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -348,9 +348,9 @@ public class AdminDashboard extends javax.swing.JFrame {
                     .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txtMangeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(42, 42, 42)
-                .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtSpamList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtSpamList))
                 .addGap(42, 42, 42)
                 .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -361,8 +361,8 @@ public class AdminDashboard extends javax.swing.JFrame {
                     .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(41, 41, 41)
                 .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel31, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtManageNewUser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(txtManageNewUser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel31, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(40, 40, 40)
                 .addGroup(NavigateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel30, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -477,7 +477,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 179, Short.MAX_VALUE)
+                        .addGap(0, 183, Short.MAX_VALUE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(btnListFriend, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -493,14 +493,14 @@ public class AdminDashboard extends javax.swing.JFrame {
                                 .addComponent(btnDeleteUser, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(34, 34, 34)
                                 .addComponent(btnLockUser, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 267, Short.MAX_VALUE))
+                        .addGap(0, 270, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel10)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbSort, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addGap(33, 33, 33)
+                            .addComponent(jLabel2)
+                            .addComponent(cbSort, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel11)
@@ -562,14 +562,14 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
-        closeBtn3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        closeBtn3.setForeground(new java.awt.Color(204, 0, 0));
-        closeBtn3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        closeBtn3.setText("-");
-        closeBtn3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        closeBtn3.addMouseListener(new java.awt.event.MouseAdapter() {
+        btnMinimize.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btnMinimize.setForeground(new java.awt.Color(204, 0, 0));
+        btnMinimize.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        btnMinimize.setText("-");
+        btnMinimize.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnMinimize.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                closeBtn3MouseClicked(evt);
+                btnMinimizeMouseClicked(evt);
             }
         });
 
@@ -617,7 +617,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addComponent(btnListFriend1, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(53, 53, 53)
                 .addComponent(btnUpdateUserPwd3, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(344, Short.MAX_VALUE))
+                .addContainerGap(351, Short.MAX_VALUE))
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -629,7 +629,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                     .addComponent(jLabel14)
                     .addComponent(cbFilterGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(46, 46, 46)
-                .addComponent(closeBtn3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnMinimize, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeBtn2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -641,7 +641,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(closeBtn2, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(closeBtn3, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnMinimize, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -704,14 +704,14 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
-        closeBtn5.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        closeBtn5.setForeground(new java.awt.Color(204, 0, 0));
-        closeBtn5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        closeBtn5.setText("-");
-        closeBtn5.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        closeBtn5.addMouseListener(new java.awt.event.MouseAdapter() {
+        btnMinimizeSpam.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btnMinimizeSpam.setForeground(new java.awt.Color(204, 0, 0));
+        btnMinimizeSpam.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        btnMinimizeSpam.setText("-");
+        btnMinimizeSpam.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnMinimizeSpam.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                closeBtn5MouseClicked(evt);
+                btnMinimizeSpamMouseClicked(evt);
             }
         });
 
@@ -736,7 +736,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                     .addComponent(jLabel16)
                     .addComponent(cbFilterSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(46, 46, 46)
-                .addComponent(closeBtn5, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnMinimizeSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeBtn4, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -752,7 +752,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(closeBtn4, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(closeBtn5, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnMinimizeSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -788,14 +788,14 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
-        closeBtn7.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        closeBtn7.setForeground(new java.awt.Color(204, 0, 0));
-        closeBtn7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        closeBtn7.setText("-");
-        closeBtn7.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        closeBtn7.addMouseListener(new java.awt.event.MouseAdapter() {
+        btnMinimizeNewUser.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btnMinimizeNewUser.setForeground(new java.awt.Color(204, 0, 0));
+        btnMinimizeNewUser.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        btnMinimizeNewUser.setText("-");
+        btnMinimizeNewUser.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnMinimizeNewUser.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                closeBtn7MouseClicked(evt);
+                btnMinimizeNewUserMouseClicked(evt);
             }
         });
 
@@ -875,7 +875,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addContainerGap(102, Short.MAX_VALUE)
+                        .addContainerGap(106, Short.MAX_VALUE)
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel6Layout.createSequentialGroup()
                                 .addComponent(btnListFriend3, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -891,7 +891,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                                 .addComponent(btnDeleteUser1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(34, 34, 34)
                                 .addComponent(btnLockUser1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 356, Short.MAX_VALUE))
+                        .addGap(0, 359, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                         .addComponent(jLabel19)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -903,7 +903,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                             .addGroup(jPanel6Layout.createSequentialGroup()
                                 .addComponent(jLabel20)
                                 .addGap(172, 172, 172)
-                                .addComponent(closeBtn7, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnMinimizeNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(closeBtn6, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(cbFilterNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -916,7 +916,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(closeBtn6, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(closeBtn7, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnMinimizeNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1011,7 +1011,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel23)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 467, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 473, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cbSortMoreUserInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel24))
@@ -1196,25 +1196,22 @@ public class AdminDashboard extends javax.swing.JFrame {
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(jLabel26)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 437, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbSortActiveUser, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel27))
-                .addGap(33, 33, 33)
+                    .addComponent(jLabel27)
+                    .addComponent(cbSortActiveUser, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addComponent(jLabel28)
-                        .addGap(172, 172, 172)
+                        .addGap(162, 162, 162)
                         .addComponent(closeBtn13, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(closeBtn12, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(cbFilterActiveUser, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbFilterActiveUser, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 995, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(jScrollPane6)
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1255,7 +1252,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             .addComponent(data, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        setSize(new java.awt.Dimension(1172, 709));
+        setSize(new java.awt.Dimension(1213, 709));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1337,12 +1334,12 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_cbFilterActionPerformed
 
     private void closeBtn2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn2MouseClicked
-        // TODO add your handling code here:
+        System.exit(0);
     }//GEN-LAST:event_closeBtn2MouseClicked
 
-    private void closeBtn3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn3MouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_closeBtn3MouseClicked
+    private void btnMinimizeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnMinimizeMouseClicked
+        this.setState(JFrame.ICONIFIED);
+    }//GEN-LAST:event_btnMinimizeMouseClicked
 
     private void tblUser1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblUser1MouseClicked
         // TODO add your handling code here:
@@ -1370,16 +1367,16 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_tblUser2MouseClicked
 
     private void closeBtn4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn4MouseClicked
-        // TODO add your handling code here:
+        System.exit(0);
     }//GEN-LAST:event_closeBtn4MouseClicked
 
     private void cbSortSpamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSortSpamActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cbSortSpamActionPerformed
 
-    private void closeBtn5MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn5MouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_closeBtn5MouseClicked
+    private void btnMinimizeSpamMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnMinimizeSpamMouseClicked
+        this.setState(JFrame.ICONIFIED);
+    }//GEN-LAST:event_btnMinimizeSpamMouseClicked
 
     private void cbFilterSpamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFilterSpamActionPerformed
 
@@ -1417,9 +1414,9 @@ public class AdminDashboard extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_closeBtn6MouseClicked
 
-    private void closeBtn7MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn7MouseClicked
-        System.exit(0);
-    }//GEN-LAST:event_closeBtn7MouseClicked
+    private void btnMinimizeNewUserMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnMinimizeNewUserMouseClicked
+        this.setState(JFrame.ICONIFIED);
+    }//GEN-LAST:event_btnMinimizeNewUserMouseClicked
 
     private void tblUser3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblUser3MouseClicked
         // TODO add your handling code here:
@@ -1454,7 +1451,7 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_closeBtn8MouseClicked
 
     private void closeBtn9MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn9MouseClicked
-        System.exit(0);
+        this.setState(JFrame.ICONIFIED);
     }//GEN-LAST:event_closeBtn9MouseClicked
 
     private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
@@ -1464,11 +1461,11 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1MouseClicked
 
     private void closeBtn10MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn10MouseClicked
-        // TODO add your handling code here:
+        System.exit(0);
     }//GEN-LAST:event_closeBtn10MouseClicked
 
     private void closeBtn11MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn11MouseClicked
-        // TODO add your handling code here:
+        this.setState(JFrame.ICONIFIED);
     }//GEN-LAST:event_closeBtn11MouseClicked
 
     private void tblUser4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblUser4MouseClicked
@@ -1484,11 +1481,11 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_cbFilterMoreUserInfoActionPerformed
 
     private void closeBtn12MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn12MouseClicked
-        // TODO add your handling code here:
+        System.exit(0);
     }//GEN-LAST:event_closeBtn12MouseClicked
 
     private void closeBtn13MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn13MouseClicked
-        // TODO add your handling code here:
+        this.setState(JFrame.ICONIFIED);
     }//GEN-LAST:event_closeBtn13MouseClicked
 
     private void tblUser5MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblUser5MouseClicked
@@ -1568,6 +1565,9 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JButton btnListFriend3;
     private javax.swing.JButton btnLockUser;
     private javax.swing.JButton btnLockUser1;
+    private javax.swing.JLabel btnMinimize;
+    private javax.swing.JLabel btnMinimizeNewUser;
+    private javax.swing.JLabel btnMinimizeSpam;
     private javax.swing.JButton btnUpdateUser;
     private javax.swing.JButton btnUpdateUser1;
     private javax.swing.JButton btnUpdateUserPwd;
@@ -1595,11 +1595,8 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JLabel closeBtn12;
     private javax.swing.JLabel closeBtn13;
     private javax.swing.JLabel closeBtn2;
-    private javax.swing.JLabel closeBtn3;
     private javax.swing.JLabel closeBtn4;
-    private javax.swing.JLabel closeBtn5;
     private javax.swing.JLabel closeBtn6;
-    private javax.swing.JLabel closeBtn7;
     private javax.swing.JLabel closeBtn8;
     private javax.swing.JLabel closeBtn9;
     private javax.swing.JPanel data;

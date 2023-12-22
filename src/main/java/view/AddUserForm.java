@@ -4,6 +4,7 @@
  */
 package view;
 
+import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
@@ -189,14 +190,20 @@ public class AddUserForm extends javax.swing.JFrame {
         String msg = "[DEFAULT VALUE]";
         if (btnActionForm.getText().equalsIgnoreCase("add")) {
             AdminDashboard.addRowtoTable((Object[]) dataRow);
-            msg = "Add User Success";
-
+            msg = "Add User Successfully";
+//            ImageIcon icon = new ImageIcon(getClass().getResource("/images/icons8-success-48.png"));
+////            Image image = icon.getImage(); 
+////            Image newimg = image.getScaledInstance(64, 50,  java.awt.Image.SCALE_SMOOTH);
+////            icon = new ImageIcon(newimg);  
+            JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
+//            this.dispose();
+            return;
         } else if (btnActionForm.getText().equalsIgnoreCase("update")) {
             AdminDashboard.updateRow((Object[]) dataRow, this.rowSelected);
-            msg = "Update User Success";
+            msg = "Update User Successfully";
         }
-        JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
 
+        JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
         this.dispose();
     }//GEN-LAST:event_btnActionFormActionPerformed
 
