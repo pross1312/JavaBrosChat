@@ -56,6 +56,12 @@ public class GroupChatMemberDb {
                                     group_id, username));
         st.close();
     }
+    public static void remove_all(String username) throws SQLException {
+        Statement st = db.conn.createStatement();
+        st.executeUpdate(String.format("delete from GroupChatMember where username = '%s'",
+                                    username));
+        st.close();
+    }
     public static boolean check_in_group(String username, String group_id) throws SQLException {
         list_sm.setString(1, group_id);
         var result = list_sm.executeQuery();

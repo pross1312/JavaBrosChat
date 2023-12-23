@@ -138,7 +138,7 @@ class KeyBundle {
 //------------------------------------------------------------------------------------------------//
 class AdminService { // can only be called by admin
     // user-operations
-    ArrayList<UserInfo> list_users(String token); // filter will be done on client side
+    ArrayList<Pair<UserInfo, Boolean>> list_users(String token); // filter will be done on client side
     ArrayList<UserInfo> list_active_users(String token, Date from, Date to); // sort by name or created time on client side
     void add_user(String token, String username, String pass, UserInfo user_info);
     void update_user(String token, String username, UserInfo user_info);

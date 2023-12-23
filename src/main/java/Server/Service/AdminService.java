@@ -7,16 +7,21 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AdminService extends Service {
-    ArrayList<UserInfo> list_users(String token) throws SQLException { // filter will be done on client side
+    ArrayList<Pair<UserInfo, Boolean>> list_users(String token) throws SQLException { // filter will be done on client side
         var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute list_users api, token not found");
         if(acc.b == AccountType.User)
             throw new Error("Only admin is allowed to get the user's list");
         ArrayList<UserInfo> user = UserInfoDb.list_users();
-        user.trimToSize();
-        return user;
+        var result = new ArrayList<Pair<UserInfo, Boolean>>(user.size());
+        for (var x : user) {
+            result.add(new Pair<UserInfo, Boolean>(x, Boolean.valueOf(AccountDb.query(x.username).is_locked)));
+        }
+        result.trimToSize();
+        return result;
     }
 
     ArrayList<UserInfo> list_active_users(String token, Date from, Date to) throws SQLException{ // sort by name or created time on client side
@@ -58,11 +63,15 @@ public class AdminService extends Service {
         if (UserInfoDb.query(username) == null)
             throw new Error("Username does not exist to be deleted");
         Server.Main.db.set_auto_commit(false);
+        KeyBundleDb.remove(username);
+        GroupChatMessageDb.remove_all(username);
+        GroupChatMemberDb.remove_all(username);
+        UserFriendDb.remove_all(username);
         LoginRecordDb.delete(username);
         RegistrationRecordDb.delete(username);
-        UserInfoDb.delete(username);
         Server.Main.db.commit();
         Server.Main.db.set_auto_commit(true);
+        UserInfoDb.delete(username);
         AccountDb.delete(username);
     }
     void change_user_pass(String token, String username, String new_pass) throws SQLException{

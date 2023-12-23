@@ -30,7 +30,9 @@ public class RegistrationRecordDb {
     }
     public static boolean delete(String username) throws SQLException {
         Statement st = db.conn.createStatement();
-        return st.executeUpdate(String.format("DELETE FROM RegistrationRecord WHERE username = '%s'", username)) == 1;
+        var result = st.executeUpdate(String.format("DELETE FROM RegistrationRecord WHERE username = '%s'", username)) == 1;
+        st.close();
+        return result;
     }
     public static ArrayList<RegistrationRecord> list_registration_record(Date from, Date to) throws SQLException {
         ArrayList<RegistrationRecord> arr = new ArrayList<>();

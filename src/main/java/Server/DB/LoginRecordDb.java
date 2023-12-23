@@ -87,6 +87,8 @@ public class LoginRecordDb {
     }
     public static boolean delete(String username) throws SQLException {
         Statement st = db.conn.createStatement();
-        return st.executeUpdate(String.format("DELETE FROM LoginRecord WHERE username = '%s'", username)) == 1;
+        var result = st.executeUpdate(String.format("DELETE FROM LoginRecord WHERE username = '%s'", username)) == 1;
+        st.close();
+        return result;
     }
 }

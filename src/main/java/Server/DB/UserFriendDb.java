@@ -40,6 +40,18 @@ public class UserFriendDb {
         if (is_auto_commit) db.commit();
         db.set_auto_commit(is_auto_commit);
     }
+    public static void remove_all(String username) throws SQLException {
+        Statement st = db.conn.createStatement();
+        boolean is_auto_commit = db.conn.getAutoCommit();
+        db.set_auto_commit(false);
+        st.execute(String.format("DELETE FROM FriendChat WHERE sender = '%s' OR friend = '%s'",
+                    username, username));
+        st.execute(String.format("DELETE FROM UserFriend WHERE username = '%s' OR friend = '%s'",
+                    username, username));
+        if (is_auto_commit) db.commit();
+        db.set_auto_commit(is_auto_commit);
+        st.close();
+    }
     public static void remove(String username, String friend) throws SQLException {
         Statement st = db.conn.createStatement();
         boolean is_auto_commit = db.conn.getAutoCommit();

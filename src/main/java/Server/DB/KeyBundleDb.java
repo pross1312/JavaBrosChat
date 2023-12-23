@@ -48,6 +48,11 @@ public class KeyBundleDb {
         }
         return identities;
     }
+    public static void remove(String username) throws SQLException {
+        Statement st = db.conn.createStatement();
+        st.executeUpdate(String.format("DELETE FROM KeyBundle WHERE address = '%s'", username));
+        st.close();
+    }
 }
 
 

@@ -4,6 +4,7 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -77,5 +78,17 @@ public class GroupChatMessageDb {
         if (result == null) throw new RuntimeException("Result set of query operation can't be null");
         if (!result.next()) throw new RuntimeException("Select count can't return no rows");
         return result.getInt("count");
+    }
+    public static void remove_all(String username) throws SQLException {
+        Statement st = db.conn.createStatement();
+        var auto = db.conn.getAutoCommit();
+        db.conn.setAutoCommit(false);
+        st.executeUpdate(String.format("update GroupChatMessage set sender = '__REMOVED__' where sender = '%s'",
+                                    username));
+        st.executeUpdate(String.format("update GroupChatMessage set receiver = '__REMOVED__' where receiver = '%s'",
+                                    username));
+        if (auto) db.conn.commit();
+        db.conn.setAutoCommit(auto);
+        st.close();
     }
 }
