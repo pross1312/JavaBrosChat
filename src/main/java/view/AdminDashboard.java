@@ -1,10 +1,20 @@
 package view;
 
+import Utils.Pair;
+import Utils.Result;
+import Utils.ResultError;
+import Utils.ResultOk;
+import Utils.UserInfo;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -74,6 +84,23 @@ public class AdminDashboard extends javax.swing.JFrame {
         //Sorting Active User Info 
         cbSortActiveUser.addItem("Created Time");
         cbSortActiveUser.addItem("Name");
+        String msg;
+        try {
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
+            if (rs instanceof ResultError err) {
+                msg = err.msg();
+            } else if (rs instanceof ResultOk ok) {
+                ArrayList<Pair<UserInfo, Boolean>> user_list = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
+                for (var item : user_list) {
+                    var user = item.a;
+                    var lock = item.b;
+                    addRowtoTable(new Object[]{user.username, user.fullname, user.address, user.birthdate.toString(),
+                        user.gender.toString(), user.email, lock}, lock);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println(e);
+        }
     }
 
     // Gradinent 
@@ -202,6 +229,11 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                formKeyPressed(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
@@ -404,7 +436,7 @@ public class AdminDashboard extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Username", "Name", "Address", "Date of Birth", "Gender", "Email"
+                "Username", "Name", "Address", "Date of Birth", "Gender", "Email", "Lock"
             }
         ));
         tblUser.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -413,11 +445,10 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
         jScrollPane1.setViewportView(tblUser);
-        if (tblUser.getColumnModel().getColumnCount() > 0) {
-            tblUser.getColumnModel().getColumn(4).setHeaderValue("Gender");
-            tblUser.getColumnModel().getColumn(5).setHeaderValue("Email");
-        }
 
+        btnAddUser.setBackground(new java.awt.Color(0, 125, 73));
+        btnAddUser.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAddUser.setForeground(new java.awt.Color(255, 255, 255));
         btnAddUser.setText("ADD");
         btnAddUser.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -430,6 +461,9 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
+        btnUpdateUser.setBackground(new java.awt.Color(0, 125, 73));
+        btnUpdateUser.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnUpdateUser.setForeground(new java.awt.Color(255, 255, 255));
         btnUpdateUser.setText("UPDATE");
         btnUpdateUser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -437,6 +471,9 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
+        btnDeleteUser.setBackground(new java.awt.Color(255, 51, 51));
+        btnDeleteUser.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnDeleteUser.setForeground(new java.awt.Color(255, 255, 255));
         btnDeleteUser.setText("DELETE");
         btnDeleteUser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -444,7 +481,15 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
+        btnLockUser.setBackground(new java.awt.Color(102, 102, 102));
+        btnLockUser.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnLockUser.setForeground(new java.awt.Color(255, 255, 255));
         btnLockUser.setText("LOCK");
+        btnLockUser.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnLockUserMouseClicked(evt);
+            }
+        });
 
         btnUpdateUserPwd.setText("SEE LOG");
 
@@ -1110,7 +1155,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                                 .addComponent(jButton1)
                                 .addGap(27, 27, 27)
                                 .addComponent(cbStatiscal, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 567, Short.MAX_VALUE)))
+                        .addGap(0, 572, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
@@ -1302,12 +1347,27 @@ public class AdminDashboard extends javax.swing.JFrame {
     private void btnDeleteUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteUserActionPerformed
         int index;
         index = tblUser.getSelectedRow();
+        String msg = null;
         if (index != -1) {
             int result = JOptionPane.showConfirmDialog((Component) null, "Are you sure?",
                     "alert", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                model.removeRow(tblUser.getSelectedRow());
-                JOptionPane.showMessageDialog(null, "Selected row deleted successfully");
+                try {
+
+                    // Call delete
+                    Result rs = Client.Client.api_c.invoke_api("AdminService", "del_user",
+                            Client.Client.token, tblUser.getValueAt(index, 0));
+                    if (rs instanceof ResultError err) {
+                        msg = err.msg();
+                        System.out.println(err.msg());
+                    } else {
+                        msg = "Selected row deleted successfully";
+                        model.removeRow(tblUser.getSelectedRow());
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                JOptionPane.showMessageDialog(null, msg);
             }
         } else {
             JOptionPane.showMessageDialog(null, "You must select user before delete", "WARNING", JOptionPane.ERROR_MESSAGE);
@@ -1518,7 +1578,41 @@ public class AdminDashboard extends javax.swing.JFrame {
         data.revalidate();
     }//GEN-LAST:event_txtManageNewUser1MouseClicked
 
-    public static void addRowtoTable(Object[] dataRow) {
+    private void btnLockUserMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnLockUserMouseClicked
+        // Handle Lock User 
+        String token = Client.Client.token;
+        String msg = "";
+        int index = tblUser.getSelectedRow();
+        Boolean lock = (Boolean) tblUser.getValueAt(index, 6);
+        if (lock == true) {
+            msg = "User already lock";
+            JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String username = (String) model.getValueAt(index, 0);
+        Result rs;
+        try {
+            rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
+            if (rs instanceof ResultError err) {
+                msg = err.msg();
+                JOptionPane.showMessageDialog(null, msg, "ERROR", JOptionPane.ERROR_MESSAGE);
+            } else if (rs instanceof ResultOk ok) {
+                msg = "Lock User Successfully";
+                tblUser.setValueAt(true, index, 6);
+                JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnLockUserMouseClicked
+
+    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
+        
+
+    }//GEN-LAST:event_formKeyPressed
+
+    public static void addRowtoTable(Object[] dataRow, boolean lock) {
         model.addRow(dataRow);
     }
 

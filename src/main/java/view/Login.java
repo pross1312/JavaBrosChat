@@ -13,6 +13,7 @@ import Utils.AccountType;
 import Utils.Pair;
 import Utils.ResultError;
 import Utils.ResultOk;
+import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,15 +22,14 @@ import java.util.logging.Logger;
  * @author ADMIN
  */
 public class Login extends javax.swing.JFrame {
-    
+
     /**
      * Creates new form Login
      */
     public Login() {
         initComponents();
-        this.txtFlagAccount.setVisible(false); 
+        this.txtFlagAccount.setVisible(false);
     }
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -66,6 +66,11 @@ public class Login extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
         setResizable(false);
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                formKeyPressed(evt);
+            }
+        });
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
@@ -92,14 +97,14 @@ public class Login extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(45, Short.MAX_VALUE)
+                .addContainerGap(85, Short.MAX_VALUE)
                 .addComponent(jLabel14)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel12)
                 .addGap(74, 74, 74))
         );
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 380, 450));
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 380, 490));
 
         pnLogin.setBackground(new java.awt.Color(25, 118, 211));
 
@@ -113,9 +118,11 @@ public class Login extends javax.swing.JFrame {
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel4.setText("Hello! Let's start");
 
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Username");
 
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Password");
 
@@ -158,6 +165,7 @@ public class Login extends javax.swing.JFrame {
         });
 
         cbRememberPassword.setBackground(new java.awt.Color(25, 118, 211));
+        cbRememberPassword.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         cbRememberPassword.setForeground(new java.awt.Color(255, 255, 255));
         cbRememberPassword.setText("Remember Password");
         cbRememberPassword.addActionListener(new java.awt.event.ActionListener() {
@@ -166,6 +174,7 @@ public class Login extends javax.swing.JFrame {
             }
         });
 
+        txtForgotPassword.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtForgotPassword.setForeground(new java.awt.Color(255, 255, 255));
         txtForgotPassword.setText("Forgot Password ?");
         txtForgotPassword.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -189,12 +198,14 @@ public class Login extends javax.swing.JFrame {
         jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel13.setIcon(new ImageIcon("/asset/icons8-user-16.png"));
 
+        txtPassword.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         txtPassword.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtPasswordActionPerformed(evt);
             }
         });
 
+        txtUsername.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         txtUsername.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtUsernameActionPerformed(evt);
@@ -223,7 +234,7 @@ public class Login extends javax.swing.JFrame {
             }
         });
 
-        txtFlagAccount.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        txtFlagAccount.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         txtFlagAccount.setForeground(new java.awt.Color(204, 0, 0));
         txtFlagAccount.setText("jLabel5");
 
@@ -245,44 +256,40 @@ public class Login extends javax.swing.JFrame {
                         .addGap(12, 12, 12)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 466, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(77, 77, 77)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(372, 372, 372)
-                        .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(77, 77, 77)
-                        .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(12, 12, 12)
-                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(77, 77, 77)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(77, 77, 77)
-                        .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(pnLoginLayout.createSequentialGroup()
-                                .addGap(2, 2, 2)
-                                .addComponent(txtShow, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(txtDisable, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(77, 77, 77)
-                        .addComponent(btnLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(pnLoginLayout.createSequentialGroup()
                         .addGap(119, 119, 119)
                         .addComponent(jLabel8)
                         .addGap(29, 29, 29)
                         .addComponent(txtSignup))
                     .addGroup(pnLoginLayout.createSequentialGroup()
                         .addGap(77, 77, 77)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnLoginLayout.createSequentialGroup()
+                        .addGap(77, 77, 77)
+                        .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(pnLoginLayout.createSequentialGroup()
+                                .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(12, 12, 12)
+                                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(pnLoginLayout.createSequentialGroup()
+                        .addGap(77, 77, 77)
+                        .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(pnLoginLayout.createSequentialGroup()
+                                .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtShow, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtDisable, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                    .addGroup(pnLoginLayout.createSequentialGroup()
+                        .addGap(77, 77, 77)
                         .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtFlagAccount)
                             .addGroup(pnLoginLayout.createSequentialGroup()
                                 .addComponent(cbRememberPassword)
-                                .addGap(56, 56, 56)
-                                .addComponent(txtForgotPassword)))))
+                                .addGap(14, 14, 14)
+                                .addComponent(txtForgotPassword))
+                            .addComponent(btnLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(12, 12, 12))
         );
         pnLoginLayout.setVerticalGroup(
@@ -297,43 +304,40 @@ public class Login extends javax.swing.JFrame {
                 .addComponent(jLabel4)
                 .addGap(28, 28, 28)
                 .addComponent(jLabel1)
-                .addGap(7, 7, 7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtUsername, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel13)
-                .addGap(7, 7, 7)
-                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(2, 2, 2)
-                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(16, 16, 16)
                 .addComponent(jLabel2)
-                .addGap(10, 10, 10)
-                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtDisable, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnLoginLayout.createSequentialGroup()
+                        .addGap(15, 15, 15)
+                        .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(3, 3, 3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtShow, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(5, 5, 5)
+                            .addComponent(txtShow, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtDisable, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(20, 20, 20)
                 .addComponent(txtFlagAccount)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbRememberPassword)
-                    .addGroup(pnLoginLayout.createSequentialGroup()
-                        .addGap(4, 4, 4)
-                        .addComponent(txtForgotPassword)))
-                .addGap(13, 13, 13)
+                    .addComponent(txtForgotPassword))
+                .addGap(11, 11, 11)
                 .addComponent(btnLogin, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(7, 7, 7)
+                .addGap(18, 18, 18)
                 .addGroup(pnLoginLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel8)
                     .addComponent(txtSignup)))
         );
 
-        getContentPane().add(pnLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 0, 470, 460));
+        getContentPane().add(pnLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 0, 470, 490));
 
-        setSize(new java.awt.Dimension(850, 451));
+        setSize(new java.awt.Dimension(850, 489));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -364,47 +368,44 @@ public class Login extends javax.swing.JFrame {
 
     private void txtDisableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtDisableMouseClicked
         // TODO add your handling code here:
-        txtPassword.setEchoChar((char)0); 
+        txtPassword.setEchoChar((char) 0);
         txtDisable.setVisible(false);
         txtDisable.setEnabled(false);
-        
-        txtShow.setEnabled(true); 
-        txtShow.setVisible(true); 
+
+        txtShow.setEnabled(true);
+        txtShow.setVisible(true);
     }//GEN-LAST:event_txtDisableMouseClicked
 
     private void txtShowMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtShowMouseClicked
         // TODO add your handling code here:
-        txtPassword.setEchoChar((char)8226); 
+        txtPassword.setEchoChar((char) 8226);
         txtDisable.setVisible(true);
         txtDisable.setEnabled(true);
-        
-        txtShow.setEnabled(false); 
-        txtShow.setVisible(false); 
+
+        txtShow.setEnabled(false);
+        txtShow.setVisible(false);
     }//GEN-LAST:event_txtShowMouseClicked
 
     private void btnLoginMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnLoginMouseClicked
         try {
-            //         TODO add your handling code here:
-            final  String username = txtUsername.getText();
-            final  String pwd = txtPassword.getText();
-            
+            final String username = txtUsername.getText();
+            final String pwd = txtPassword.getText();
+
             var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
             if (result instanceof ResultError err) {
                 txtFlagAccount.setText(err.msg());
                 txtFlagAccount.show();
                 System.out.println(err.msg());
-            }
-            else if (result instanceof ResultOk success) {
-                var data = (Pair<String, AccountType>)success.data();
+            } else if (result instanceof ResultOk success) {
+                var data = (Pair<String, AccountType>) success.data();
                 Client.token = data.a;
                 System.out.println("Token: " + data.a);
                 System.out.print("Type: ");
                 System.out.println(data.b);
-                if(data.b == AccountType.Admin) {
+                if (data.b == AccountType.Admin) {
                     new AdminDashboard().setVisible(true);
                     this.dispose();
-                }
-                else if(data.b == AccountType.User){
+                } else if (data.b == AccountType.User) {
                     new UserDashboard().setVisible(true);
                     this.dispose();
                 }
@@ -416,15 +417,46 @@ public class Login extends javax.swing.JFrame {
 
     private void txtSignupMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSignupMouseClicked
         // TODO add your handling code here:
-        new Signup().setVisible(true); 
+        new Signup().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_txtSignupMouseClicked
 
     private void txtForgotPasswordMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtForgotPasswordMouseClicked
         // TODO add your handling code here:
-        new ForgotPass().setVisible(true); 
+        new ForgotPass().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_txtForgotPasswordMouseClicked
+
+    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            try {
+                final String username = txtUsername.getText();
+                final String pwd = txtPassword.getText();
+
+                var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
+                if (result instanceof ResultError err) {
+                    txtFlagAccount.setText(err.msg());
+                    txtFlagAccount.show();
+                    System.out.println(err.msg());
+                } else if (result instanceof ResultOk success) {
+                    var data = (Pair<String, AccountType>) success.data();
+                    Client.token = data.a;
+                    System.out.println("Token: " + data.a);
+                    System.out.print("Type: ");
+                    System.out.println(data.b);
+                    if (data.b == AccountType.Admin) {
+                        new AdminDashboard().setVisible(true);
+                        this.dispose();
+                    } else if (data.b == AccountType.User) {
+                        new UserDashboard().setVisible(true);
+                        this.dispose();
+                    }
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_formKeyPressed
 
     /**
      * @param args the command line arguments
