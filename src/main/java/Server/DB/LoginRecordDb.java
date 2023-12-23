@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import Utils.LoginRecord;
@@ -83,5 +84,9 @@ public class LoginRecordDb {
         }
         result.close();
         return arr;
+    }
+    public static boolean delete(String username) throws SQLException {
+        Statement st = db.conn.createStatement();
+        return st.executeUpdate(String.format("DELETE FROM LoginRecord WHERE username = '%s'", username)) == 1;
     }
 }

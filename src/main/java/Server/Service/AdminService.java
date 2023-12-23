@@ -57,7 +57,12 @@ public class AdminService extends Service {
             throw new Error("Only admin is allowed to delete a user");
         if (UserInfoDb.query(username) == null)
             throw new Error("Username does not exist to be deleted");
+        Server.Main.db.set_auto_commit(false);
+        LoginRecordDb.delete(username);
+        RegistrationRecordDb.delete(username);
         UserInfoDb.delete(username);
+        Server.Main.db.commit();
+        Server.Main.db.set_auto_commit(true);
         AccountDb.delete(username);
     }
     void change_user_pass(String token, String username, String new_pass) throws SQLException{

@@ -61,7 +61,7 @@ public class UserInfoDb {
             throw new RuntimeException("Result set of query operation can't be null");
         while(result.next()){
             var info = parse_row(result);
-            arr.add(info);
+            if (!info.username.equals("__REMOVED__")) arr.add(info);
         }
         result.close();
         return arr;

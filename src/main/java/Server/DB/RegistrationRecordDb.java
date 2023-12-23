@@ -5,6 +5,7 @@ import Utils.RegistrationRecord;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +27,10 @@ public class RegistrationRecordDb {
         insert_sm.setString(1, username);
         insert_sm.setTimestamp(2, new Timestamp(new Date().getTime()));;
         return insert_sm.executeUpdate() == 1;
+    }
+    public static boolean delete(String username) throws SQLException {
+        Statement st = db.conn.createStatement();
+        return st.executeUpdate(String.format("DELETE FROM RegistrationRecord WHERE username = '%s'", username)) == 1;
     }
     public static ArrayList<RegistrationRecord> list_registration_record(Date from, Date to) throws SQLException {
         ArrayList<RegistrationRecord> arr = new ArrayList<>();
