@@ -359,16 +359,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace min="0" pref="183" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="180" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="btnListFriend" min="-2" pref="147" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
-                                      <Component id="btnUpdateUserPwd1" min="-2" pref="153" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
-                                      <Component id="btnUpdateUserPwd" min="-2" pref="153" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
+                                  <Group type="102" alignment="1" attributes="0">
                                       <Component id="btnAddUser" min="-2" pref="91" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                                       <Component id="btnUpdateUser" min="-2" pref="91" max="-2" attributes="0"/>
@@ -377,8 +370,15 @@
                                       <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                                       <Component id="btnLockUser" min="-2" pref="91" max="-2" attributes="0"/>
                                   </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="btnListFriend" min="-2" pref="150" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
+                                      <Component id="btnUpdateUserPwd1" min="-2" pref="153" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+                                      <Component id="btnUpdateUserPwd" min="-2" pref="153" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <EmptySpace min="0" pref="270" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="266" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
@@ -636,16 +636,34 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="SEE LOG"/>
               </Properties>
+              <Events>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="btnUpdateUserPwdMouseClicked"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="btnListFriend">
               <Properties>
                 <Property name="text" type="java.lang.String" value="SEE LIST FRIEND"/>
               </Properties>
+              <Events>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="btnListFriendMouseClicked"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JButton" name="btnUpdateUserPwd1">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="49" green="7d" red="0" type="rgb"/>
+                </Property>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Segoe UI" size="12" style="1"/>
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="UPDATE PASWORD"/>
               </Properties>
+              <Events>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="btnUpdateUserPwd1MouseClicked"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JComboBox" name="cbSort">
               <Properties>

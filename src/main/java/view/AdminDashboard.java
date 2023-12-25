@@ -10,15 +10,23 @@ import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.table.DefaultTableModel;
+import view.Component.DateListFrame;
+import view.Component.NewJPanel;
 
 public class AdminDashboard extends javax.swing.JFrame {
 
@@ -492,10 +500,28 @@ public class AdminDashboard extends javax.swing.JFrame {
         });
 
         btnUpdateUserPwd.setText("SEE LOG");
+        btnUpdateUserPwd.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnUpdateUserPwdMouseClicked(evt);
+            }
+        });
 
         btnListFriend.setText("SEE LIST FRIEND");
+        btnListFriend.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnListFriendMouseClicked(evt);
+            }
+        });
 
+        btnUpdateUserPwd1.setBackground(new java.awt.Color(0, 125, 73));
+        btnUpdateUserPwd1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnUpdateUserPwd1.setForeground(new java.awt.Color(255, 255, 255));
         btnUpdateUserPwd1.setText("UPDATE PASWORD");
+        btnUpdateUserPwd1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnUpdateUserPwd1MouseClicked(evt);
+            }
+        });
 
         cbSort.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -522,14 +548,8 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 183, Short.MAX_VALUE)
+                        .addGap(0, 180, Short.MAX_VALUE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(btnListFriend, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(38, 38, 38)
-                                .addComponent(btnUpdateUserPwd1, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(34, 34, 34)
-                                .addComponent(btnUpdateUserPwd, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(btnAddUser, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(37, 37, 37)
@@ -537,8 +557,14 @@ public class AdminDashboard extends javax.swing.JFrame {
                                 .addGap(49, 49, 49)
                                 .addComponent(btnDeleteUser, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(34, 34, 34)
-                                .addComponent(btnLockUser, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 270, Short.MAX_VALUE))
+                                .addComponent(btnLockUser, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(btnListFriend, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(35, 35, 35)
+                                .addComponent(btnUpdateUserPwd1, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(34, 34, 34)
+                                .addComponent(btnUpdateUserPwd, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 266, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel10)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1608,9 +1634,102 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLockUserMouseClicked
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
-        
+
 
     }//GEN-LAST:event_formKeyPressed
+
+    private void btnListFriendMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnListFriendMouseClicked
+        // LIST friend of user 
+        final String token = Client.Client.token;
+        final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
+        try {
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", token, username);
+            if (rs instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, "Can't not show list friends of this user " + err.msg());
+            } else if (rs instanceof ResultOk ok) {
+                ArrayList<UserInfo> user_list = (ArrayList<UserInfo>) ok.data();
+                if (user_list == null) {
+                    JOptionPane.showMessageDialog(null, "User does'nt have friends");
+                    return;
+                }
+                for (var user : user_list) {
+                    JPanel list_friends = new NewJPanel();
+                    list_friends.setVisible(true);
+                    NewJPanel.addRowtoTable(new Object[]{user.username, user.fullname,
+                        user.gender.toString(), user.email});
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnListFriendMouseClicked
+
+    private void btnUpdateUserPwd1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnUpdateUserPwd1MouseClicked
+        final String token = Client.Client.token;
+        final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
+
+        JFrame newPwdFrame = new JFrame();
+        newPwdFrame.setTitle("New Password Frame");
+
+        newPwdFrame.setLayout(new GridLayout(3, 2));
+
+        JLabel label = new JLabel("New Password:");
+        newPwdFrame.add(label);
+
+        JPasswordField newPasswordField = new JPasswordField();
+        newPwdFrame.add(newPasswordField);
+
+        JButton updateButton = new JButton("Update");
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String newPassword = new String(newPasswordField.getPassword());
+                String msg = "";
+                try {
+                    Result rs = Client.Client.api_c.invoke_api("AdminService", "change_user_pass", token, username, newPassword);
+                    if (rs instanceof ResultError err) {
+                        msg = err.msg();
+                    } else if (rs instanceof ResultOk ok) {
+                        msg = "Password updated to: " + newPassword;
+                    }
+                    JOptionPane.showMessageDialog(null, msg);
+                    newPwdFrame.dispose();
+                } catch (IOException ex) {
+                    Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        newPwdFrame.add(updateButton);
+        newPwdFrame.setSize(350, 150);
+
+        newPwdFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        newPwdFrame.setLocationRelativeTo(null);
+        newPwdFrame.setVisible(true);
+        newPwdFrame.setResizable(false);
+
+
+    }//GEN-LAST:event_btnUpdateUserPwd1MouseClicked
+
+    private void btnUpdateUserPwdMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnUpdateUserPwdMouseClicked
+        // See Log history
+        final String token = Client.Client.token;
+        final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
+
+        try {
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "get_login_log", token, username);
+            if (rs instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg()); 
+            } else if (rs instanceof ResultOk ok) {
+                 ArrayList<Date> list_log = (ArrayList<Date>) ok.data();
+                 new DateListFrame(list_log).setVisible(true); 
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }//GEN-LAST:event_btnUpdateUserPwdMouseClicked
 
     public static void addRowtoTable(Object[] dataRow, boolean lock) {
         model.addRow(dataRow);
