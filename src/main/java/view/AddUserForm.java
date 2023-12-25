@@ -20,15 +20,16 @@ public class AddUserForm extends javax.swing.JFrame {
      * Creates new form AddUserForm
      */
     public static String typeForm;
+    private int rowSelected;
+    public String lock;
 
     public AddUserForm() {
         initComponents();
         AddUserForm.typeForm = "add";
+        this.lock = "false";
     }
 
-    private int rowSelected;
-
-    public AddUserForm(String username, String name, String address, String dob, String gender, String email, String titleForm, String btnAction, int rowSelected) {
+    public AddUserForm(String username, String name, String address, String dob, String gender, String email, String lock, String titleForm, String btnAction, int rowSelected) {
         initComponents();
         txtUsername.setText(username);
         txtName.setText(name);
@@ -39,11 +40,11 @@ public class AddUserForm extends javax.swing.JFrame {
         btnActionForm.setText(btnAction);
         this.rowSelected = rowSelected;
         AddUserForm.typeForm = "update";
-        
+        this.lock = lock;
         txtUsername.setEnabled(false);
         txtPassword.setText("**************");
         txtPassword.setEnabled(false);
-        
+
     }
 
     @SuppressWarnings("unchecked")
@@ -208,8 +209,7 @@ public class AddUserForm extends javax.swing.JFrame {
             txtAddress.getText(),
             txtDob.getText(),
             cbGender.getSelectedItem().toString(),
-            txtEmail.getText()};
-
+            txtEmail.getText(), this.lock};
         // Get access Token
         final String accessToken = Client.Client.token;
         // Add Funtional 
@@ -229,7 +229,7 @@ public class AddUserForm extends javax.swing.JFrame {
                     System.out.println(err.msg());
                     msg = err.msg();
                 } else if (rs instanceof ResultOk) {
-                    AdminDashboard.addRowtoTable((Object[]) dataRow, false);
+                    AdminDashboard.addRowtoTable((Object[]) dataRow, false, AdminDashboard.model);
                     msg = "Add User Successfully";
                 }
                 JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
@@ -237,6 +237,7 @@ public class AddUserForm extends javax.swing.JFrame {
             } catch (IOException ex) {
                 Logger.getLogger(AddUserForm.class.getName()).log(Level.SEVERE, null, ex);
             }
+//            Update 
         } else if (btnActionForm.getText().equalsIgnoreCase("update")) {
             Result rs = null;
             try {
