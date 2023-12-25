@@ -1,4 +1,8 @@
-package view;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package view.Component;
 
 import Utils.GroupChatMemberInfo;
 import java.awt.BorderLayout;
@@ -11,70 +15,49 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import Utils.GroupChatMemberInfo;
+import java.util.ArrayList;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
 public class GroupChatMemberTable extends javax.swing.JFrame {
 
     private JTable table;
-    private DefaultTableModel tableModel;
-    private final String[] columnsName = {"Group ID", "Username", "Joined Date"};
+    private static DefaultTableModel tableModel;
+    private final String[] columnNames = {"Group ID", "Username", "Joined Date"};
 
     public GroupChatMemberTable(ArrayList<GroupChatMemberInfo> memberInfoList) {
-        initComponents();
         init(memberInfoList);
     }
 
     private void init(ArrayList<GroupChatMemberInfo> memberInfoList) {
+        this.setTitle("Group Chat Member");
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        table = new JTable();
         
-        setTitle("Group Chat Member");
-        table = new JTable(null, columnsName);
-        for (int i = 0; i < columnsName.length; i++) {
+        tableModel = new DefaultTableModel(); 
+        GroupChatMemberTable.tableModel.setColumnIdentifiers(columnNames);
+        table.setModel(tableModel);
 
-            TableColumn tc = table.getColumnModel().getColumn(i);
-            tc.setHeaderValue(columnsName[i]);
-
-            DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();
-            dtcr.setHorizontalAlignment(SwingConstants.CENTER); //For Aligning the Elements of all columns to CENTER
-            tc.setCellRenderer(dtcr);
-        }
-        
         JScrollPane scrollPane = new JScrollPane(table);
 
         for (var member : memberInfoList) {
-            addRowtoTable(new Object[]{
-                member.group_id, member.username, member.joined_date
-            }, tableModel);
+            System.out.println(member.username);
+            GroupChatMemberTable.addRowtoTable(new Object[]{
+                member.group_id.toString(), member.username.toString(), member.joined_date.toString()
+            });
         }
+        add(scrollPane);
+        this.setSize(500, 300);
 
-        add(scrollPane, BorderLayout.CENTER);
-        setSize(500, 300);
-
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-        setLocationRelativeTo(null);
+        this.setLocationRelativeTo(null);
     }
 
-    public static void addRowtoTable(Object[] dataRow, DefaultTableModel model) {
-        model.addRow(dataRow);
-    }
-
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
-
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+    private static void addRowtoTable(Object[] dataRow) {
+        tableModel.addRow(dataRow);
+    }                      
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -100,9 +83,8 @@ public class GroupChatMemberTable extends javax.swing.JFrame {
         }
         //</editor-fold>
 
-     
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+    // Variables declaration - do not modify                     
+    // End of variables declaration                   
 }

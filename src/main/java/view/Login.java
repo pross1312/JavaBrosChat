@@ -14,6 +14,7 @@ import Utils.Pair;
 import Utils.ResultError;
 import Utils.ResultOk;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -204,6 +205,11 @@ public class Login extends javax.swing.JFrame {
                 txtPasswordActionPerformed(evt);
             }
         });
+        txtPassword.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtPasswordKeyPressed(evt);
+            }
+        });
 
         txtUsername.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         txtUsername.addActionListener(new java.awt.event.ActionListener() {
@@ -387,6 +393,9 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_txtShowMouseClicked
 
     private void btnLoginMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnLoginMouseClicked
+        handleLogin();
+        }//GEN-LAST:event_btnLoginMouseClicked
+    private void handleLogin() {
         try {
             final String username = txtUsername.getText();
             final String pwd = txtPassword.getText();
@@ -413,8 +422,7 @@ public class Login extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         }
-        }//GEN-LAST:event_btnLoginMouseClicked
-
+    }
     private void txtSignupMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSignupMouseClicked
         // TODO add your handling code here:
         new Signup().setVisible(true);
@@ -428,35 +436,14 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_txtForgotPasswordMouseClicked
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            try {
-                final String username = txtUsername.getText();
-                final String pwd = txtPassword.getText();
 
-                var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
-                if (result instanceof ResultError err) {
-                    txtFlagAccount.setText(err.msg());
-                    txtFlagAccount.show();
-                    System.out.println(err.msg());
-                } else if (result instanceof ResultOk success) {
-                    var data = (Pair<String, AccountType>) success.data();
-                    Client.token = data.a;
-                    System.out.println("Token: " + data.a);
-                    System.out.print("Type: ");
-                    System.out.println(data.b);
-                    if (data.b == AccountType.Admin) {
-                        new AdminDashboard().setVisible(true);
-                        this.dispose();
-                    } else if (data.b == AccountType.User) {
-                        new UserDashboard().setVisible(true);
-                        this.dispose();
-                    }
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
     }//GEN-LAST:event_formKeyPressed
+
+    private void txtPasswordKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPasswordKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            handleLogin();
+        }
+    }//GEN-LAST:event_txtPasswordKeyPressed
 
     /**
      * @param args the command line arguments

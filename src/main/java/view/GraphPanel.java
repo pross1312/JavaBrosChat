@@ -29,9 +29,9 @@ public class GraphPanel extends JPanel {
     private static final Stroke GRAPH_STROKE = new BasicStroke(2f);
     private int pointWidth = 4;
     private int numberYDivisions = 10;
-    private List<Double> scores;
+    private ArrayList<Integer> scores;
 
-    public GraphPanel(List<Double> scores) {
+    public GraphPanel(ArrayList<Integer> scores) {
         this.scores = scores;
     }
 
@@ -85,7 +85,7 @@ public class GraphPanel extends JPanel {
                     g2.setColor(gridColor);
                     g2.drawLine(x0, getHeight() - padding - labelPadding - 1 - pointWidth, x1, padding);
                     g2.setColor(Color.BLACK);
-                    String xLabel = i + "";
+                    String xLabel = i + 1 + "";
                     FontMetrics metrics = g2.getFontMetrics();
                     int labelWidth = metrics.stringWidth(xLabel);
                     g2.drawString(xLabel, x0 - labelWidth / 2, y0 + metrics.getHeight() + 3);
@@ -124,40 +124,37 @@ public class GraphPanel extends JPanel {
 //    public Dimension getPreferredSize() {
 //        return new Dimension(width, heigth);
 //    }
-    private double getMinScore() {
-        double minScore = Double.MAX_VALUE;
-        for (Double score : scores) {
+    private int getMinScore() {
+        int minScore = Integer.MAX_VALUE;
+        for (Integer score : scores) {
             minScore = Math.min(minScore, score);
         }
         return minScore;
     }
 
-    private double getMaxScore() {
-        double maxScore = Double.MIN_VALUE;
-        for (Double score : scores) {
+    private int getMaxScore() {
+        int maxScore = Integer.MIN_VALUE;
+        for (Integer score : scores) {
             maxScore = Math.max(maxScore, score);
         }
         return maxScore;
     }
 
-    public void setScores(List<Double> scores) {
+    public void setScores(ArrayList<Integer> scores) {
         this.scores = scores;
         invalidate();
         this.repaint();
     }
 
-    public List<Double> getScores() {
+    public ArrayList<Integer> getScores() {
         return scores;
     }
 
-    public static void createAndShowGui() {
-        List<Double> scores = new ArrayList<>();
+    public static void createAndShowGui(ArrayList<Integer> scores) {
         Random random = new Random();
         int maxDataPoints = 12;
-        int maxScore = 100;
-        for (int i = 0; i < maxDataPoints; i++) {
-            scores.add((double) random.nextDouble() * maxScore);
-//            scores.add((double) i);
+        for(var score : scores){
+            System.out.println(score);
         }
         GraphPanel mainPanel = new GraphPanel(scores);
         mainPanel.setPreferredSize(new Dimension(800, 600));
@@ -167,14 +164,6 @@ public class GraphPanel extends JPanel {
         frame.getContentPane().add(mainPanel);
         frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        frame.setVisible(true); 
     }
-
-    public static void main(String[] args) {
-      SwingUtilities.invokeLater(new Runnable() {
-         public void run() {
-            createAndShowGui();
-         }
-      });
-   }
 }

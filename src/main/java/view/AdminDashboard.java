@@ -3,9 +3,11 @@ package view;
 import Utils.GroupChatInfo;
 import Utils.GroupChatMemberInfo;
 import Utils.Pair;
+import Utils.RegistrationRecord;
 import Utils.Result;
 import Utils.ResultError;
 import Utils.ResultOk;
+import Utils.SpamReport;
 import Utils.UserInfo;
 import java.awt.Color;
 import java.awt.Component;
@@ -16,9 +18,13 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import static java.lang.ProcessBuilder.Redirect.to;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
+import static java.util.Date.from;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -36,12 +42,21 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import view.Component.DateListFrame;
+import view.Component.DateSelectionForm;
+import view.Component.GroupChatMemberTable;
 import view.Component.NewJPanel;
+import view.Interface.DateSelectionListener;
+import view.Sync.SyncObject;
 
-public class AdminDashboard extends javax.swing.JFrame {
+public class AdminDashboard extends javax.swing.JFrame implements DateSelectionListener {
 
     public static DefaultTableModel model;
     public static DefaultTableModel modelGroup;
+    public static DefaultTableModel modelSpam;
+    public static DefaultTableModel modelNewUser;
+    private SyncObject syncObject;
+
+    public static DateSelectionListener dateSelectionListener;
 
     public AdminDashboard() {
         //TODO Get list of user from db and display in table. 
@@ -56,25 +71,12 @@ public class AdminDashboard extends javax.swing.JFrame {
         //Filter Group 
         cbFilterGroup.addItem("Name");
 
-        //Filter Span 
+        //Filter Spam
         cbFilterSpam.addItem("Username");
         cbFilterSpam.addItem("Time report");
 
-        //Sorting Spam 
-        cbSortSpam.addItem("Time report");
-        cbSortSpam.addItem("Username");
-
         //Filter New User 
         cbFilterNewUser.addItem("Name");
-        cbFilterNewUser.addItem("1 month ago");
-        cbFilterNewUser.addItem("3 months ago");
-        cbFilterNewUser.addItem("6 months ago");
-        cbFilterNewUser.addItem("9 months ago");
-        cbFilterNewUser.addItem("9 months ago");
-        cbFilterNewUser.addItem("1 year ago");
-        //Sorting New User  
-        cbSortNewUser.addItem("Name");
-        cbSortNewUser.addItem("First Login At");
 
         cbStatiscal.addItem("New User Graph");
         cbStatiscal.addItem("Active User Graph");
@@ -82,10 +84,6 @@ public class AdminDashboard extends javax.swing.JFrame {
         //Filter More User Info  
         cbFilterSpam.addItem("Name");
         cbFilterSpam.addItem("Direct Friends");
-
-        //Sorting More User Info 
-        cbSortSpam.addItem("Created Time");
-        cbSortSpam.addItem("Name");
 
         //Filter Active User Info  
         cbFilterActiveUser.addItem("Name");
@@ -144,7 +142,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         textField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                updateFilter(textField,cbBox, table );
+                updateFilter(textField, cbBox, table);
             }
 
             @Override
@@ -209,32 +207,24 @@ public class AdminDashboard extends javax.swing.JFrame {
         jTextField2 = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        tblUser2 = new javax.swing.JTable();
-        jLabel15 = new javax.swing.JLabel();
+        tblSpam = new javax.swing.JTable();
         jLabel16 = new javax.swing.JLabel();
         btnListFriend2 = new javax.swing.JButton();
         jLabel17 = new javax.swing.JLabel();
         closeBtn4 = new javax.swing.JLabel();
-        cbSortSpam = new javax.swing.JComboBox<>();
         btnMinimizeSpam = new javax.swing.JLabel();
         cbFilterSpam = new javax.swing.JComboBox<>();
+        jTextField3 = new javax.swing.JTextField();
         jPanel6 = new javax.swing.JPanel();
         jLabel19 = new javax.swing.JLabel();
         closeBtn6 = new javax.swing.JLabel();
         btnMinimizeNewUser = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
-        tblUser3 = new javax.swing.JTable();
-        btnAddUser1 = new javax.swing.JButton();
-        btnUpdateUser1 = new javax.swing.JButton();
-        btnDeleteUser1 = new javax.swing.JButton();
-        btnLockUser1 = new javax.swing.JButton();
-        btnUpdateUserPwd2 = new javax.swing.JButton();
-        btnListFriend3 = new javax.swing.JButton();
-        btnUpdateUserPwd4 = new javax.swing.JButton();
-        cbSortNewUser = new javax.swing.JComboBox<>();
+        tblNewUser = new javax.swing.JTable();
         cbFilterNewUser = new javax.swing.JComboBox<>();
-        jLabel4 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
+        jTextField4 = new javax.swing.JTextField();
+        lbDate = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel23 = new javax.swing.JLabel();
         closeBtn10 = new javax.swing.JLabel();
@@ -569,7 +559,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 181, Short.MAX_VALUE)
+                        .addGap(0, 185, Short.MAX_VALUE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(btnAddUser, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -585,7 +575,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                                 .addComponent(btnUpdateUserPwd1, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(34, 34, 34)
                                 .addComponent(btnUpdateUserPwd, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 265, Short.MAX_VALUE))
+                        .addGap(0, 268, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel10)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -667,9 +657,17 @@ public class AdminDashboard extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Group Name", "Created at"
+                "Group id", "Group Name", "Created at"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, true, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         tblGroup.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tblGroupMouseClicked(evt);
@@ -705,13 +703,13 @@ public class AdminDashboard extends javax.swing.JFrame {
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(298, 298, 298)
-                .addComponent(btnListAdminGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(53, 53, 53)
-                .addComponent(btnListMember, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(344, Short.MAX_VALUE))
+                .addComponent(btnListAdminGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(28, 28, 28)
+                .addComponent(btnListMember, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 531, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel14)
@@ -754,26 +752,32 @@ public class AdminDashboard extends javax.swing.JFrame {
 
         data.add(jPanel3, "card3");
 
-        tblUser2.setModel(new javax.swing.table.DefaultTableModel(
+        tblSpam.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Username", "Time", "Report by", "Reason"
+                "Reporter", "Target", "Reason", "Reported at"
             }
         ));
-        tblUser2.addMouseListener(new java.awt.event.MouseAdapter() {
+        tblSpam.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tblUser2MouseClicked(evt);
+                tblSpamMouseClicked(evt);
             }
         });
-        jScrollPane3.setViewportView(tblUser2);
-
-        jLabel15.setText("Sort by: ");
+        jScrollPane3.setViewportView(tblSpam);
 
         jLabel16.setText("Filter by:");
 
+        btnListFriend2.setBackground(new java.awt.Color(102, 102, 102));
+        btnListFriend2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnListFriend2.setForeground(new java.awt.Color(255, 255, 255));
         btnListFriend2.setText("LOCK USER");
+        btnListFriend2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnListFriend2ActionPerformed(evt);
+            }
+        });
 
         jLabel17.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel17.setText("Spam List");
@@ -786,12 +790,6 @@ public class AdminDashboard extends javax.swing.JFrame {
         closeBtn4.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 closeBtn4MouseClicked(evt);
-            }
-        });
-
-        cbSortSpam.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbSortSpamActionPerformed(evt);
             }
         });
 
@@ -820,16 +818,16 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addComponent(jLabel17)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbSortSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel15))
-                .addGap(33, 33, 33)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel16)
-                    .addComponent(cbFilterSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(46, 46, 46)
-                .addComponent(btnMinimizeSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(closeBtn4, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel16)
+                        .addGap(187, 187, 187)
+                        .addComponent(btnMinimizeSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(closeBtn4, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(cbFilterSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(397, 397, 397)
@@ -846,14 +844,12 @@ public class AdminDashboard extends javax.swing.JFrame {
                         .addComponent(btnMinimizeSpam, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel16)
-                            .addComponent(jLabel15))))
+                        .addComponent(jLabel16)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbSortSpam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbFilterSpam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbFilterSpam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(52, 52, 52)
@@ -890,64 +886,20 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
-        tblUser3.setModel(new javax.swing.table.DefaultTableModel(
+        tblNewUser.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Username", "Name", "Address", "Date of Birth", "Gender", "Email"
+                "Username", "Date"
             }
         ));
-        tblUser3.addMouseListener(new java.awt.event.MouseAdapter() {
+        tblNewUser.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tblUser3MouseClicked(evt);
+                tblNewUserMouseClicked(evt);
             }
         });
-        jScrollPane4.setViewportView(tblUser3);
-        if (tblUser3.getColumnModel().getColumnCount() > 0) {
-            tblUser3.getColumnModel().getColumn(4).setHeaderValue("Gender");
-            tblUser3.getColumnModel().getColumn(5).setHeaderValue("Email");
-        }
-
-        btnAddUser1.setText("ADD");
-        btnAddUser1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                btnAddUser1MouseClicked(evt);
-            }
-        });
-        btnAddUser1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddUser1ActionPerformed(evt);
-            }
-        });
-
-        btnUpdateUser1.setText("UPDATE");
-        btnUpdateUser1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdateUser1ActionPerformed(evt);
-            }
-        });
-
-        btnDeleteUser1.setText("DELETE");
-        btnDeleteUser1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteUser1ActionPerformed(evt);
-            }
-        });
-
-        btnLockUser1.setText("LOCK");
-
-        btnUpdateUserPwd2.setText("SEE LOG");
-
-        btnListFriend3.setText("SEE LIST FRIEND");
-
-        btnUpdateUserPwd4.setText("UPDATE PASWORD");
-
-        cbSortNewUser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbSortNewUserActionPerformed(evt);
-            }
-        });
+        jScrollPane4.setViewportView(tblNewUser);
 
         cbFilterNewUser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -955,49 +907,30 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
-        jLabel4.setText("Sort by: ");
-
         jLabel20.setText("Filter by:");
+
+        lbDate.setText("`");
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel6Layout.createSequentialGroup()
+                .addComponent(jLabel19)
+                .addGap(182, 182, 182)
+                .addComponent(lbDate, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 157, Short.MAX_VALUE)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addContainerGap(106, Short.MAX_VALUE)
-                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel6Layout.createSequentialGroup()
-                                .addComponent(btnListFriend3, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(38, 38, 38)
-                                .addComponent(btnUpdateUserPwd4, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(34, 34, 34)
-                                .addComponent(btnUpdateUserPwd2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel6Layout.createSequentialGroup()
-                                .addComponent(btnAddUser1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(37, 37, 37)
-                                .addComponent(btnUpdateUser1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(49, 49, 49)
-                                .addComponent(btnDeleteUser1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(34, 34, 34)
-                                .addComponent(btnLockUser1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 359, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                        .addComponent(jLabel19)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbSortNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4))
-                        .addGap(33, 33, 33)
-                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel6Layout.createSequentialGroup()
-                                .addComponent(jLabel20)
-                                .addGap(172, 172, 172)
-                                .addComponent(btnMinimizeNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(closeBtn6, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(cbFilterNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(jLabel20)
+                        .addGap(289, 289, 289)
+                        .addComponent(btnMinimizeNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(closeBtn6, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(cbFilterNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(35, 35, 35)
+                        .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
             .addComponent(jScrollPane4)
         );
@@ -1010,28 +943,15 @@ public class AdminDashboard extends javax.swing.JFrame {
                         .addComponent(btnMinimizeNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel20)
-                            .addComponent(jLabel4))))
+                        .addComponent(jLabel20)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbSortNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbFilterNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbFilterNewUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lbDate))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 508, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAddUser1)
-                    .addComponent(btnUpdateUser1)
-                    .addComponent(btnDeleteUser1)
-                    .addComponent(btnLockUser1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnListFriend3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnUpdateUserPwd4, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnUpdateUserPwd2, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(38, 38, 38))
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE))
         );
 
         data.add(jPanel6, "card3");
@@ -1102,7 +1022,7 @@ public class AdminDashboard extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel23)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 473, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 486, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(cbSortMoreUserInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel24))
@@ -1168,8 +1088,12 @@ public class AdminDashboard extends javax.swing.JFrame {
             }
         });
 
+        jLabel22.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel22.setText("Enter year:");
 
+        tfYear.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
+        jButton1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jButton1.setText("Line Graph");
         jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -1196,12 +1120,12 @@ public class AdminDashboard extends javax.swing.JFrame {
                             .addGroup(jPanel7Layout.createSequentialGroup()
                                 .addComponent(jLabel22)
                                 .addGap(18, 18, 18)
-                                .addComponent(tfYear, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(tfYear, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel7Layout.createSequentialGroup()
                                 .addComponent(jButton1)
-                                .addGap(27, 27, 27)
-                                .addComponent(cbStatiscal, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 572, Short.MAX_VALUE)))
+                                .addGap(28, 28, 28)
+                                .addComponent(cbStatiscal, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 531, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
@@ -1210,16 +1134,19 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(closeBtn8, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(closeBtn9, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(10, 10, 10)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tfYear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel22))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(cbStatiscal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(611, Short.MAX_VALUE))
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tfYear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel22)))
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addGap(64, 64, 64)
+                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cbStatiscal, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton1))))
+                .addContainerGap(594, Short.MAX_VALUE))
         );
 
         data.add(jPanel7, "card3");
@@ -1348,12 +1275,14 @@ public class AdminDashboard extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
     public void updateFilter(JTextField textField, JComboBox cbFilter, JTable table) {
         String filterText = textField.getText();
-        String filtetCate = cbFilter.getSelectedItem().toString();
+        String filterCate = cbFilter.getSelectedItem().toString();
         int indices = 1;
-        if ("Name".equals(filtetCate)) {
+        if ("Name".equals(filterCate)) {
             indices = 1;
-        } else if ("User name".equals(filtetCate)) {
+        } else if ("User name".equals(filterCate)) {
             indices = 0;
+        } else if ("Time report".equals(filterCate)) {
+            indices = 3;
         }
         // STATUS HERE
 //        else if()
@@ -1445,6 +1374,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         data.repaint();
         data.revalidate();
         modelGroup = (DefaultTableModel) tblGroup.getModel();
+        modelGroup.setRowCount(0);
+
         try {
             Result rs = Client.Client.api_c.invoke_api("AdminService", "list_groups", token);
             if (rs instanceof ResultError err) {
@@ -1456,7 +1387,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                     return;
                 }
                 for (var group : group_list) {
-                    addRowtoTable(new Object[]{group.name, group.created_date}, false, modelGroup);
+                    addRowtoTable(new Object[]{group.id, group.name, group.created_date}, false, modelGroup);
                 }
             }
         } catch (IOException ex) {
@@ -1464,9 +1395,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         }
 
         initSorter(modelGroup, tblGroup);
-        initFilter(jTextField2, cbFilterGroup, tblGroup); 
+        initFilter(jTextField2, cbFilterGroup, tblGroup);
 
-        
         data.add(jPanel3);
         data.repaint();
         data.revalidate();
@@ -1487,17 +1417,13 @@ public class AdminDashboard extends javax.swing.JFrame {
         data.revalidate();
     }//GEN-LAST:event_jLabel3MouseClicked
 
-    private void tblUser2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblUser2MouseClicked
+    private void tblSpamMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblSpamMouseClicked
         // TODO add your handling code here:
-    }//GEN-LAST:event_tblUser2MouseClicked
+    }//GEN-LAST:event_tblSpamMouseClicked
 
     private void closeBtn4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeBtn4MouseClicked
         System.exit(0);
     }//GEN-LAST:event_closeBtn4MouseClicked
-
-    private void cbSortSpamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSortSpamActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbSortSpamActionPerformed
 
     private void btnMinimizeSpamMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnMinimizeSpamMouseClicked
         this.setState(JFrame.ICONIFIED);
@@ -1508,23 +1434,100 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_cbFilterSpamActionPerformed
 
     private void txtSpamListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSpamListMouseClicked
+        String token = Client.Client.token;
         data.removeAll();
         data.repaint();
         data.revalidate();
-        
-        
-        
-        
+        modelSpam = (DefaultTableModel) tblSpam.getModel();
+        modelSpam.setRowCount(0);
+        try {
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_spam_reports", token);
+            if (rs instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            } else if (rs instanceof ResultOk ok) {
+                ArrayList<SpamReport> spam_list = (ArrayList<SpamReport>) ok.data();
+                if (spam_list == null) {
+                    JOptionPane.showMessageDialog(null, "Error while connecting to server");
+                    return;
+                }
+                for (var spam : spam_list) {
+                    addRowtoTable(new Object[]{spam.reporter, spam.target, spam.reason, spam.date}, false, modelSpam);
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        initSorter(modelSpam, tblSpam);
+        initFilter(jTextField3, cbFilterSpam, tblSpam);
+
         data.add(jPanel1);
         data.repaint();
         data.revalidate();
     }//GEN-LAST:event_txtSpamListMouseClicked
 
-    private void txtManageNewUserMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtManageNewUserMouseClicked
+    private String start;
+    private String end;
 
+    public void onDateSelected(Date startDate, Date endDate) {
+        // Xử lý ngày đã chọn từ DateSelectionForm
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        this.start = dateFormat.format(startDate);
+        this.end = dateFormat.format(endDate);
+
+        lbDate.setText("Filter from " + start + " to " + end);
+        System.out.println("Ngày bắt đầu: " + start);
+        System.out.println("Ngày kết thúc: " + end);
+    }
+
+
+    private void txtManageNewUserMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtManageNewUserMouseClicked
         data.removeAll();
         data.repaint();
         data.revalidate();
+        syncObject = new SyncObject();
+        dateSelectionListener = this;
+        Runnable myRunnable = new Runnable() {
+            public void run() {
+                DateSelectionForm dateSelectionForm = new DateSelectionForm(AdminDashboard.dateSelectionListener, syncObject);
+            }
+        };
+        
+        Thread thread = new Thread(myRunnable);
+        thread.start();
+
+        try {
+            // Wait Date Select 
+            syncObject.waitForDateSelection();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        String token = Client.Client.token;
+        modelNewUser = (DefaultTableModel) tblNewUser.getModel();
+
+        // Manage new user 
+        try {
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token);
+            if (rs instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            } else if (rs instanceof ResultOk ok) {
+                ArrayList<RegistrationRecord> record_list = (ArrayList<RegistrationRecord>) ok.data();
+                if (record_list == null) {
+                    JOptionPane.showMessageDialog(null, "Error while connecting to server");
+                    return;
+                }
+                for (var record : record_list) {
+                    addRowtoTable(new Object[]{record.username, record.date}, false, modelNewUser);
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        initSorter(modelNewUser, tblNewUser);
+        initFilter(jTextField4, cbFilterNewUser, tblNewUser);
+
         data.add(jPanel6);
         data.repaint();
         data.revalidate();
@@ -1547,29 +1550,9 @@ public class AdminDashboard extends javax.swing.JFrame {
         this.setState(JFrame.ICONIFIED);
     }//GEN-LAST:event_btnMinimizeNewUserMouseClicked
 
-    private void tblUser3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblUser3MouseClicked
+    private void tblNewUserMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblNewUserMouseClicked
         // TODO add your handling code here:
-    }//GEN-LAST:event_tblUser3MouseClicked
-
-    private void btnAddUser1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnAddUser1MouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnAddUser1MouseClicked
-
-    private void btnAddUser1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddUser1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnAddUser1ActionPerformed
-
-    private void btnUpdateUser1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateUser1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnUpdateUser1ActionPerformed
-
-    private void btnDeleteUser1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteUser1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnDeleteUser1ActionPerformed
-
-    private void cbSortNewUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSortNewUserActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbSortNewUserActionPerformed
+    }//GEN-LAST:event_tblNewUserMouseClicked
 
     private void cbFilterNewUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFilterNewUserActionPerformed
         // TODO add your handling code here:
@@ -1583,9 +1566,39 @@ public class AdminDashboard extends javax.swing.JFrame {
         this.setState(JFrame.ICONIFIED);
     }//GEN-LAST:event_closeBtn9MouseClicked
 
+//  LINE GRAPH 
     private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
-        final String year = tfYear.getText();
-        GraphPanel.createAndShowGui();
+        final int year = Integer.parseInt(tfYear.getText());
+        String token = Client.Client.token;
+
+        ArrayList<Integer> list_amount_users = new ArrayList<>();
+        for (int i = 1; i <= 11; ++i) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(year, i - 1, 1);
+
+            int end_of_Month = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+            Date from = new Date(year, i, 1);
+            Date to = new Date(year, i + 1, end_of_Month);
+            try {
+                Result rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token, from, to);
+                if (rs instanceof ResultError err) {
+                    JOptionPane.showMessageDialog(null, err.msg());
+                } else if (rs instanceof ResultOk ok) {
+                    ArrayList<RegistrationRecord> record_list = (ArrayList<RegistrationRecord>) ok.data();
+                    if (record_list == null) {
+                        JOptionPane.showMessageDialog(null, "Error while connecting to server");
+                        return;
+                    }
+                    int amount_of_User = record_list.size();
+                    list_amount_users.add(amount_of_User);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        GraphPanel.createAndShowGui(list_amount_users);
+
 
     }//GEN-LAST:event_jButton1MouseClicked
 
@@ -1677,7 +1690,6 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLockUserMouseClicked
 
     private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
-
 
     }//GEN-LAST:event_formKeyPressed
 
@@ -1823,6 +1835,9 @@ public class AdminDashboard extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (rs instanceof ResultOk ok) {
                 ArrayList<GroupChatMemberInfo> list_log = (ArrayList<GroupChatMemberInfo>) ok.data();
+                for (var list : list_log) {
+                    System.out.println(list);
+                }
                 new GroupChatMemberTable(list_log).setVisible(true);
             }
 
@@ -1830,6 +1845,28 @@ public class AdminDashboard extends javax.swing.JFrame {
             Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnListMemberMouseClicked
+
+    private void btnListFriend2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListFriend2ActionPerformed
+        final String token = Client.Client.token;
+        int index = tblSpam.getSelectedRow();
+        String msg = "";
+        if (index == -1) {
+            msg = "You must select user before lock";
+        } else {
+            String username = (String) modelSpam.getValueAt(index, 1);
+            try {
+                Result rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
+                if (rs instanceof ResultError err) {
+                    msg = err.msg();
+                } else if (rs instanceof ResultOk ok) {
+                    msg = "Lock User Successfully";
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        JOptionPane.showMessageDialog(null, msg);
+    }//GEN-LAST:event_btnListFriend2ActionPerformed
 
     /**
      *
@@ -1876,25 +1913,18 @@ public class AdminDashboard extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel Navigate;
     private javax.swing.JButton btnAddUser;
-    private javax.swing.JButton btnAddUser1;
     private javax.swing.JButton btnDeleteUser;
-    private javax.swing.JButton btnDeleteUser1;
     private javax.swing.JButton btnListAdminGroup;
     private javax.swing.JButton btnListFriend;
     private javax.swing.JButton btnListFriend2;
-    private javax.swing.JButton btnListFriend3;
     private javax.swing.JButton btnListMember;
     private javax.swing.JButton btnLockUser;
-    private javax.swing.JButton btnLockUser1;
     private javax.swing.JLabel btnMinimize;
     private javax.swing.JLabel btnMinimizeNewUser;
     private javax.swing.JLabel btnMinimizeSpam;
     private javax.swing.JButton btnUpdateUser;
-    private javax.swing.JButton btnUpdateUser1;
     private javax.swing.JButton btnUpdateUserPwd;
     private javax.swing.JButton btnUpdateUserPwd1;
-    private javax.swing.JButton btnUpdateUserPwd2;
-    private javax.swing.JButton btnUpdateUserPwd4;
     private javax.swing.JComboBox<String> cbFilter;
     private javax.swing.JComboBox<String> cbFilterActiveUser;
     private javax.swing.JComboBox<String> cbFilterGroup;
@@ -1903,8 +1933,6 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> cbFilterSpam;
     private javax.swing.JComboBox<String> cbSortActiveUser;
     private javax.swing.JComboBox<String> cbSortMoreUserInfo;
-    private javax.swing.JComboBox<String> cbSortNewUser;
-    private javax.swing.JComboBox<String> cbSortSpam;
     private javax.swing.JComboBox<String> cbStatiscal;
     private javax.swing.JLabel closeBtn;
     private javax.swing.JLabel closeBtn1;
@@ -1924,7 +1952,6 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
@@ -1942,7 +1969,6 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel31;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
@@ -1963,10 +1989,13 @@ public class AdminDashboard extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField jTextField3;
+    private javax.swing.JTextField jTextField4;
+    private javax.swing.JLabel lbDate;
     private static javax.swing.JTable tblGroup;
+    private static javax.swing.JTable tblNewUser;
+    private static javax.swing.JTable tblSpam;
     private static javax.swing.JTable tblUser;
-    private static javax.swing.JTable tblUser2;
-    private static javax.swing.JTable tblUser3;
     private static javax.swing.JTable tblUser4;
     private static javax.swing.JTable tblUser5;
     private javax.swing.JTextField tfYear;
