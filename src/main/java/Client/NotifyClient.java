@@ -1,11 +1,15 @@
 package Client;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import Utils.Connection;
 import Utils.ChatMessage;
 import Utils.Notify.*;
+import Utils.Pair;
 import Utils.NotifyConnect;
 import Utils.ResultError;
 import Utils.ResultOk;
@@ -14,18 +18,38 @@ public class NotifyClient {
     private Connection conn;
     String addr;
     int port;
-    String username;
-    String token;
     Thread thread;
+    ConcurrentHashMap<Class<?>, LinkedList<Pair<String, Consumer<Notify>>>> handlers;
     public NotifyClient(String token, String addr, int port) throws IOException {
         this.addr = addr;
         this.port = port;
         this.conn = null;
         this.thread = null;
-        this.token = token;
         conn = new Connection(addr, port);
-        System.out.println("QIWOEJOIQWEJ");
+        handlers = new ConcurrentHashMap<>();
         handshake(token);
+    }
+    public void register(Class<?> type, String register_name, Consumer<Notify> handler) {
+        var consumers = handlers.get(type);
+        if (consumers == null) {
+            consumers = new LinkedList<>();
+            consumers.addFirst(new Pair<>(register_name, handler));
+            handlers.put(type, consumers);
+        } else {
+            for (var obj : consumers) {
+                if (obj.a.equals(register_name)) {
+                    obj.b = handler;
+                    return;
+                }
+            }
+            consumers.addFirst(new Pair<>(register_name, handler));
+        }
+    }
+    public void unregister(Class<?> type, String register_name) {
+        var consumers = handlers.get(type);
+        if (consumers != null) {
+            consumers.removeIf(x -> x.a.equals(register_name));
+        }
     }
     public void handshake(String token) throws IOException {
         if (conn == null || !conn.is_connected()) {
@@ -54,46 +78,15 @@ public class NotifyClient {
                     if (result == null) {
                         conn.close();
                         break;
-                    }  else if (result instanceof NewGroupMsg noti) {
-                        try {
-                            ClientA.api_c.async_invoke_api(x -> {
-                                if (x instanceof ResultOk ok) {
-                                    var msgs = (ArrayList<ChatMessage>)ok.data();
-                                    msgs.forEach(cipher_msg -> {
-                                        var sender = cipher_msg.sender;
-                                        var msg = ClientA.msg_client.decrypt(sender, cipher_msg.cipher_msg);
-                                        if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
-                                        else System.out.printf("[%s] %s\n", sender, msg.get());
-                                    });
-                                } else if (x instanceof ResultError err) {
-                                    System.out.println(err.msg());
-                                }
-                            }, "GroupChatService", "get_unread_msg", token, noti.group_id);
-                        } catch (IOException e) {
-                            System.out.println(e);
+                    }  else if (result instanceof Notify noti) {
+                        var consumers = handlers.get(noti.getClass());
+                        if (consumers == null) {
+                            System.out.printf("Unhandled notification type '%s'\n", noti.getClass().getName());
+                        } else {
+                            consumers.forEach((x) -> {
+                                x.b.accept(noti);
+                            });
                         }
-                    } else if (result instanceof NewFriendMsg noti) {
-                        try {
-                            ClientA.api_c.async_invoke_api(x -> {
-                                if (x instanceof ResultOk ok) {
-                                    var msgs = (ArrayList<ChatMessage>)ok.data();
-                                    msgs.forEach(cipher_msg -> {
-                                        var sender = cipher_msg.sender;
-                                        var msg = ClientA.msg_client.decrypt(sender, cipher_msg.cipher_msg);
-                                        if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
-                                        else System.out.printf("[%s] %s\n", sender, msg.get());
-                                    });
-                                } else if (x instanceof ResultError err) {
-                                    System.out.println(err.msg());
-                                }
-                            }, "FriendChatService", "get_unread_msg", token, noti.sender);
-                        } catch (IOException e) {
-                            System.out.println(e);
-                        }
-                    } else if (result instanceof NewFriendLogin new_login) {
-                        System.out.printf("[%s] just logged in\n", new_login.friend);
-                    } else if (result instanceof Notify) {
-                        System.out.printf("Unhandled notification type '%s'\n", result.getClass().getName());
                     } else {
                         throw new RuntimeException(String.format("Unable to process type %s from server", result.getClass().getName()));
                     }

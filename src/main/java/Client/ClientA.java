@@ -1,5 +1,6 @@
 package Client;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import Utils.Pair;
 import Utils.ResultError;
 import Utils.ResultOk;
 import Utils.UserInfo;
+import Utils.Notify.*;
 
 public class ClientA {
     static NotifyClient notify;
@@ -49,6 +51,51 @@ public class ClientA {
         } else if (result instanceof ResultOk ok) {
             authen_token = ((Pair<String, AccountType>)ok.data()).a;
             notify = new NotifyClient(authen_token, "localhost", SERVER_PORT);
+            notify.register(FriendLogin.class, "main", (noti) -> {
+                var new_login = (FriendLogin)noti;
+                System.out.printf("[%s] just logged in\n", new_login.friend);
+            });
+            notify.register(NewGroupMsg.class, "main", (notification) -> {
+                var noti = (NewGroupMsg)notification;
+                System.out.printf("%d checkout\n", noti.count);
+                try {
+                    api_c.async_invoke_api(x -> {
+                        if (x instanceof ResultOk okk) {
+                            var msgs = (ArrayList<ChatMessage>)okk.data();
+                            msgs.forEach(cipher_msg -> {
+                                var sender = cipher_msg.sender;
+                                var msg = msg_client.decrypt(sender, cipher_msg.cipher_msg);
+                                if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
+                                else System.out.printf("[%s] %s\n", sender, msg.get());
+                            });
+                        } else if (x instanceof ResultError err) {
+                            System.out.println(err.msg());
+                        }
+                    }, "GroupChatService", "get_unread_msg", authen_token, noti.group_id);
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
+            });
+            notify.register(NewFriendMsg.class, "main", (notification) -> {
+                var noti = (NewFriendMsg)notification;
+                try {
+                    api_c.async_invoke_api(x -> {
+                        if (x instanceof ResultOk okk) {
+                            var msgs = (ArrayList<ChatMessage>)okk.data();
+                            msgs.forEach(cipher_msg -> {
+                                var sender = cipher_msg.sender;
+                                var msg = msg_client.decrypt(sender, cipher_msg.cipher_msg);
+                                if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
+                                else System.out.printf("[%s] %s\n", sender, msg.get());
+                            });
+                        } else if (x instanceof ResultError err) {
+                            System.out.println(err.msg());
+                        }
+                    }, "FriendChatService", "get_unread_msg", authen_token, noti.sender);
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
+            });
             msg_client = new MessageClient(username);
             System.out.println(authen_token);
             shell();
@@ -60,6 +107,10 @@ public class ClientA {
             var line = scanner.nextLine().trim();
             var tokens = Arrays.stream(line.split(" ")).map(x -> x.trim()).toList();
             if (tokens.get(0).compareTo("/quit") == 0) {
+                var result = api_c.invoke_api("AccountService", "logout", authen_token);
+                if (result instanceof ResultError err) {
+                    System.out.println(err.msg());
+                }
                 notify.close();
                 break;
             } else if (tokens.get(0).compareTo("/login") == 0) {

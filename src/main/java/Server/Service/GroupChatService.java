@@ -51,13 +51,8 @@ public class GroupChatService extends Service {
         if (acc == null) throw new Error("Can't execute send_msg api, token not found");
         var username = acc.a;
         if (GroupChatMemberDb.check_in_group(username, group_id)) {
-            var members = GroupChatMemberDb.list_members(group_id);
-            for (var x : members) {
-                if (x.compareTo(username) != 0) {
-                    Main.server.notify(x,
-                            new NewGroupMsg(group_id, GroupChatMessageDb.get_count_unread(x, group_id)));
-                }
-            }
+            Main.server.notify(receiver,
+                    new NewGroupMsg(group_id, GroupChatMessageDb.get_count_unread(receiver, group_id)));
             GroupChatMessageDb.add(receiver, username, cipher_msg, new Date(), null, group_id);
 
         } else {
@@ -95,6 +90,9 @@ public class GroupChatService extends Service {
             throw new Error(String.format("'%s' is not admin of the group", username));
         }
         GroupChatMemberDb.remove(target_username, group_id);
+        GroupChatMemberDb.list_members(group_id).forEach((member) -> {
+            Main.server.notify(member, new DelGroupMember(group_id, target_username));
+        });
     }
     void add_member(String token, String group_id, String target_username) throws SQLException {
         var acc = Server.Main.accounts.get(token);
@@ -104,6 +102,9 @@ public class GroupChatService extends Service {
             throw new Error(String.format("'%s' is already in group", target_username));
         if (!UserFriendDb.is_friend(username, target_username))
             throw new Error("Can't add people that are not your friends to group");
+        GroupChatMemberDb.list_members(group_id).forEach((member) -> {
+            Main.server.notify(member, new NewGroupMember(group_id, target_username));
+        });
         GroupChatMemberDb.add(new GroupChatMemberInfo(group_id, target_username, new Date(), false));
     }
     void set_admin(String token, String group_id, String target_username, Boolean is_admin) throws SQLException {

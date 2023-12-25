@@ -1,8 +1,8 @@
 package Utils.Notify;
 
-public class NewFriendLogin extends Notify {
+public class FriendLogin extends Notify {
     public String friend;
-    public NewFriendLogin(String friend) {
+    public FriendLogin(String friend) {
         this.friend = friend;
     }
 }
