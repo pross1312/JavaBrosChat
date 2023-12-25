@@ -11,6 +11,7 @@ import Utils.*;
 
 public class Main {
     public static Server server;
+    public static Mailer mailer;
     public static volatile ConcurrentHashMap<String, Pair<String, AccountType>> accounts;
     public static Database db;
     static {
@@ -24,6 +25,7 @@ public class Main {
              db = new Database();
              server = new Server("localhost", 13123);
              accounts = new ConcurrentHashMap<String, Pair<String, AccountType>>();
+             mailer = new Mailer("JavaBros", "javabros29", System.getenv("JAVA_BROS_MAIL_PASS"));
              System.out.println("[INFO] Server initialized successfully");
         } catch (Exception e) {
             e.printStackTrace();

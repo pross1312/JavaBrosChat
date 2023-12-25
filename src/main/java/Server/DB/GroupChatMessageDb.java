@@ -77,7 +77,7 @@ public class GroupChatMessageDb {
         var result = get_count_unread_sm.executeQuery();
         if (result == null) throw new RuntimeException("Result set of query operation can't be null");
         if (!result.next()) throw new RuntimeException("Select count can't return no rows");
-        return result.getInt("count");
+        return result.getInt("count") + 1; // NOTE: don't know why the query return count - 1
     }
     public static void remove_all(String username) throws SQLException {
         Statement st = db.conn.createStatement();

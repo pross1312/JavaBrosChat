@@ -39,7 +39,9 @@ public class Server implements ConnectionHandler {
         services.put("E2EService", new E2EService());
         // ...........................................
     }
-    // this one ignored failure
+    public void remove_noti_client(String username) {
+        clients.remove(username);
+    }
     public boolean notify(String username, Notify notification) {
         var conn = clients.get(username);
         if (conn == null) {

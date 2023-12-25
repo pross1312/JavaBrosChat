@@ -1,6 +1,6 @@
 package Server.Service;
 import Utils.*;
-import Utils.Notify.NewFriendLogin;
+import Utils.Notify.*;
 
 import java.sql.SQLException;
 import java.util.Base64;
@@ -24,7 +24,7 @@ public class AccountService extends Service {
                 return new Pair<String, AccountType>(token, account.type);
             } else {
                 UserFriendDb.list_friends_info(username).forEach(x -> {
-                    Server.Main.server.notify(x.username, new NewFriendLogin(username));
+                    Server.Main.server.notify(x.username, new FriendLogin(username));
                 });
                 LoginRecordDb.add(username);
                 Server.Main.accounts.put(token, new Pair<String, AccountType>(username, account.type));
@@ -38,7 +38,12 @@ public class AccountService extends Service {
     void logout(String token) throws SQLException { // return a token from Account
         var acc = Server.Main.accounts.get(token);
         if (acc != null) {
+            var username = acc.a;
             Server.Main.accounts.remove(token); // TODO: notify user's ?
+            Server.Main.server.remove_noti_client(username);
+            UserFriendDb.list_friends_info(username).forEach(x -> {
+                Server.Main.server.notify(x.username, new FriendLogout(username));
+            });
         } else throw new Error("Can't execute logout api, token not found");
     }
 
