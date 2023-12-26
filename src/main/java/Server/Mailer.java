@@ -53,7 +53,7 @@ public class Mailer {
             msg.setText(content, "UTF-8");
             msg.setSentDate(new Date());
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to_mail, false));
-            Transport.send(msg);  
+            Transport.send(msg);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,4 +61,3 @@ public class Mailer {
         return false;
     }
 }
-

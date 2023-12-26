@@ -82,7 +82,7 @@ public class AdminService extends Service {
             throw new Error("Only admin is allowed to change a user's password");
         if (UserInfoDb.query(username) == null)
             throw new Error("Username does not exist to change password");
-        AccountDb.change_pass(username, new_pass);
+        AccountDb.change_pass(username, Helper.hash_password(new_pass + username));
     }
     ArrayList<Date> get_login_log(String token, String username) throws SQLException{
         var acc = Server.Main.accounts.get(token);
