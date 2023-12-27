@@ -175,6 +175,14 @@ public class AdminService extends Service {
             throw new Error("Only admin is allowed to list all the spam reports of a specific user");
         AccountDb.lock_user(username);
     }
+     void unlock_user(String token, String username) throws SQLException{
+        var acc = Server.Main.accounts.get(token);
+        if(acc == null)
+            throw new Error("Can't execute list_spam_filter_name api, token not found");
+        if (acc.b == AccountType.User)
+            throw new Error("Only admin is allowed to list all the spam reports of a specific user");
+        AccountDb.unlock_user(username);
+    }
     // new-registration
     ArrayList<RegistrationRecord> list_registers(String token, Date from, Date to) throws SQLException {
         var acc = Server.Main.accounts.get(token);

@@ -12,19 +12,16 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import view.Interface.DateSelectionListener;
-import view.Sync.SyncObject;
 
 public class DateSelectionForm extends javax.swing.JFrame {
 
     private JLabel startDateLabel, endDateLabel;
     private static JDateChooser startDateChooser, endDateChooser;
     private JButton confirmButton;
-    private final SyncObject syncObject;
     private final DateSelectionListener dateSelectionListener;
 
-    public DateSelectionForm(DateSelectionListener listener, SyncObject syncObject) {
+    public DateSelectionForm(DateSelectionListener listener) {
         this.dateSelectionListener = listener;
-        this.syncObject = syncObject;
         initComponents();
         init();
     }
@@ -62,7 +59,6 @@ public class DateSelectionForm extends javax.swing.JFrame {
             Date[] selectedDates = getSelectedDates();
             if (selectedDates != null && dateSelectionListener != null) {
                 dateSelectionListener.onDateSelected(selectedDates[0], selectedDates[1]);
-                syncObject.setDateSelected(true);
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(null, "Invalid Date, Please try again !!!");
