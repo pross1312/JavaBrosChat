@@ -412,7 +412,8 @@ public class Login extends javax.swing.JFrame {
                 System.out.print("Type: ");
                 System.out.println(data.b);
                 if (data.b == AccountType.Admin) {
-                    new AdminDashboard().setVisible(true);
+                    new Version2AdminDashBoard().setVisible(true); 
+//                    new AdminDashboard().setVisible(true);
                     this.dispose();
                 } else if (data.b == AccountType.User) {
                     new UserDashboard().setVisible(true);

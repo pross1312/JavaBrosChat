@@ -68,7 +68,7 @@ public class AccountDb {
         return lock_user.executeUpdate() == 1;
     }
     public static boolean unlock_user(String username) throws SQLException {
-        lock_user.setBoolean(1, true);
+        lock_user.setBoolean(1, false);
         lock_user.setString(2, username);
         return lock_user.executeUpdate() == 1;
     }
