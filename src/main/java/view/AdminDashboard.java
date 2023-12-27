@@ -1518,7 +1518,7 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
                     return;
                 }
                 for (var record : record_list) {
-                    addRowtoTable(new Object[]{record.username, record.date}, false, modelNewUser);
+                    addRowtoTable(new Object[]{record.username, record.ts}, false, modelNewUser);
                 }
             }
         } catch (IOException ex) {
