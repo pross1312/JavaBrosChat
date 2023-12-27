@@ -2,6 +2,7 @@ package Server.Service;
 import Utils.*;
 import Utils.Notify.*;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.Date;
@@ -67,8 +68,25 @@ public class AccountService extends Service {
         }
     }
 
-    void recover_pass(String username) {
-        throw new Error("Unimplemented");
+    void recover_pass(String username) throws SQLException {
+        var user = UserInfoDb.query(username);
+        if (user == null) {
+            throw new Error("Username not existsed");
+        }
+        byte[] rand_arr = new byte[16];
+        for (int i = 0; i < rand_arr.length; i++) {
+            rand_arr[i] = (byte)(Math.random()*('Z' - 'A') + 'A');
+        }
+        var new_pass = new String(rand_arr, StandardCharsets.UTF_8);
+        if (!AccountDb.change_pass(username, Helper.hash_password(new_pass + username))) {
+            throw new Error("Can't change user password");
+        }
+        var result = Server.Main.mailer.send(user.email,
+                "Recover password",
+                "New password:" + new_pass);
+        if (!result) {
+            throw new Error(String.format("Can't send mail to '%s'", user.email));
+        }
     }
 }
 
