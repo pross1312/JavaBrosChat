@@ -54,15 +54,12 @@ public class NotifyClient {
     public void handshake(String token) throws IOException {
         if (conn == null || !conn.is_connected()) {
             conn = new Connection(addr, port);
-            System.out.println("Connected");
         }
         if (!conn.send(new NotifyConnect(token))) {
             throw new IOException("Handshake to notification server failed");
         }
         var result = conn.read();
         if (result instanceof ResultOk okk) {
-            System.out.println((String)okk.data());
-            System.out.println("Handshake successful, start listening to notification");
             start_listening();
         } else if (result instanceof ResultError err) {
             System.out.println(err.msg());

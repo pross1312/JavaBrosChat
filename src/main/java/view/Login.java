@@ -396,31 +396,27 @@ public class Login extends javax.swing.JFrame {
         handleLogin();
         }//GEN-LAST:event_btnLoginMouseClicked
     private void handleLogin() {
-        try {
-            final String username = txtUsername.getText();
-            final String pwd = txtPassword.getText();
+        final String username = txtUsername.getText();
+        final String pwd = txtPassword.getText();
 
-            var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
-            if (result instanceof ResultError err) {
-                txtFlagAccount.setText(err.msg());
-                txtFlagAccount.show();
-                System.out.println(err.msg());
-            } else if (result instanceof ResultOk success) {
-                var data = (Pair<String, AccountType>) success.data();
-                Client.token = data.a;
-                System.out.println("Token: " + data.a);
-                System.out.print("Type: ");
-                System.out.println(data.b);
-                if (data.b == AccountType.Admin) {
-                    new AdminDashboard().setVisible(true);
-                    this.dispose();
-                } else if (data.b == AccountType.User) {
-                    new UserDashboard().setVisible(true);
-                    this.dispose();
-                }
+        var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
+        if (result instanceof ResultError err) {
+            txtFlagAccount.setText(err.msg());
+            txtFlagAccount.show();
+            System.out.println(err.msg());
+        } else if (result instanceof ResultOk success) {
+            var data = (Pair<String, AccountType>) success.data();
+            Client.token = data.a;
+            System.out.println("Token: " + data.a);
+            System.out.print("Type: ");
+            System.out.println(data.b);
+            if (data.b == AccountType.Admin) {
+                new AdminDashboard().setVisible(true);
+                this.dispose();
+            } else if (data.b == AccountType.User) {
+                new UserDashboard().setVisible(true);
+                this.dispose();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     private void txtSignupMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSignupMouseClicked

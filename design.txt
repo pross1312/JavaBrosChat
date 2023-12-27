@@ -50,7 +50,6 @@ class ChatMessage {
     String sender; // username
     Date sent_date;
     String msg;
-    String media_id;
 }
 
 class GroupChatInfo {
@@ -60,37 +59,7 @@ class GroupChatInfo {
     ArrayList<String username> members;
 }
 
-class Media {
-    String id;
-    Date date_created;
-    String uploader; // username
-    String group_id;
-    ByteBuffer data; // ??? or use link and store data somewhere else cause sql can't store bytes array
-}
-class NewMsgNotify {
-    String group_id;
-    int count;
-}
-class FriendRequest {
-    String sender;
-    Date date_sent;
-    String target;
-}
 
-class KeyBundle {
-    public int regis_id;
-    public int dev_id;
-    public int signed_key_id;
-    public byte[] signed_key_pub;
-    public byte[] signed_key_sig;
-    public byte[] identity_pub;
-    public KeyBundle(
-            int regis_id, int dev_id,
-            int signed_key_id, byte[] signed_key_pub,
-            byte[] signed_key_sig, byte[] identity_pub);
-    public KeyBundle(PreKeyBundle bundle);
-    public PreKeyBundle to_pre_key_bundle();
-}
 //----------------------------------Service-----------------------------------//
 
 //--------------------------------ADMIN-ACTIONS-----------------------------------//
@@ -210,35 +179,33 @@ class UserManagementService {
 
 class GroupChatService {
     // need more than 2 people to create group chat -> usernames.size() >= 3
-    String create(String token, String group_name, ArrayList<String> usernames); // return group_id
-    ArrayList<GroupChatInfo> list_groups(String token); // list all groups that user are in
-    void rename(String token, String group_id, String new_name);
-    void remove_member(String token, String group_id, String target_username)
-    void add_member(String token, String group_id, String target_username);
-    void set_admin(String token, String group_id, String target_username, boolean is_admin);
-    ArrayLists<ChatMessage> get_unread_msg(String token, String group_id);
+-   String create(String token, String group_name, ArrayList<String> usernames); // return group_id
+-   ArrayList<GroupChatInfo> list_groups(String token); // list all groups that user are in
+-   void rename(String token, String group_id, String new_name);
+-   void remove_member(String token, String group_id, String target_username);
+-   void add_member(String token, String group_id, String target_username);
+-   void set_admin(String token, String group_id, String target_username, boolean is_admin);
+-   ArrayLists<ChatMessage> get_unread_msg(String token, String group_id);
+-   ArrayList<ChatMessage> get_all_msg(String token, String group_id);
     void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
-    void send_msg(String token, String text, String media_id, String group_id);
-    void send_msg(String token, byte[] cipher_msg, String group_id, String member); // send msg to each member of group cause of end to end (dumb solution) T_T
+-   void send_msg(String token, byte[] cipher_msg, String group_id);
     ArrayList<ChatMessage> search_msg(String token, String group_id);
-    ArrayList<String> list_members(String token, String group_id);
+-   ArrayList<String> list_members(String token, String group_id);
 }
 
 class FriendChatService {
     void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
-    ArrayLists<ChatMessage> get_unread_msg(String token, String friend);
-    void send_msg(String token, String text, String media_id, String friend);
-    void send_msg(String token, byte[] cipher_msg, String friend);
+-   ArrayLists<ChatMessage> get_unread_msg(String token, String friend);
+-   ArrayLists<ChatMessage> get_all_msg(String token, String friend);
+-   void send_msg(String token, byte[] cipher_msg, String friend);
     ArrayList<ChatMessage> search_msg(String token, String group_id);
 }
 
 class E2EService {
-    void add(String token, KeyBundle bundle); // add a key bundle when create new account
-    KeyBundle get(String token, String name); // get a key bundle of an account
-}
-
-// optional
-class UserMediaService { // for file, voice, ...
-    String upload_media(String token, String group_id, ByteBuffer media);
-    void download_media(String token, String group_id, String media_id);
+-   void add_identity(String token, byte[] publickey);
+-   byte[] get_identity(String token, String name);
+-   void add_group_secret(String token, String target, String g_id, byte[] params);
+-   byte[] get_group_secret(String token, String group_id);
+-   void add_user_secret(String token, String friend, byte[] usr_to_friend, byte[] friend_to_usr);
+-   byte[] get_user_secret(String token, String target);
 }

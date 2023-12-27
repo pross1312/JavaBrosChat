@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Base64;
 
 import Server.DB.*;
+import Server.DB.SecretDb.SecretType;
 import Utils.Notify.*;
 import Server.Main;
 import java.util.Date;
@@ -46,14 +47,18 @@ public class GroupChatService extends Service {
         users_list.add(username);
         return group_id;
     }
-    void send_msg(String token, byte[] cipher_msg, String group_id, String receiver) throws SQLException {
+    void send_msg(String token, byte[] cipher_msg, String group_id) throws SQLException {
         var acc = Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute send_msg api, token not found");
         var username = acc.a;
         if (GroupChatMemberDb.check_in_group(username, group_id)) {
-            Main.server.notify(receiver,
-                    new NewGroupMsg(group_id, GroupChatMessageDb.get_count_unread(receiver, group_id)));
-            GroupChatMessageDb.add(receiver, username, cipher_msg, new Date(), null, group_id);
+            for (var x : GroupChatMemberDb.list_members(group_id)) {
+                if (!x.equals(username)) {
+                    Main.server.notify(x,
+                        new NewGroupMsg(group_id, GroupChatMessageDb.get_count_unread(x, group_id)));
+                }
+            }
+            GroupChatMessageDb.add(username, cipher_msg, new Date(), group_id);
 
         } else {
             throw new Error("Can't send message to group that you are not in");
@@ -65,7 +70,17 @@ public class GroupChatService extends Service {
         var username = acc.a;
         if (!GroupChatMemberDb.check_in_group(username, group_id)) throw new Error("Can't get message of group that you are not in");
         var result = GroupChatMessageDb.get_unread_msg(username, group_id);
-        GroupChatMessageDb.update_last_read(username, group_id);
+        if (result.size() > 0) GroupChatMessageDb.update_last_read(username, group_id);
+        result.trimToSize();
+        return result;
+    }
+    ArrayList<ChatMessage> get_all_msg(String token, String group_id) throws SQLException {
+        var acc = Main.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute get_all_msg api, token not found");
+        var username = acc.a;
+        if (!GroupChatMemberDb.check_in_group(username, group_id)) throw new Error("Can't get message of group that you are not in");
+        var result = GroupChatMessageDb.get_all_msg(username, group_id);
+        if (result.size() > 0) GroupChatMessageDb.update_last_read(username, group_id);
         result.trimToSize();
         return result;
     }
@@ -90,6 +105,7 @@ public class GroupChatService extends Service {
             throw new Error(String.format("'%s' is not admin of the group", username));
         }
         GroupChatMemberDb.remove(target_username, group_id);
+        SecretDb.remove(target_username, group_id, SecretType.GROUP);
         GroupChatMemberDb.list_members(group_id).forEach((member) -> {
             Main.server.notify(member, new DelGroupMember(group_id, target_username));
         });

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import Server.Service.Service;
 import Server.DB.*;
+import Server.DB.SecretDb.SecretType;
 import Utils.*;
 import Utils.Notify.NewFriend;
 import Utils.Notify.NewFriendRequest;
@@ -22,7 +23,7 @@ public class UserManagementService extends Service {
         }
         throw new Error("Can't execute get_info api, token not found");
     }
-    void add_friend(String token, String friend) throws SQLException {
+    boolean add_friend(String token, String friend) throws SQLException { // return true if new_friend (request -> false)
         var acc = Server.Main.accounts.get(token);
         if (acc != null) {
             String username = acc.a;
@@ -32,6 +33,7 @@ public class UserManagementService extends Service {
             if (req_from_friend == null) {
                 if (!FriendRequestDb.add(username, friend)) throw new Error("Can't execute add_friend api");
                 Server.Main.server.notify(friend, new NewFriendRequest(username));
+                return false;
             } else {
                 Server.Main.db.set_auto_commit(false);
                 FriendRequestDb.remove(friend, username);
@@ -39,6 +41,7 @@ public class UserManagementService extends Service {
                 Server.Main.db.commit();
                 Server.Main.db.set_auto_commit(true);
                 Server.Main.server.notify(friend, new NewFriend(username)); // notify friend that they just made a new friend
+                return true;
             }
         } else throw new Error("Can't execute add_friend api, token not found");
     }
@@ -59,6 +62,12 @@ public class UserManagementService extends Service {
         if (acc != null) {
             String username = acc.a;
             UserFriendDb.remove(username, friend);
+            Server.Main.db.set_auto_commit(false);
+            SecretDb.remove(username, friend, SecretType.USER);
+            SecretDb.remove(friend, username, SecretType.USER);
+            Server.Main.db.commit();
+            Server.Main.db.set_auto_commit(true);
+
         } else throw new Error("Can't execute unfriend api, token not found");
     }
 

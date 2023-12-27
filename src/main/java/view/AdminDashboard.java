@@ -93,21 +93,17 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
         cbSortActiveUser.addItem("Created Time");
         cbSortActiveUser.addItem("Name");
         String msg;
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
-            if (rs instanceof ResultError err) {
-                msg = err.msg();
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<Pair<UserInfo, Boolean>> user_list = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
-                for (var item : user_list) {
-                    var user = item.a;
-                    var lock = item.b;
-                    addRowtoTable(new Object[]{user.username, user.fullname, user.address, user.birthdate.toString(),
-                        user.gender.toString(), user.email, lock}, lock, model);
-                }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
+        if (rs instanceof ResultError err) {
+            msg = err.msg();
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<Pair<UserInfo, Boolean>> user_list = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
+            for (var item : user_list) {
+                var user = item.a;
+                var lock = item.b;
+                addRowtoTable(new Object[]{user.username, user.fullname, user.address, user.birthdate.toString(),
+                    user.gender.toString(), user.email, lock}, lock, model);
             }
-        } catch (IOException e) {
-            System.out.println(e);
         }
 
         initSorter(model, tblUser);
@@ -1346,20 +1342,16 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
             int result = JOptionPane.showConfirmDialog((Component) null, "Are you sure?",
                     "alert", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                try {
 
-                    // Call delete
-                    Result rs = Client.Client.api_c.invoke_api("AdminService", "del_user",
-                            Client.Client.token, tblUser.getValueAt(index, 0));
-                    if (rs instanceof ResultError err) {
-                        msg = err.msg();
-                        System.out.println(err.msg());
-                    } else {
-                        msg = "Selected row deleted successfully";
-                        model.removeRow(tblUser.getSelectedRow());
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+                // Call delete
+                Result rs = Client.Client.api_c.invoke_api("AdminService", "del_user",
+                        Client.Client.token, tblUser.getValueAt(index, 0));
+                if (rs instanceof ResultError err) {
+                    msg = err.msg();
+                    System.out.println(err.msg());
+                } else {
+                    msg = "Selected row deleted successfully";
+                    model.removeRow(tblUser.getSelectedRow());
                 }
                 JOptionPane.showMessageDialog(null, msg);
             }
@@ -1376,22 +1368,18 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
         modelGroup = (DefaultTableModel) tblGroup.getModel();
         modelGroup.setRowCount(0);
 
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_groups", token);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<GroupChatInfo> group_list = (ArrayList<GroupChatInfo>) ok.data();
-                if (group_list == null) {
-                    JOptionPane.showMessageDialog(null, "Error for connect to server");
-                    return;
-                }
-                for (var group : group_list) {
-                    addRowtoTable(new Object[]{group.id, group.name, group.created_date}, false, modelGroup);
-                }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_groups", token);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<GroupChatInfo> group_list = (ArrayList<GroupChatInfo>) ok.data();
+            if (group_list == null) {
+                JOptionPane.showMessageDialog(null, "Error for connect to server");
+                return;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            for (var group : group_list) {
+                addRowtoTable(new Object[]{group.id, group.name, group.created_date}, false, modelGroup);
+            }
         }
 
         initSorter(modelGroup, tblGroup);
@@ -1440,22 +1428,18 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
         data.revalidate();
         modelSpam = (DefaultTableModel) tblSpam.getModel();
         modelSpam.setRowCount(0);
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_spam_reports", token);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<SpamReport> spam_list = (ArrayList<SpamReport>) ok.data();
-                if (spam_list == null) {
-                    JOptionPane.showMessageDialog(null, "Error while connecting to server");
-                    return;
-                }
-                for (var spam : spam_list) {
-                    addRowtoTable(new Object[]{spam.reporter, spam.target, spam.reason, spam.date}, false, modelSpam);
-                }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_spam_reports", token);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<SpamReport> spam_list = (ArrayList<SpamReport>) ok.data();
+            if (spam_list == null) {
+                JOptionPane.showMessageDialog(null, "Error while connecting to server");
+                return;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            for (var spam : spam_list) {
+                addRowtoTable(new Object[]{spam.reporter, spam.target, spam.reason, spam.date}, false, modelSpam);
+            }
         }
 
         initSorter(modelSpam, tblSpam);
@@ -1507,22 +1491,18 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
         modelNewUser = (DefaultTableModel) tblNewUser.getModel();
 
         // Manage new user 
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<RegistrationRecord> record_list = (ArrayList<RegistrationRecord>) ok.data();
-                if (record_list == null) {
-                    JOptionPane.showMessageDialog(null, "Error while connecting to server");
-                    return;
-                }
-                for (var record : record_list) {
-                    addRowtoTable(new Object[]{record.username, record.date}, false, modelNewUser);
-                }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<RegistrationRecord> record_list = (ArrayList<RegistrationRecord>) ok.data();
+            if (record_list == null) {
+                JOptionPane.showMessageDialog(null, "Error while connecting to server");
+                return;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            for (var record : record_list) {
+                addRowtoTable(new Object[]{record.username, record.ts}, false, modelNewUser);
+            }
         }
 
         initSorter(modelNewUser, tblNewUser);
@@ -1580,21 +1560,17 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
 
             Date from = new Date(year, i, 1);
             Date to = new Date(year, i + 1, end_of_Month);
-            try {
-                Result rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token, from, to);
-                if (rs instanceof ResultError err) {
-                    JOptionPane.showMessageDialog(null, err.msg());
-                } else if (rs instanceof ResultOk ok) {
-                    ArrayList<RegistrationRecord> record_list = (ArrayList<RegistrationRecord>) ok.data();
-                    if (record_list == null) {
-                        JOptionPane.showMessageDialog(null, "Error while connecting to server");
-                        return;
-                    }
-                    int amount_of_User = record_list.size();
-                    list_amount_users.add(amount_of_User);
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token, from, to);
+            if (rs instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            } else if (rs instanceof ResultOk ok) {
+                ArrayList<RegistrationRecord> record_list = (ArrayList<RegistrationRecord>) ok.data();
+                if (record_list == null) {
+                    JOptionPane.showMessageDialog(null, "Error while connecting to server");
+                    return;
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+                int amount_of_User = record_list.size();
+                list_amount_users.add(amount_of_User);
             }
         }
         GraphPanel.createAndShowGui(list_amount_users);
@@ -1674,18 +1650,14 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
 
         String username = (String) model.getValueAt(index, 0);
         Result rs;
-        try {
-            rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
-            if (rs instanceof ResultError err) {
-                msg = err.msg();
-                JOptionPane.showMessageDialog(null, msg, "ERROR", JOptionPane.ERROR_MESSAGE);
-            } else if (rs instanceof ResultOk ok) {
-                msg = "Lock User Successfully";
-                tblUser.setValueAt(true, index, 6);
-                JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
+        if (rs instanceof ResultError err) {
+            msg = err.msg();
+            JOptionPane.showMessageDialog(null, msg, "ERROR", JOptionPane.ERROR_MESSAGE);
+        } else if (rs instanceof ResultOk ok) {
+            msg = "Lock User Successfully";
+            tblUser.setValueAt(true, index, 6);
+            JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_btnLockUserMouseClicked
 
@@ -1697,25 +1669,21 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
         // LIST friend of user 
         final String token = Client.Client.token;
         final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", token, username);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, "Can't not show list friends of this user " + err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<UserInfo> user_list = (ArrayList<UserInfo>) ok.data();
-                if (user_list == null) {
-                    JOptionPane.showMessageDialog(null, "User does'nt have friends");
-                    return;
-                }
-                for (var user : user_list) {
-                    JPanel list_friends = new NewJPanel();
-                    list_friends.setVisible(true);
-                    NewJPanel.addRowtoTable(new Object[]{user.username, user.fullname,
-                        user.gender.toString(), user.email});
-                }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", token, username);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, "Can't not show list friends of this user " + err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<UserInfo> user_list = (ArrayList<UserInfo>) ok.data();
+            if (user_list == null) {
+                JOptionPane.showMessageDialog(null, "User does'nt have friends");
+                return;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            for (var user : user_list) {
+                JPanel list_friends = new NewJPanel();
+                list_friends.setVisible(true);
+                NewJPanel.addRowtoTable(new Object[]{user.username, user.fullname,
+                    user.gender.toString(), user.email});
+            }
         }
     }//GEN-LAST:event_btnListFriendMouseClicked
 
@@ -1740,18 +1708,14 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
             public void actionPerformed(ActionEvent e) {
                 String newPassword = new String(newPasswordField.getPassword());
                 String msg = "";
-                try {
-                    Result rs = Client.Client.api_c.invoke_api("AdminService", "change_user_pass", token, username, newPassword);
-                    if (rs instanceof ResultError err) {
-                        msg = err.msg();
-                    } else if (rs instanceof ResultOk ok) {
-                        msg = "Password updated to: " + newPassword;
-                    }
-                    JOptionPane.showMessageDialog(null, msg);
-                    newPwdFrame.dispose();
-                } catch (IOException ex) {
-                    Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+                Result rs = Client.Client.api_c.invoke_api("AdminService", "change_user_pass", token, username, newPassword);
+                if (rs instanceof ResultError err) {
+                    msg = err.msg();
+                } else if (rs instanceof ResultOk ok) {
+                    msg = "Password updated to: " + newPassword;
                 }
+                JOptionPane.showMessageDialog(null, msg);
+                newPwdFrame.dispose();
             }
         });
         newPwdFrame.add(updateButton);
@@ -1771,18 +1735,14 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
         final String token = Client.Client.token;
         final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
 
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "get_login_log", token, username);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<Date> list_log = (ArrayList<Date>) ok.data();
-                new DateListFrame(list_log).setVisible(true);
-            }
-
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "get_login_log", token, username);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<Date> list_log = (ArrayList<Date>) ok.data();
+            new DateListFrame(list_log).setVisible(true);
         }
+
 
     }//GEN-LAST:event_btnUpdateUserPwdMouseClicked
 
@@ -1806,44 +1766,36 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
         final String token = Client.Client.token;
         final String group_id = (String) tblGroup.getValueAt(tblGroup.getSelectedRow(), 0);
 
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_group_members", token, group_id);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<GroupChatMemberInfo> list_log = (ArrayList<GroupChatMemberInfo>) ok.data();
-                for (int i = 0; i < list_log.size(); ++i) {
-                    if (list_log.get(i).is_admin == false) {
-                        list_log.remove(i);
-                    }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_group_members", token, group_id);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<GroupChatMemberInfo> list_log = (ArrayList<GroupChatMemberInfo>) ok.data();
+            for (int i = 0; i < list_log.size(); ++i) {
+                if (list_log.get(i).is_admin == false) {
+                    list_log.remove(i);
                 }
-                new GroupChatMemberTable(list_log).setVisible(true);
             }
-
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            new GroupChatMemberTable(list_log).setVisible(true);
         }
+
     }//GEN-LAST:event_btnListAdminGroupMouseClicked
 
     private void btnListMemberMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnListMemberMouseClicked
         final String token = Client.Client.token;
         final String group_id = (String) tblGroup.getValueAt(tblGroup.getSelectedRow(), 0);
 
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_group_members", token, group_id);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<GroupChatMemberInfo> list_log = (ArrayList<GroupChatMemberInfo>) ok.data();
-                for (var list : list_log) {
-                    System.out.println(list);
-                }
-                new GroupChatMemberTable(list_log).setVisible(true);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_group_members", token, group_id);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<GroupChatMemberInfo> list_log = (ArrayList<GroupChatMemberInfo>) ok.data();
+            for (var list : list_log) {
+                System.out.println(list);
             }
-
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            new GroupChatMemberTable(list_log).setVisible(true);
         }
+
     }//GEN-LAST:event_btnListMemberMouseClicked
 
     private void btnListFriend2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListFriend2ActionPerformed
@@ -1854,15 +1806,11 @@ public class AdminDashboard extends javax.swing.JFrame implements DateSelectionL
             msg = "You must select user before lock";
         } else {
             String username = (String) modelSpam.getValueAt(index, 1);
-            try {
-                Result rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
-                if (rs instanceof ResultError err) {
-                    msg = err.msg();
-                } else if (rs instanceof ResultOk ok) {
-                    msg = "Lock User Successfully";
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
+            if (rs instanceof ResultError err) {
+                msg = err.msg();
+            } else if (rs instanceof ResultOk ok) {
+                msg = "Lock User Successfully";
             }
         }
         JOptionPane.showMessageDialog(null, msg);
