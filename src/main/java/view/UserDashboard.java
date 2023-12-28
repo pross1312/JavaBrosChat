@@ -46,7 +46,6 @@ public class UserDashboard extends javax.swing.JFrame {
     private static String username = Client.Client.username;
     private String current_target = null;
     private ChatType current_type = null;
-    private ChatArea chat_box;
     private BiConsumer<String, ChatType> on_click_chat_session;
 
     public UserDashboard() {
@@ -60,9 +59,7 @@ public class UserDashboard extends javax.swing.JFrame {
         on_click_chat_session = (name, type) -> {
             current_target = name;
             current_type = type;
-            chat_box = new ChatArea();
-            chat_container.setViewportView(chat_box);
-            chat_box.setLayout(new BoxLayout(chat_box, BoxLayout.Y_AXIS));
+            chat_box.removeAll();
             register_chat_box_notification_event(type);
             var api_res = api_c.invoke_api(
                     type == ChatType.USER ? "FriendChatService" : "GroupChatService",
@@ -91,14 +88,32 @@ public class UserDashboard extends javax.swing.JFrame {
         noti_c.register(NewFriend.class, "UD:MENU_LIST", x -> {
             var noti = (NewFriend) x;
             var session = new ChatSession(noti.friend, noti.friend, true,
-                    on_click_chat_session, ChatType.USER);
+                    (a, b) -> {
+                        current_chat_label.setText(noti.friend);
+                        on_click_chat_session.accept(a, b);
+                    }, ChatType.USER);
             menuList.add(session, "wrap");
             chats.add(session);
             menuList.validate();
         });
+        noti_c.register(NewGroup.class, "UD:MENU_LIST", x -> {
+            var noti = (NewGroup) x;
+            add_group(noti.info);
+        });
         noti_c.register(NewFriendRequest.class, "UD:WINDOW", x -> {
             var noti = (NewFriendRequest) x;
-               
+            int n = JOptionPane.showConfirmDialog(
+                    this, "Accept friend request from " + noti.initiator + "?",
+                    "Friend Request",
+                    JOptionPane.YES_NO_OPTION);
+            if (n == JOptionPane.YES_OPTION) {
+                if (!msg_c.add_friend(noti.initiator)) {
+                    JOptionPane.showMessageDialog(null, "Can't accept friend request");
+                } else {
+                }
+            } else if (n == JOptionPane.NO_OPTION) {
+            } else {
+            }
         });
         noti_c.register(FriendLogin.class, "UD:MENU_LIST", x -> {
             var noti = (FriendLogin) x;
@@ -108,19 +123,6 @@ public class UserDashboard extends javax.swing.JFrame {
                     break;
                 }
             }
-        });
-        noti_c.register(NewFriend.class, "UD:MENU_LIST", x -> {
-            var noti = (NewFriend) x;
-            for (var session : chats) {
-                if (session.name.equals(noti.friend)) {
-                    session.set_active(true);
-                    break;
-                }
-            }
-        });
-        noti_c.register(NewGroup.class, "UD:MENU_LIST", x -> {
-            var noti = (NewGroup) x;
-            add_group(noti.info);
         });
         noti_c.register(FriendLogout.class, "UD:MENU_LIST", x -> {
             var noti = (FriendLogout) x;
@@ -135,26 +137,28 @@ public class UserDashboard extends javax.swing.JFrame {
 
     public void add_group(GroupChatInfo info) {
         var session = new ChatSession(info.name, info.id, true,
-                on_click_chat_session, ChatType.GROUP);
+                (a, b) -> {
+                    current_chat_label.setText(info.name);
+                    on_click_chat_session.accept(a, b);
+                }, ChatType.GROUP);
         menuList.add(session, "wrap");
         chats.add(session);
         menuList.validate();
     }
 
     public void register_chat_box_notification_event(ChatType type) {
-        noti_c.register(NewFriendMsg.class, "UD:CHAT_BOX", x -> {
-            if (current_target == null) {
-                return;
-            }
-            var noti = (NewFriendMsg) x;
-            if (!current_target.equals(noti.sender)) {
-                return;
-            }
-            var res = type == ChatType.USER
+        if (current_type == null || current_target == null) {
+            return;
+        }
+        noti_c.register(
+                current_type == ChatType.USER ? NewFriendMsg.class : NewGroupMsg.class,
+                "UD:CHAT_BOX", x -> {
+            if (current_type == null || current_target == null) return;
+            var res = current_type == ChatType.USER
                     ? CallAPI.get_unread_friend(token, current_target)
                     : CallAPI.get_unread_group(token, current_target);
             if (res.isEmpty()) {
-                // TODO: handle error
+                JOptionPane.showMessageDialog(null, "Can't get new messages");
             } else {
                 res.get().forEach(msg -> {
                     var text = msg_c.decrypt_msg(msg.cipher_msg, current_target, type);
@@ -180,7 +184,10 @@ public class UserDashboard extends javax.swing.JFrame {
                 var friends = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
                 chat_sessions = new ArrayList<>(friends.stream().map(x -> {
                     var chat_item = new ChatSession(x.a.username, x.a.username, x.b,
-                            on_click_chat_session, ChatType.USER);
+                            (a, b) -> {
+                                current_chat_label.setText(x.a.username);
+                                on_click_chat_session.accept(a, b);
+                            }, ChatType.USER);
                     menuList.add(chat_item, "wrap");
                     return chat_item;
                 }).toList());
@@ -192,7 +199,10 @@ public class UserDashboard extends javax.swing.JFrame {
                 var groups = (ArrayList<GroupChatInfo>) ok.data();
                 chat_sessions.addAll(groups.stream().map(x -> {
                     var chat_item = new ChatSession(x.name, x.id, true,
-                            on_click_chat_session, ChatType.GROUP);
+                            (a, b) -> {
+                                current_chat_label.setText(x.name);
+                                on_click_chat_session.accept(a, b);
+                            }, ChatType.GROUP);
                     menuList.add(chat_item, "wrap");
                     return chat_item;
                 }).toList());
@@ -231,6 +241,7 @@ public class UserDashboard extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jTextField1 = new javax.swing.JTextField();
@@ -238,12 +249,15 @@ public class UserDashboard extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
+        current_chat_label = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         menuList = new javax.swing.JLayeredPane();
         jPanel2 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         input_area = new javax.swing.JTextField();
         chat_container = new javax.swing.JScrollPane();
+        chat_box = new javax.swing.JPanel();
 
         chat_area.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -274,17 +288,27 @@ public class UserDashboard extends javax.swing.JFrame {
         jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-message-32.png"))); // NOI18N
         jLabel5.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
+        jLabel10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-logout-50.png"))); // NOI18N
+        jLabel10.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel10.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel10MouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnToolBarLayout = new javax.swing.GroupLayout(pnToolBar);
         pnToolBar.setLayout(pnToolBarLayout);
         pnToolBarLayout.setHorizontalGroup(
             pnToolBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnToolBarLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE)
+                .addGroup(pnToolBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
-            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         pnToolBarLayout.setVerticalGroup(
             pnToolBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -297,7 +321,9 @@ public class UserDashboard extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addGap(26, 26, 26)
                 .addComponent(jLabel3)
-                .addContainerGap(559, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel10)
+                .addContainerGap())
         );
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
@@ -332,7 +358,8 @@ public class UserDashboard extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -343,25 +370,48 @@ public class UserDashboard extends javax.swing.JFrame {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTextField1)
             .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 43, Short.MAX_VALUE)
+            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jTextField1)
+                .addContainerGap())
         );
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(210, 210, 210)));
         jPanel1.setForeground(new java.awt.Color(195, 191, 191));
 
+        current_chat_label.setForeground(new java.awt.Color(0, 255, 0));
+        current_chat_label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-person-48.png"))); // NOI18N
+
+        jLabel9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-ban-24.png"))); // NOI18N
+        jLabel9.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel9.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel9MouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(current_chat_label, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel9)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addComponent(current_chat_label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jScrollPane1.setBackground(new java.awt.Color(255, 255, 255));
@@ -374,11 +424,11 @@ public class UserDashboard extends javax.swing.JFrame {
         menuList.setLayout(menuListLayout);
         menuListLayout.setHorizontalGroup(
             menuListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 383, Short.MAX_VALUE)
+            .addGap(0, 392, Short.MAX_VALUE)
         );
         menuListLayout.setVerticalGroup(
             menuListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 706, Short.MAX_VALUE)
         );
 
         jScrollPane1.setViewportView(menuList);
@@ -413,7 +463,7 @@ public class UserDashboard extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(input_area, javax.swing.GroupLayout.DEFAULT_SIZE, 610, Short.MAX_VALUE)
+                .addComponent(input_area, javax.swing.GroupLayout.DEFAULT_SIZE, 608, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -430,41 +480,40 @@ public class UserDashboard extends javax.swing.JFrame {
 
         chat_container.setHorizontalScrollBar(null);
 
+        chat_box.setLayout(new javax.swing.BoxLayout(chat_box, javax.swing.BoxLayout.Y_AXIS));
+        chat_container.setViewportView(chat_box);
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1033, Short.MAX_VALUE)
-            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel4Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(chat_container))
-                    .addContainerGap()))
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(chat_container))
+                .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel4Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel4Layout.createSequentialGroup()
-                            .addComponent(chat_container, javax.swing.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jScrollPane1))
-                    .addContainerGap()))
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(chat_container)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -493,16 +542,12 @@ public class UserDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel6MouseClicked
 
     private void jLabel8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel8MouseClicked
-        Consumer<GroupChatInfo> cb = (info) -> {
-            add_group(info);
-        };
         api_c.async_invoke_api(res -> {
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk ok) {
                 var data = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
-                new CreateGroupForm(data.stream().map(x -> x.a).toList(),
-                        cb).setVisible(true);
+                new CreateGroupForm(data.stream().map(x -> x.a).toList()).setVisible(true);
             } else {
                 throw new RuntimeException("Unexpected");
             }
@@ -528,6 +573,28 @@ public class UserDashboard extends javax.swing.JFrame {
         // TODO add your handling code here:
         ListFriendRequest.get_instance().setVisible(true);
     }//GEN-LAST:event_jLabel2MouseClicked
+
+    private void jLabel9MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel9MouseClicked
+        // TODO add your handling code here:
+        if (current_type == ChatType.USER) {
+            var res = api_c.invoke_api("UserManagementService", "block_user",
+                    token, current_target);
+            if (res instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            }
+        }
+    }//GEN-LAST:event_jLabel9MouseClicked
+
+    private void jLabel10MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel10MouseClicked
+        // TODO add your handling code here:
+        var res = api_c.invoke_api("AccountService", "logout", token);
+        if (res instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (res instanceof ResultOk) {
+            this.dispose();
+            new Login().setVisible(true);
+        } else throw new RuntimeException("Unexpected");
+    }//GEN-LAST:event_jLabel10MouseClicked
 
     public static void main(String args[]) {
 
@@ -564,9 +631,12 @@ public class UserDashboard extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane chat_area;
+    private javax.swing.JPanel chat_box;
     private javax.swing.JScrollPane chat_container;
+    private javax.swing.JLabel current_chat_label;
     private javax.swing.JTextField input_area;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -574,6 +644,7 @@ public class UserDashboard extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

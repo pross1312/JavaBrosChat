@@ -22,13 +22,16 @@ public class ListFriendRequest extends javax.swing.JFrame {
      * Creates new form ListFriendRequest
      */
     private static ListFriendRequest instance;
+
     public static ListFriendRequest get_instance() {
-        if (instance == null) instance = new ListFriendRequest();
+        if (instance == null) {
+            instance = new ListFriendRequest();
+        }
         return instance;
     }
+
     private ListFriendRequest() {
         initComponents();
-        scroll_pane.setViewportView(body);
         var result = Client.Client.api_c.invoke_api("UserManagementService", "get_friend_requests",
                 Client.Client.token);
         if (result instanceof ResultError err) {
@@ -40,8 +43,6 @@ public class ListFriendRequest extends javax.swing.JFrame {
                     System.out.println(x.initiator);
                     body.add(new ItemPeople(x.initiator, P2PStatus.STRANGER));
                 });
-                body.repaint();
-                body.setVisible(true);
                 scroll_pane.setViewportView(body);
                 scroll_pane.repaint();
             }
@@ -61,12 +62,9 @@ public class ListFriendRequest extends javax.swing.JFrame {
 
         jLabel1 = new javax.swing.JLabel();
         scroll_pane = new javax.swing.JScrollPane();
-        body = new javax.swing.JLayeredPane();
+        body = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setAlwaysOnTop(true);
-        setLocationByPlatform(true);
-        setResizable(false);
 
         jLabel1.setBackground(new java.awt.Color(255, 255, 255));
         jLabel1.setFont(new java.awt.Font("SansSerif.plain", 1, 20)); // NOI18N
@@ -74,18 +72,9 @@ public class ListFriendRequest extends javax.swing.JFrame {
         jLabel1.setText("Friend requests");
 
         scroll_pane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll_pane.setMinimumSize(new java.awt.Dimension(377, 252));
 
-        javax.swing.GroupLayout bodyLayout = new javax.swing.GroupLayout(body);
-        body.setLayout(bodyLayout);
-        bodyLayout.setHorizontalGroup(
-            bodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 333, Short.MAX_VALUE)
-        );
-        bodyLayout.setVerticalGroup(
-            bodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 383, Short.MAX_VALUE)
-        );
-
+        body.setLayout(new javax.swing.BoxLayout(body, javax.swing.BoxLayout.Y_AXIS));
         scroll_pane.setViewportView(body);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -95,8 +84,8 @@ public class ListFriendRequest extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
-                    .addComponent(scroll_pane))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(scroll_pane, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -104,7 +93,7 @@ public class ListFriendRequest extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scroll_pane)
+                .addComponent(scroll_pane, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -147,7 +136,7 @@ public class ListFriendRequest extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLayeredPane body;
+    private javax.swing.JPanel body;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane scroll_pane;
     // End of variables declaration//GEN-END:variables

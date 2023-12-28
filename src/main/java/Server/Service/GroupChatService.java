@@ -48,6 +48,7 @@ public class GroupChatService extends Service {
         users_list.forEach(member -> {
             Main.server.notify(member, new NewGroup(group));
         });
+        Main.server.notify(username, new NewGroup(group));
         return group_id;
     }
     void send_msg(String token, byte[] cipher_msg, String group_id) throws SQLException {

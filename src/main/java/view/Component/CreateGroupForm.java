@@ -16,10 +16,8 @@ import net.miginfocom.swing.MigLayout;
 public class CreateGroupForm extends javax.swing.JFrame {
 
     private ArrayList<String> members;
-    private Consumer<GroupChatInfo> callback;
 
-    public CreateGroupForm(List<UserInfo> friends, Consumer<GroupChatInfo> cb) {
-        this.callback = cb;
+    public CreateGroupForm(List<UserInfo> friends) {
         members = new ArrayList<>();
         initComponents();
         this.setResizable(false);
@@ -154,13 +152,9 @@ public class CreateGroupForm extends javax.swing.JFrame {
         // TODO add your handling code here:
         var g_name = group_name.getText().trim();
         if (!g_name.isBlank()) {
-            System.out.println();
-            var res = Client.Client.api_c.invoke_api("GroupChatService", "create",
-                    Client.Client.token, g_name, members);
-            if (res instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (res instanceof ResultOk ok) {
-                callback.accept(new GroupChatInfo((String)ok.data(), g_name, new Date()));
+            if (Client.Client.msg_c.create_group(g_name, members).isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Can't create group");
+            } else {
                 this.dispose();
             }
         }
@@ -197,7 +191,7 @@ public class CreateGroupForm extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new CreateGroupForm(null, null).setVisible(true);
+                new CreateGroupForm(null).setVisible(true);
             }
         });
     }
