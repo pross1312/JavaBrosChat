@@ -1,26 +1,30 @@
 package view.Component;
 
+import Client.MessageClient.ChatType;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import view.UserDashboard;
 
 public class ChatSession extends javax.swing.JPanel {
     public String name;
-    Consumer<String> on_click;
+    BiConsumer<String, ChatType> on_click;
+    public ChatType type;
     private static final Color active_c = new Color(0, 204, 51);
     private static final Color inactive_c = new Color(48, 48, 48);
-    public ChatSession(String label, String name, boolean is_active, Consumer<String> on_click) {
+    public ChatSession(String label, String name, boolean is_active,
+            BiConsumer<String, ChatType> on_click, ChatType type) {
         initComponents();
         this.name = name; 
         this.on_click = on_click;
+        this.type = type;
         txtName.setText(label);
-        Set_active(is_active);
+        set_active(is_active);
         init();
     }
     
-    public void Set_active(boolean is_active) {
+    public void set_active(boolean is_active) {
         txtName.setForeground(is_active ? active_c : inactive_c);
         txtName.repaint();
     }
@@ -80,7 +84,7 @@ public class ChatSession extends javax.swing.JPanel {
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
         //TODO send username to User Dash Board 
-        this.on_click.accept(this.name);
+        this.on_click.accept(this.name, this.type);
     }//GEN-LAST:event_formMouseClicked
 
 

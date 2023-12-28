@@ -136,6 +136,16 @@ public class CallAPI {
         return Optional.empty();
     }
 
+    public static Optional<ArrayList<ChatMessage>> get_unread_group(String token, String g_id) {
+        var result = Client.Client.api_c.invoke_api("GroupChatService", "get_unread_msg", token, g_id);
+        if (result instanceof ResultError err) {
+            System.out.println(err.msg());
+        } else if (result instanceof ResultOk ok) {
+            return Optional.of((ArrayList<ChatMessage>) ok.data());
+        }
+        return Optional.empty();
+    }
+
     public static ArrayList<LoginRecord> get_login_log(String token) {
         ArrayList<LoginRecord> login_records = null;
         Result rs = Client.Client.api_c.invoke_api("AdminService", "get_login_log", token);

@@ -2,6 +2,7 @@ package view;
 
 import Client.ApiClient;
 import Client.MessageClient;
+import Client.MessageClient.ChatType;
 import Client.NotifyClient;
 import Utils.*;
 import Utils.Notify.*;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -22,6 +24,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 import view.API.CallAPI;
 import view.Component.AddFriendForm;
@@ -42,7 +45,9 @@ public class UserDashboard extends javax.swing.JFrame {
     private static List<ChatSession> chats;
     private static String username = Client.Client.username;
     private String current_target = null;
+    private ChatType current_type = null;
     private ChatArea chat_box;
+    private BiConsumer<String, ChatType> on_click_chat_session;
 
     public UserDashboard() {
         initComponents();
@@ -51,28 +56,35 @@ public class UserDashboard extends javax.swing.JFrame {
 
     private void init() {
         menuList.setLayout(new MigLayout());
-        showPeople();
         jScrollPane1.getVerticalScrollBar().setUI(new ModernScrollPane());
-
-//        body.setLayout(new MigLayout("fillx", "", "5[]5"));
-////        sp.setVerticalScrollBar(new JScrollBar());
-////        sp.getVerticalScrollBar().setBackground(Color.white);
-//        addItemLeft("Hello World ");
-//        addItemLeft("Hello World ");
-//        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
-//        addItemLeft("hello\nerererew\newewe");
-    }
-
-    public void addItemLeft(String text) {
-//        ChatLeft item = new ChatLeft();
-//        item.setText(text);
-//        body.add(item, "wrap, w :: 80%");
-//        body.repaint();
-//        body.revalidate();
-    }
-
-    public void addItemRight(String text) {
-
+        on_click_chat_session = (name, type) -> {
+            current_target = name;
+            current_type = type;
+            chat_box = new ChatArea();
+            chat_container.setViewportView(chat_box);
+            chat_box.setLayout(new BoxLayout(chat_box, BoxLayout.Y_AXIS));
+            register_chat_box_notification_event(type);
+            var api_res = api_c.invoke_api(
+                    type == ChatType.USER ? "FriendChatService" : "GroupChatService",
+                    "get_all_msg", token, name);
+            if (api_res instanceof ResultError err) {
+                System.out.println(err.msg());
+            } else if (api_res instanceof ResultOk ok) {
+                var msgs = (ArrayList<ChatMessage>) ok.data();
+                msgs.forEach(msg -> {
+                    Optional<String> text = msg_c.decrypt_msg(msg.cipher_msg, name, type);
+                    chat_box.add(new ChatItem(
+                            msg.sender.equals(username) ? null : msg.sender, msg.sent_date,
+                            text.orElse("[Message is not available]"),
+                            !msg.sender.equals(username)));
+                });
+            }
+            chat_box.validate();
+            chat_container.setViewportView(chat_box);
+            JScrollBar vertical = chat_container.getVerticalScrollBar();
+            vertical.setValue(vertical.getMaximum());
+        };
+        showPeople();
     }
 
     public void register_menu_notification_event() {
@@ -80,34 +92,61 @@ public class UserDashboard extends javax.swing.JFrame {
             var noti = (FriendLogin) x;
             for (var session : chats) {
                 if (session.name.equals(noti.friend)) {
-                    session.Set_active(true);
+                    session.set_active(true);
                     break;
                 }
             }
+        });
+        noti_c.register(NewFriend.class, "UD:MENU_LIST", x -> {
+            var noti = (NewFriend) x;
+            for (var session : chats) {
+                if (session.name.equals(noti.friend)) {
+                    session.set_active(true);
+                    break;
+                }
+            }
+        });
+        noti_c.register(NewGroup.class, "UD:MENU_LIST", x -> {
+            var noti = (NewGroup) x;
+            add_group(noti.info);
         });
         noti_c.register(FriendLogout.class, "UD:MENU_LIST", x -> {
             var noti = (FriendLogout) x;
             for (var session : chats) {
                 if (session.name.equals(noti.friend)) {
-                    session.Set_active(false);
+                    session.set_active(false);
                     break;
                 }
             }
         });
     }
 
-    public void register_chat_box_notification_event() {
+    public void add_group(GroupChatInfo info) {
+        var session = new ChatSession(info.name, info.id, true,
+                on_click_chat_session, ChatType.GROUP);
+        menuList.add(session, "wrap");
+        chats.add(session);
+        menuList.validate();
+        this.update(this.getGraphics());
+    }
+
+    public void register_chat_box_notification_event(ChatType type) {
         noti_c.register(NewFriendMsg.class, "UD:CHAT_BOX", x -> {
+            if (current_target == null) {
+                return;
+            }
             var noti = (NewFriendMsg) x;
             if (!current_target.equals(noti.sender)) {
                 return;
             }
-            var res = CallAPI.get_unread_friend(token, current_target);
+            var res = type == ChatType.USER
+                    ? CallAPI.get_unread_friend(token, current_target)
+                    : CallAPI.get_unread_group(token, current_target);
             if (res.isEmpty()) {
                 // TODO: handle error
             } else {
                 res.get().forEach(msg -> {
-                    var text = msg_c.decrypt_usr_msg(msg.cipher_msg, current_target);
+                    var text = msg_c.decrypt_msg(msg.cipher_msg, current_target, type);
                     chat_box.add(new ChatItem(
                             msg.sender.equals(username) ? null : msg.sender, msg.sent_date,
                             text.orElse("[Message is not available]"),
@@ -121,54 +160,48 @@ public class UserDashboard extends javax.swing.JFrame {
     }
 
     public void showPeople() {
-        Consumer<String> on_click;
-        on_click = (name) -> {
-            current_target = name;
-            chat_box = new ChatArea();
-            chat_container.setViewportView(chat_box);
-            chat_box.setLayout(new BoxLayout(chat_box, BoxLayout.Y_AXIS));
-            register_chat_box_notification_event();
-            var api_res = api_c.invoke_api("FriendChatService", "get_all_msg", token, name);
-            if (api_res instanceof ResultError err) {
-                System.out.println(err.msg());
-            } else if (api_res instanceof ResultOk ok) {
-                var msgs = (ArrayList<ChatMessage>) ok.data();
-                msgs.forEach(msg -> {
-                    Optional<String> text = msg_c.decrypt_usr_msg(msg.cipher_msg, name);
-                    chat_box.add(new ChatItem(
-                            msg.sender.equals(username) ? null : msg.sender, msg.sent_date,
-                            text.orElse("[Message is not available]"),
-                            !msg.sender.equals(username)));
-                });
-            }
-            chat_box.repaint();
-            JScrollBar vertical = chat_container.getVerticalScrollBar();
-            vertical.setValue(vertical.getMaximum());
-            chat_container.repaint();
-        };
+
         api_c.async_invoke_api(api_res -> {
+            List<ChatSession> chat_sessions = null;
             if (api_res instanceof ResultError err) {
                 System.out.println(err.msg());
             } else if (api_res instanceof ResultOk ok) {
                 var friends = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
-                chats = friends.stream().map(x -> {
-                    var chat_item = new ChatSession(x.a.username, x.a.username, x.b, on_click);
+                chat_sessions = new ArrayList<>(friends.stream().map(x -> {
+                    var chat_item = new ChatSession(x.a.username, x.a.username, x.b, on_click_chat_session, ChatType.USER);
                     menuList.add(chat_item, "wrap");
                     return chat_item;
-                }).toList();
+                }).toList());
+            }
+            var res = api_c.invoke_api("GroupChatService", "list_groups", token);
+            if (res instanceof ResultError err) {
+                System.out.println(err.msg());
+            } else if (res instanceof ResultOk ok) {
+                var groups = (ArrayList<GroupChatInfo>) ok.data();
+                System.out.println(groups);
+                chat_sessions.addAll(groups.stream().map(x -> {
+                    var chat_item = new ChatSession(x.name, x.id, true, on_click_chat_session, ChatType.GROUP);
+                    menuList.add(chat_item, "wrap");
+                    return chat_item;
+                }).toList());
+                chats = chat_sessions;
             }
         }, "UserManagementService", "list_friends", token);
+
         register_menu_notification_event();
     }
 
     void handle_send_msg() {
-        if (current_target == null) return;
+        if (current_target == null) {
+            return;
+        }
         String msg = input_area.getText();
-        if (!msg_c.send_friend(current_target, msg)) {
+        if (!msg_c.send_msg(current_target, msg, current_type)) {
             // TODO: handle can't send message
         } else if (chat_box != null) {
             chat_box.add(new ChatItem(null, new Date(), msg, false));
             input_area.setText("");
+            chat_box.validate();
             chat_container.setViewportView(chat_box);
             JScrollBar vertical = chat_container.getVerticalScrollBar();
             vertical.setValue(vertical.getMaximum());
@@ -377,7 +410,6 @@ public class UserDashboard extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        chat_container.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         chat_container.setHorizontalScrollBar(null);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -421,7 +453,20 @@ public class UserDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel6MouseClicked
 
     private void jLabel8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel8MouseClicked
-        new CreateGroupForm().setVisible(true);
+        Consumer<GroupChatInfo> cb = (info) -> {
+            add_group(info);
+        };
+        api_c.async_invoke_api(res -> {
+            if (res instanceof ResultError err) {
+                System.out.println(err.msg());
+            } else if (res instanceof ResultOk ok) {
+                var data = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
+                new CreateGroupForm(data.stream().map(x -> x.a).toList(),
+                        cb).setVisible(true);
+            } else {
+                throw new RuntimeException("Unexpected");
+            }
+        }, "UserManagementService", "list_friends", token);
     }//GEN-LAST:event_jLabel8MouseClicked
 
     private void input_areaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_input_areaActionPerformed

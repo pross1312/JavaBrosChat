@@ -45,6 +45,9 @@ public class GroupChatService extends Service {
         Main.db.commit();
         Main.db.set_auto_commit(true);
         users_list.add(username);
+        users_list.forEach(member -> {
+            Main.server.notify(member, new NewGroup(group));
+        });
         return group_id;
     }
     void send_msg(String token, byte[] cipher_msg, String group_id) throws SQLException {

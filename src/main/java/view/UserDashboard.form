@@ -375,7 +375,6 @@
     </Container>
     <Container class="javax.swing.JScrollPane" name="chat_container">
       <Properties>
-        <Property name="verticalScrollBarPolicy" type="int" value="22"/>
         <Property name="horizontalScrollBar" type="javax.swing.JScrollBar" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="null"/>
         </Property>

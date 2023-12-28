@@ -31,6 +31,11 @@ import Utils.ResultError;
 import Utils.ResultOk;
 
 public class MessageClient {
+
+    public enum ChatType {
+        GROUP,
+        USER
+    }
     String username, token;
     ApiClient api_c;
     KeyPair identity;
@@ -327,5 +332,28 @@ public class MessageClient {
         var result = op_session.get().decrypt(cipher_msg);
         if (result.isEmpty()) return Optional.empty();
         return Optional.of(new String(result.get(), StandardCharsets.UTF_8));
+    }
+
+    public Optional<String> decrypt_msg(byte[] cipher_msg, String target, ChatType type) {
+        if (type == ChatType.GROUP) {
+            return decrypt_group_msg(cipher_msg, target);
+        } else {
+            return decrypt_usr_msg(cipher_msg, target);
+        }
+    }
+
+    public boolean send_msg(String target, String text, ChatType type) {
+        var op_session = get_group_session(target);
+        if (op_session.isEmpty()) {
+            return false;
+        }
+        var data = op_session.get().encrypt(text.getBytes());
+        var api_result = api_c.invoke_api(
+                type == ChatType.GROUP ? "GroupChatService" : "FriendChatService", "send_msg", token, data, target);
+        if (api_result instanceof ResultError err) {
+            System.out.println(err.msg());
+            return false;
+        }
+        return true;
     }
 }
