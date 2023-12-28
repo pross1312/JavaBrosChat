@@ -288,8 +288,8 @@ RETURN
 	select fc.*
 	from FriendChat fc
 	join UserFriend uf on uf.username = @username and uf.friend = @friend
-                          or uf.username = @friend and uf.friend = @username
-	where fc.id >= uf.start_history_msg
+	where ((fc.sender = @username and fc.friend = @friend) or
+              (fc.friend = @username and fc.sender = @friend)) and fc.id >= uf.start_history_msg
 go
 CREATE PROCEDURE add_msg_to_friend
 	@sender USERNAME_TYPE,

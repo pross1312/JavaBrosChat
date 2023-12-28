@@ -1,5 +1,6 @@
 package view.API;
 
+import Utils.ChatMessage;
 import Utils.GroupChatMemberInfo;
 import Utils.LoginRecord;
 import Utils.Pair;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -122,6 +124,16 @@ public class CallAPI {
         }
 
         return list_amount_users;
+    }
+    
+    public static Optional<ArrayList<ChatMessage>> get_unread_friend(String token, String friend) {
+        var result = Client.Client.api_c.invoke_api("FriendChatService", "get_unread_msg", token, friend);
+        if (result instanceof ResultError err) {
+            System.out.println(err.msg());
+        } else if (result instanceof ResultOk ok) {
+            return Optional.of((ArrayList<ChatMessage>) ok.data());
+        }
+        return Optional.empty();
     }
 
     public static ArrayList<LoginRecord> get_login_log(String token) {

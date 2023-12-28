@@ -9,6 +9,8 @@ import javax.swing.ImageIcon;
 
 import Client.ApiClient;
 import Client.Client;
+import Client.MessageClient;
+import Client.NotifyClient;
 import Utils.AccountType;
 import Utils.Pair;
 import Utils.ResultError;
@@ -410,12 +412,20 @@ public class Login extends javax.swing.JFrame {
             System.out.println("Token: " + data.a);
             System.out.print("Type: ");
             System.out.println(data.b);
+            Client.username = username;
             if (data.b == AccountType.Admin) {
                 new Version2AdminDashBoard().setVisible(true); 
                 //                    new AdminDashboard().setVisible(true);
                 this.dispose();
             } else if (data.b == AccountType.User) {
-                new UserDashboard().setVisible(true);
+                try {
+                    Client.noti_c = new NotifyClient(data.a, Client.SV_ADDR, Client.SV_PORT);
+                    Client.msg_c = new MessageClient(username, data.a, Client.SV_ADDR, Client.SV_PORT);
+                    new UserDashboard().setVisible(true);
+                } catch(IOException e) {
+                    txtFlagAccount.setText("Network error");
+                    txtFlagAccount.show();
+                }
                 this.dispose();
             }
         }

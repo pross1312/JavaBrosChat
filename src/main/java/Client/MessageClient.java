@@ -230,6 +230,7 @@ public class MessageClient {
     }
 
     public Optional<String> decrypt_usr_msg(byte[] cipher_msg, String friend) {
+        if (cipher_msg == null) return Optional.empty();
         var op_session = get_user_session(friend);
         if (op_session.isEmpty()) return Optional.empty();
         var result = op_session.get().decrypt(cipher_msg);
@@ -320,6 +321,7 @@ public class MessageClient {
     }
 
     public Optional<String> decrypt_group_msg(byte[] cipher_msg, String g_id) {
+        if (cipher_msg == null) return Optional.empty();
         var op_session = get_group_session(g_id);
         if (op_session.isEmpty()) return Optional.empty();
         var result = op_session.get().decrypt(cipher_msg);
