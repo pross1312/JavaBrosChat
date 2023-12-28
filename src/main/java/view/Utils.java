@@ -19,8 +19,8 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import view.API.CallAPI;
-import static view.AdminDashboard.addRowtoTable;
-import static view.AdminDashboard.model;
+import static view.Version2AdminDashBoard.addRowtoTable;
+import static view.Version2AdminDashBoard.model;
 
 // This file provide some function to style UI
 public class Utils {

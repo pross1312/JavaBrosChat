@@ -228,7 +228,7 @@ public class AddUserForm extends javax.swing.JFrame {
                 System.out.println(err.msg());
                 msg = err.msg();
             } else if (rs instanceof ResultOk) {
-                AdminDashboard.addRowtoTable((Object[]) dataRow, false, AdminDashboard.model);
+                Version2AdminDashBoard.addRowtoTable((Object[]) dataRow, false, Version2AdminDashBoard.model);
                 msg = "Add User Successfully";
             }
             JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
@@ -249,7 +249,7 @@ public class AddUserForm extends javax.swing.JFrame {
                 System.out.println(err.msg());
                 msg = err.msg();
             } else if (rs instanceof ResultOk) {
-                AdminDashboard.updateRow((Object[]) dataRow, this.rowSelected);
+                Version2AdminDashBoard.updateRow((Object[]) dataRow, this.rowSelected);
                 msg = "Update User Successfully";
             }
             JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);

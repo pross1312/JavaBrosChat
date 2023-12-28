@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import view.AdminDashboard;
+import view.Version2AdminDashBoard;
 
 // This file provide some function to get Data from Backend. 
 public class CallAPI {
