@@ -153,4 +153,10 @@ public class GroupChatService extends Service {
         result.trimToSize();
         return result;
     }
+    void clear_history(String token, String group_id) throws SQLException {
+        var acc = Server.Main.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute rename api, token not found");
+        var username = acc.a;
+        GroupChatMemberDb.clear_history(group_id, username);
+    }
 }

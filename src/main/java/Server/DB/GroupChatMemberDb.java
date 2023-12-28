@@ -14,11 +14,12 @@ import Utils.GroupChatMemberInfo;
 public class GroupChatMemberDb {
     private static Database db = Server.Main.db;
     private static CallableStatement insert_sm;
-    private static PreparedStatement list_sm;
+    private static PreparedStatement list_sm, clear_hs_sm;
     static {
         try {
             insert_sm = db.conn.prepareCall("{call add_member_to_group(?, ?, ?, ?)}");
             list_sm = db.conn.prepareStatement("SELECT * FROM GroupChatMember WHERE group_id = ?");
+            clear_hs_sm = db.conn.prepareStatement("UPDATE GroupChatMember SET start_history_msg = last_read_msg WHERE group_id = ? AND username = ?");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -92,5 +93,10 @@ public class GroupChatMemberDb {
         }
         result.close();
         return arr;
+    }
+    public static boolean clear_history(String group_id, String username) throws SQLException {
+        clear_hs_sm.setString(1, group_id);
+        clear_hs_sm.setString(2, username);
+        return clear_hs_sm.executeUpdate() == 1;
     }
 }

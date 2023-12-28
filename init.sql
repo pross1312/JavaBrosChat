@@ -189,6 +189,17 @@ add constraint FK_GCS_USER foreign key(username) references UserInfo(username),
     constraint FK_UCS_GROUP foreign key(target) references GroupChat(id)
 go
 
+create table BlockUser(
+    username USERNAME_TYPE,
+    target USERNAME_TYPE,
+	primary key(username)
+)
+go
+alter table BlockUser
+add constraint FK_USERNAME_USER foreign key(username) references UserInfo(username),
+    constraint FK_TARGET_USER foreign key(username) references UserInfo(username)
+go
+
 CREATE FUNCTION list_friends_info(@usr USERNAME_TYPE)
 RETURNS TABLE AS
 RETURN
@@ -316,3 +327,7 @@ AS BEGIN
         insert into UserIdentity(username, public_key) values(@username, @public_key)
     end
 END
+CREATE PROCEDURE searchUser @username nvarchar(100)
+AS
+SELECT * FROM UserInfo WHERE username like '%' + @username + '%'
+GO

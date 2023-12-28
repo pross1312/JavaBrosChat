@@ -1,10 +1,12 @@
 package Server.Service;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import Server.Main;
 import Server.Service.Service;
 import Server.DB.*;
 import Server.DB.SecretDb.SecretType;
@@ -27,6 +29,7 @@ public class UserManagementService extends Service {
         var acc = Server.Main.accounts.get(token);
         if (acc != null) {
             String username = acc.a;
+            if (BlockUserDb.checkBlocked(friend, username)) throw new Error("Can't add friend, you are blocked!!!");
             if (UserInfoDb.query(friend) == null) throw new Error(String.format("No username '%s' found", friend));
             if (UserFriendDb.is_friend(username, friend)) throw new Error(String.format("%s and %s are already friend.", username, friend));
             var req_from_friend = FriendRequestDb.query(friend, username);
@@ -85,8 +88,13 @@ public class UserManagementService extends Service {
         throw new Error("Can't execute list_friends api, token not found");
     }
 
-    ArrayList<UserInfo> find_users(String token, String pattern) {
-        throw new Error("Unimplemented");
+    ArrayList<UserInfo> find_users(String token, String pattern) throws SQLException {
+        var acc = Server.Main.accounts.get(token);
+        if(acc == null)
+            throw new Error("Can't execute find_users api, token not found");
+        var result = UserInfoDb.searchUsers(pattern);
+        result.trimToSize();
+        return result;
     }
 
     void report_spam(String token, String target, String reason) throws SQLException {
@@ -99,7 +107,13 @@ public class UserManagementService extends Service {
         }
     }
 
-    void block_user(String token, String target_username) {
-        throw new Error("Unimplemented");
+    void block_user(String token, String target_username) throws SQLException{
+        var acc = Server.Main.accounts.get(token);
+        if(acc == null)
+            throw new Error("Can't execute block_user api, token not found");
+        var username = acc.a;
+        if (!BlockUserDb.add(username, target_username)) {
+            throw new RuntimeException("Can't execute block_user api");
+        }
     }
 }

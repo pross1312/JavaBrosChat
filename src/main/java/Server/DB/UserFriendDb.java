@@ -11,13 +11,14 @@ import Utils.UserInfo;
 
 public class UserFriendDb {
     private static Database db = Server.Main.db;
-    private static PreparedStatement insert_sm, get_all_friends_sm;
+    private static PreparedStatement insert_sm, get_all_friends_sm, clear_hs_sm;
     public String username;
     public String friend;
     static {
         try {
             insert_sm = db.conn.prepareStatement("INSERT INTO UserFriend(username, friend, start_history_msg, last_read_msg) VALUES(?, ?, 0, 0);");
             get_all_friends_sm = db.conn.prepareStatement("SELECT * FROM list_friends_info(?)");
+            clear_hs_sm = db.conn.prepareStatement("UPDATE UserFriend SET start_history_msg = last_read_msg WHERE username = ? AND friend = ?");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -83,6 +84,11 @@ public class UserFriendDb {
         }
         result.close();
         return friends_info;
+    }
+    public static boolean clear_history(String username, String friend) throws SQLException {
+        clear_hs_sm.setString(1, username);
+        clear_hs_sm.setString(2, friend);
+        return clear_hs_sm.executeUpdate() == 1;
     }
 }
 
