@@ -19,10 +19,19 @@ public class DateSelectionForm extends javax.swing.JFrame {
     private static JDateChooser startDateChooser, endDateChooser;
     private JButton confirmButton;
     private final DateSelectionListener dateSelectionListener;
+    private int typeofForm;
 
     public DateSelectionForm(DateSelectionListener listener) {
         this.dateSelectionListener = listener;
         initComponents();
+        this.typeofForm = 0;
+        init();
+    }
+
+    public DateSelectionForm(DateSelectionListener listener, int type) {
+        this.dateSelectionListener = listener;
+        initComponents();
+        this.typeofForm = type;
         init();
     }
 
@@ -37,7 +46,7 @@ public class DateSelectionForm extends javax.swing.JFrame {
         startDateChooser = new JDateChooser();
         endDateChooser = new JDateChooser();
         confirmButton = new JButton("Filter");
-        
+
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(3, 2));
         panel.add(startDateLabel);
@@ -54,11 +63,14 @@ public class DateSelectionForm extends javax.swing.JFrame {
         add(panelBtn);
         setResizable(false);
         setVisible(true);
-        
+
         confirmButton.addActionListener((ActionEvent e) -> {
             Date[] selectedDates = getSelectedDates();
-            if (selectedDates != null && dateSelectionListener != null) {
+            if (selectedDates != null && dateSelectionListener != null && typeofForm == 0) {
                 dateSelectionListener.onDateSelected(selectedDates[0], selectedDates[1]);
+                dispose();
+            } else if (selectedDates != null && dateSelectionListener != null && typeofForm == 1) {
+                dateSelectionListener.onDateSelectedForActiveUser(selectedDates[0], selectedDates[1]);
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(null, "Invalid Date, Please try again !!!");
@@ -73,9 +85,12 @@ public class DateSelectionForm extends javax.swing.JFrame {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
             Date startDate = startDateChooser.getDate();
             Date endDate = endDateChooser.getDate();
-            return new Date[]{
-                startDate, endDate
-            };
+            if (startDate != null && endDate != null) {
+                return new Date[]{
+                    startDate, endDate
+                };
+            }
+            return null;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Date must not be null");
             ex.printStackTrace();
