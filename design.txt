@@ -167,14 +167,14 @@ class AccountService {
 
 // user-api, 
 class UserManagementService {
-    void get_info(String token);
-    void add_friend(String token, String target);
-    ArrayList<FriendRequest> get_all_friend_requests(String token);
-    void unfriend(String token, String friend_username);
-    ArrayList<Pair<UserInfo, Boolean>> list_friends(String token); // send back info and active or not
-    ArrayList<UserInfo> find_users(String token, String pattern);
-    void report_spam(String token, String target, String reason);
-    void block_user(String token, String target_username);
+-   void get_info(String token);
+-   void add_friend(String token, String target);
+-   ArrayList<FriendRequest> get_all_friend_requests(String token);
+-   void unfriend(String token, String friend_username);
+-   ArrayList<Pair<UserInfo, Boolean>> list_friends(String token); // send back info and active or not
+-   ArrayList<UserInfo> find_users(String token, String pattern);
+-   void report_spam(String token, String target, String reason);
+-   void block_user(String token, String target_username);
 }
 
 class GroupChatService {
@@ -187,18 +187,16 @@ class GroupChatService {
 -   void set_admin(String token, String group_id, String target_username, boolean is_admin);
 -   ArrayLists<ChatMessage> get_unread_msg(String token, String group_id);
 -   ArrayList<ChatMessage> get_all_msg(String token, String group_id);
-    void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
+-   void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
 -   void send_msg(String token, byte[] cipher_msg, String group_id);
-    ArrayList<ChatMessage> search_msg(String token, String group_id);
 -   ArrayList<String> list_members(String token, String group_id);
 }
 
 class FriendChatService {
-    void clear_history(String token, String group_id); // clear this user chat history, only show msg from this point onward
+-   void clear_history(String token, String friend); // clear this user chat history, only show msg from this point onward
 -   ArrayLists<ChatMessage> get_unread_msg(String token, String friend);
 -   ArrayLists<ChatMessage> get_all_msg(String token, String friend);
 -   void send_msg(String token, byte[] cipher_msg, String friend);
-    ArrayList<ChatMessage> search_msg(String token, String group_id);
 }
 
 class E2EService {

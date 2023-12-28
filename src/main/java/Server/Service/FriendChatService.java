@@ -38,4 +38,10 @@ public class FriendChatService extends Service {
         result.trimToSize();
         return result;
     }
+    void clear_history(String token, String friend) throws SQLException {
+        var acc = Server.Main.accounts.get(token);
+        if (acc == null) throw new Error("Can't execute rename api, token not found");
+        var username = acc.a;
+        UserFriendDb.clear_history(username, friend);
+    }
 }

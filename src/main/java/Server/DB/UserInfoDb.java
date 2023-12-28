@@ -12,7 +12,7 @@ import Utils.UserInfo.Gender;
 public class UserInfoDb {
     private static Database db = Server.Main.db;
 
-    private static PreparedStatement insert_sm, query_sm, query_all_sm, update_sm, delete_sm;
+    private static PreparedStatement insert_sm, query_sm, query_all_sm, update_sm, delete_sm, search_sm;
     static {
         try {
             insert_sm = db.conn.prepareStatement("INSERT INTO UserInfo(username, fullname, email, address, birthdate, gender) VALUES(?, ?, ?, ?, ?, ?)");
@@ -20,6 +20,7 @@ public class UserInfoDb {
             query_all_sm = db.conn.prepareStatement("SELECT * FROM UserInfo");
             update_sm = db.conn.prepareStatement("UPDATE UserInfo SET fullname = ?, email = ?, address = ?, birthdate = ?, gender = ? WHERE username = ?");
             delete_sm = db.conn.prepareStatement("DELETE FROM UserInfo WHERE username = ?");
+            search_sm = db.conn.prepareStatement("EXEC searchUser @username = ?;");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -80,5 +81,19 @@ public class UserInfoDb {
     public static boolean delete(String username) throws SQLException {
         delete_sm.setString(1, username);
         return delete_sm.executeUpdate() == 1;
+    }
+
+    public static ArrayList<UserInfo> searchUsers(String username) throws SQLException {
+        ArrayList<UserInfo> arr = new ArrayList<>();
+        search_sm.setString(1, username);
+        var result = search_sm.executeQuery();
+        if(result == null)
+            throw new RuntimeException("Result set of query operation can't be null");
+        while(result.next()){
+            var info = parse_row(result);
+            if (!info.username.equals("__REMOVED__")) arr.add(info);
+        }
+        result.close();
+        return arr;
     }
 }
