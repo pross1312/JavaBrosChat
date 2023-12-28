@@ -214,46 +214,37 @@ public class AddUserForm extends javax.swing.JFrame {
         final String accessToken = Client.Client.token;
         // Add Funtional 
         if (btnActionForm.getText().equalsIgnoreCase("add")) {
-            try {
-                Result rs = Client.Client.api_c.invoke_api("AdminService", "add_user",
-                        accessToken, txtUsername.getText(), txtPassword.getText(),
-                        new UserInfo(
-                                txtUsername.getText(),
-                                txtName.getText(),
-                                txtAddress.getText(),
-                                txtEmail.getText(),
-                                new Date(),
-                                cbGender.getSelectedItem().toString().equals("Male")
-                                ? UserInfo.Gender.Male : UserInfo.Gender.Female));
-                if (rs instanceof ResultError err) {
-                    System.out.println(err.msg());
-                    msg = err.msg();
-                } else if (rs instanceof ResultOk) {
-                    AdminDashboard.addRowtoTable((Object[]) dataRow, false, AdminDashboard.model);
-                    msg = "Add User Successfully";
-                }
-                JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
-                this.dispose();
-            } catch (IOException ex) {
-                Logger.getLogger(AddUserForm.class.getName()).log(Level.SEVERE, null, ex);
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "add_user",
+                    accessToken, txtUsername.getText(), txtPassword.getText(),
+                    new UserInfo(
+                            txtUsername.getText(),
+                            txtName.getText(),
+                            txtAddress.getText(),
+                            txtEmail.getText(),
+                            new Date(),
+                            cbGender.getSelectedItem().toString().equals("Male")
+                            ? UserInfo.Gender.Male : UserInfo.Gender.Female));
+            if (rs instanceof ResultError err) {
+                System.out.println(err.msg());
+                msg = err.msg();
+            } else if (rs instanceof ResultOk) {
+                AdminDashboard.addRowtoTable((Object[]) dataRow, false, AdminDashboard.model);
+                msg = "Add User Successfully";
             }
+            JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
+            this.dispose();
 //            Update 
         } else if (btnActionForm.getText().equalsIgnoreCase("update")) {
-            Result rs = null;
-            try {
-                rs = Client.Client.api_c.invoke_api("AdminService", "update_user",
-                        accessToken, txtUsername.getText(),
-                        new UserInfo(
-                                txtUsername.getText(),
-                                txtName.getText(),
-                                txtAddress.getText(),
-                                txtEmail.getText(),
-                                new Date(),
-                                cbGender.getSelectedItem().toString().equals("Male")
-                                ? UserInfo.Gender.Male : UserInfo.Gender.Female));
-            } catch (IOException ex) {
-                Logger.getLogger(AddUserForm.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            Result rs = Client.Client.api_c.invoke_api("AdminService", "update_user",
+                    accessToken, txtUsername.getText(),
+                    new UserInfo(
+                            txtUsername.getText(),
+                            txtName.getText(),
+                            txtAddress.getText(),
+                            txtEmail.getText(),
+                            new Date(),
+                            cbGender.getSelectedItem().toString().equals("Male")
+                            ? UserInfo.Gender.Male : UserInfo.Gender.Female));
             if (rs instanceof ResultError err) {
                 System.out.println(err.msg());
                 msg = err.msg();

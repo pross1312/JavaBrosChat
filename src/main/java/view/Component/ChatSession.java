@@ -3,18 +3,30 @@ package view.Component;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
 import view.UserDashboard;
 
-public class ItemPeople extends javax.swing.JPanel {
-    private String username; 
-    public ItemPeople(String name, String username) {
+public class ChatSession extends javax.swing.JPanel {
+    public String name;
+    Consumer<String> on_click;
+    private static final Color active_c = new Color(0, 204, 51);
+    private static final Color inactive_c = new Color(48, 48, 48);
+    public ChatSession(String label, String name, boolean is_active, Consumer<String> on_click) {
         initComponents();
-        this.username = username; 
-        txtName.setText(name);
+        this.name = name; 
+        this.on_click = on_click;
+        txtName.setText(label);
+        Set_active(is_active);
         init();
     }
-
+    
+    public void Set_active(boolean is_active) {
+        txtName.setForeground(is_active ? active_c : inactive_c);
+        txtName.repaint();
+    }
+    
     private void init() {
+        var original_bg = this.getBackground();
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent me) {
@@ -23,7 +35,7 @@ public class ItemPeople extends javax.swing.JPanel {
 
             @Override
             public void mouseExited(MouseEvent me) {
-                setBackground(new Color(242, 242, 242));
+                setBackground(original_bg);
             }
         });
     }
@@ -43,7 +55,8 @@ public class ItemPeople extends javax.swing.JPanel {
         });
 
         txtName.setBackground(new java.awt.Color(255, 255, 255));
-        txtName.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtName.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        txtName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         txtName.setText("Name");
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-person-48.png"))); // NOI18N
@@ -54,9 +67,9 @@ public class ItemPeople extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jLabel2)
-                .addGap(18, 18, 18)
+                .addGap(45, 45, 45)
                 .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(93, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -67,7 +80,7 @@ public class ItemPeople extends javax.swing.JPanel {
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
         //TODO send username to User Dash Board 
-        UserDashboard.setUserNameSelected(txtName.getText()); 
+        this.on_click.accept(this.name);
     }//GEN-LAST:event_formMouseClicked
 
 

@@ -250,16 +250,12 @@ public class Signup extends javax.swing.JFrame {
         final String email = txtEmail.getText();
 
         //TODO Validate info
-        try {
-            var result = Client.api_c.invoke_api("AccountService", "register", username, password, new UserInfo(username, email));
-            if (result instanceof ResultError err) {
-                System.out.println(err.msg());
-            } else {
-                new Login().setVisible(true);
-                this.dispose();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        var result = Client.api_c.invoke_api("AccountService", "register", username, password, new UserInfo(username, email));
+        if (result instanceof ResultError err) {
+            System.out.println(err.msg());
+        } else {
+            new Login().setVisible(true);
+            this.dispose();
         }
     }//GEN-LAST:event_btnRegisterMouseClicked
 

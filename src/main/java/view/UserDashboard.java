@@ -1,32 +1,52 @@
 package view;
 
+import Client.ApiClient;
+import Client.MessageClient;
+import Client.NotifyClient;
+import Utils.*;
+import Utils.Notify.*;
 import com.google.inject.internal.MoreTypes;
 import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.ScrollPane;
+import java.awt.event.KeyEvent;
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import net.miginfocom.swing.MigLayout;
+import view.API.CallAPI;
 import view.Component.AddFriendForm;
+import view.Component.ChatArea;
+import view.Component.ChatItem;
 import view.Component.ChatLeft;
 import view.Component.CreateGroupForm;
-import view.Component.ItemPeople;
+import view.Component.ChatSession;
 import view.Component.ModernScrollPane;
 
 public class UserDashboard extends javax.swing.JFrame {
 
     private static String userNameSelected;
-
-    //TODO: Remove welcome page when user select 
-    public static void setUserNameSelected(String username) {
-        UserDashboard.userNameSelected = username;
-        lbNameSelected.setText(username);
-    }
+    private static ApiClient api_c = Client.Client.api_c;
+    private static MessageClient msg_c = Client.Client.msg_c;
+    private static NotifyClient noti_c = Client.Client.noti_c;
+    private static String token = Client.Client.token;
+    private static List<ChatSession> chats;
+    private static String username = Client.Client.username;
+    private String current_target = null;
+    private ChatArea chat_box;
 
     public UserDashboard() {
         initComponents();
         init();
-        
     }
 
     private void init() {
@@ -34,50 +54,124 @@ public class UserDashboard extends javax.swing.JFrame {
         showPeople();
         jScrollPane1.getVerticalScrollBar().setUI(new ModernScrollPane());
 
-        body.setLayout(new MigLayout("fillx", "", "5[]5"));
-//        sp.setVerticalScrollBar(new JScrollBar());
-//        sp.getVerticalScrollBar().setBackground(Color.white);
-        addItemLeft("Hello World ");
-        addItemLeft("Hello World ");
-        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
-        addItemLeft("hello\nerererew\newewe");
-        addItemLeft("Hello World ");
-        addItemLeft("Hello World ");
-        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
-        addItemLeft("hello\nerererew\newewe");
-        addItemLeft("Hello World ");
-        addItemLeft("Hello World ");
-        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
-        addItemLeft("hello\nerererew\newewe");
-        addItemLeft("Hello World ");
-        addItemLeft("Hello World ");
-        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
-        addItemLeft("hello\nerererew\newewe");
-        addItemLeft("Hello World ");
-        addItemLeft("Hello World ");
-        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
-        addItemLeft("hello\nerererew\newewe");
-        addItemLeft("Hello World ");
-        addItemLeft("Hello World ");
-        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
-        addItemLeft("hello\nerererew\newewe");
+//        body.setLayout(new MigLayout("fillx", "", "5[]5"));
+////        sp.setVerticalScrollBar(new JScrollBar());
+////        sp.getVerticalScrollBar().setBackground(Color.white);
+//        addItemLeft("Hello World ");
+//        addItemLeft("Hello World ");
+//        addItemLeft("Simpletext started as a passion project because I couldn’t find what I was looking for. Most apps were trying to do too much and ended up bloated with features I don’t need. So I built Simpletext based on a simple premise — what if there’s an app that refuses to do more, choosing instead to do just one thing, and do it well? For Simpletext, that one thing is writing.");
+//        addItemLeft("hello\nerererew\newewe");
     }
 
     public void addItemLeft(String text) {
-        ChatLeft item = new ChatLeft();
-        item.setText(text);
-        body.add(item, "wrap, w :: 80%");
-        body.repaint();
-        body.revalidate();
+//        ChatLeft item = new ChatLeft();
+//        item.setText(text);
+//        body.add(item, "wrap, w :: 80%");
+//        body.repaint();
+//        body.revalidate();
     }
 
     public void addItemRight(String text) {
-        
+
+    }
+
+    public void register_menu_notification_event() {
+        noti_c.register(FriendLogin.class, "UD:MENU_LIST", x -> {
+            var noti = (FriendLogin) x;
+            for (var session : chats) {
+                if (session.name.equals(noti.friend)) {
+                    session.Set_active(true);
+                    break;
+                }
+            }
+        });
+        noti_c.register(FriendLogout.class, "UD:MENU_LIST", x -> {
+            var noti = (FriendLogout) x;
+            for (var session : chats) {
+                if (session.name.equals(noti.friend)) {
+                    session.Set_active(false);
+                    break;
+                }
+            }
+        });
+    }
+
+    public void register_chat_box_notification_event() {
+        noti_c.register(NewFriendMsg.class, "UD:CHAT_BOX", x -> {
+            var noti = (NewFriendMsg) x;
+            if (!current_target.equals(noti.sender)) {
+                return;
+            }
+            var res = CallAPI.get_unread_friend(token, current_target);
+            if (res.isEmpty()) {
+                // TODO: handle error
+            } else {
+                res.get().forEach(msg -> {
+                    var text = msg_c.decrypt_usr_msg(msg.cipher_msg, current_target);
+                    chat_box.add(new ChatItem(
+                            msg.sender.equals(username) ? null : msg.sender, msg.sent_date,
+                            text.orElse("[Message is not available]"),
+                            !msg.sender.equals(username)));
+                });
+                chat_container.setViewportView(chat_box);
+                JScrollBar vertical = chat_container.getVerticalScrollBar();
+                vertical.setValue(vertical.getMaximum());
+            }
+        });
     }
 
     public void showPeople() {
-        for (int i = 0; i < 50; ++i) {
-            menuList.add(new ItemPeople("People " + i, Integer.toString(i)), "wrap");
+        Consumer<String> on_click;
+        on_click = (name) -> {
+            current_target = name;
+            chat_box = new ChatArea();
+            chat_container.setViewportView(chat_box);
+            chat_box.setLayout(new BoxLayout(chat_box, BoxLayout.Y_AXIS));
+            register_chat_box_notification_event();
+            var api_res = api_c.invoke_api("FriendChatService", "get_all_msg", token, name);
+            if (api_res instanceof ResultError err) {
+                System.out.println(err.msg());
+            } else if (api_res instanceof ResultOk ok) {
+                var msgs = (ArrayList<ChatMessage>) ok.data();
+                msgs.forEach(msg -> {
+                    Optional<String> text = msg_c.decrypt_usr_msg(msg.cipher_msg, name);
+                    chat_box.add(new ChatItem(
+                            msg.sender.equals(username) ? null : msg.sender, msg.sent_date,
+                            text.orElse("[Message is not available]"),
+                            !msg.sender.equals(username)));
+                });
+            }
+            chat_box.repaint();
+            JScrollBar vertical = chat_container.getVerticalScrollBar();
+            vertical.setValue(vertical.getMaximum());
+            chat_container.repaint();
+        };
+        api_c.async_invoke_api(api_res -> {
+            if (api_res instanceof ResultError err) {
+                System.out.println(err.msg());
+            } else if (api_res instanceof ResultOk ok) {
+                var friends = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
+                chats = friends.stream().map(x -> {
+                    var chat_item = new ChatSession(x.a.username, x.a.username, x.b, on_click);
+                    menuList.add(chat_item, "wrap");
+                    return chat_item;
+                }).toList();
+            }
+        }, "UserManagementService", "list_friends", token);
+        register_menu_notification_event();
+    }
+
+    void handle_send_msg() {
+        if (current_target == null) return;
+        String msg = input_area.getText();
+        if (!msg_c.send_friend(current_target, msg)) {
+            // TODO: handle can't send message
+        } else if (chat_box != null) {
+            chat_box.add(new ChatItem(null, new Date(), msg, false));
+            input_area.setText("");
+            chat_container.setViewportView(chat_box);
+            JScrollBar vertical = chat_container.getVerticalScrollBar();
+            vertical.setValue(vertical.getMaximum());
         }
     }
 
@@ -85,6 +179,8 @@ public class UserDashboard extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        chat_area = new javax.swing.JScrollPane();
+        jRadioButton1 = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         jTextField1 = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
@@ -97,19 +193,15 @@ public class UserDashboard extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         menuList = new javax.swing.JLayeredPane();
-        jPanel4 = new javax.swing.JPanel();
-        lbNameSelected = new javax.swing.JLabel();
-        lbStatus = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jPanel5 = new javax.swing.JPanel();
-        jTextField2 = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        body = new javax.swing.JPanel();
-        sp = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        input_area = new javax.swing.JTextField();
+        chat_container = new javax.swing.JScrollPane();
+
+        chat_area.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        jRadioButton1.setText("jRadioButton1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -150,7 +242,7 @@ public class UserDashboard extends javax.swing.JFrame {
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
                 .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -203,7 +295,7 @@ public class UserDashboard extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addGap(26, 26, 26)
                 .addComponent(jLabel3)
-                .addContainerGap(528, Short.MAX_VALUE))
+                .addContainerGap(509, Short.MAX_VALUE))
         );
 
         jScrollPane1.setBackground(new java.awt.Color(255, 255, 255));
@@ -225,116 +317,68 @@ public class UserDashboard extends javax.swing.JFrame {
 
         jScrollPane1.setViewportView(menuList);
 
-        jPanel4.setBackground(new java.awt.Color(255, 255, 255));
-
-        lbNameSelected.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        lbNameSelected.setText(".....");
-
-        lbStatus.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        lbStatus.setForeground(new java.awt.Color(51, 177, 55));
-        lbStatus.setText("Active");
-
-        jLabel9.setText("Search ");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lbNameSelected, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(77, 77, 77))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(13, 13, 13)
-                        .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(lbNameSelected)
-                        .addGap(10, 10, 10)
-                        .addComponent(lbStatus)))
-                .addContainerGap())
-        );
-
-        jTextField2.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jTextField2.setText("Text here");
-
-        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-send-48.png"))); // NOI18N
-        jLabel7.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 588, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.Alignment.TRAILING)))
-        );
-
-        jPanel2.setLayout(new java.awt.CardLayout());
-
-        sp.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        javax.swing.GroupLayout bodyLayout = new javax.swing.GroupLayout(body);
-        body.setLayout(bodyLayout);
-        bodyLayout.setHorizontalGroup(
-            bodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(sp, javax.swing.GroupLayout.DEFAULT_SIZE, 687, Short.MAX_VALUE)
-        );
-        bodyLayout.setVerticalGroup(
-            bodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(sp, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
-        );
-
-        jPanel2.add(body, "card3");
-
-        jLabel11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/logo-no-background_1.png"))); // NOI18N
-
-        jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel10.setText("Welcome to JavaBroChat");
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(210, 210, 210)));
+        jPanel1.setForeground(new java.awt.Color(195, 191, 191));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(93, 93, 93)
-                .addComponent(jLabel11)
-                .addContainerGap(94, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(221, 221, 221))
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(184, 184, 184)
-                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel11)
-                .addContainerGap(254, Short.MAX_VALUE))
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        jPanel2.add(jPanel1, "card2");
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel7.setBackground(new java.awt.Color(204, 204, 204));
+        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-send-48.png"))); // NOI18N
+        jLabel7.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel7.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel7MouseClicked(evt);
+            }
+        });
+
+        input_area.setFont(new java.awt.Font("SansSerif.plain", 0, 26)); // NOI18N
+        input_area.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                input_areaActionPerformed(evt);
+            }
+        });
+        input_area.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                input_areaKeyReleased(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(input_area, javax.swing.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
+                    .addComponent(input_area))
+                .addContainerGap())
+        );
+
+        chat_container.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        chat_container.setHorizontalScrollBar(null);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -344,33 +388,31 @@ public class UserDashboard extends javax.swing.JFrame {
                 .addComponent(pnToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(chat_container)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(pnToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 623, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(chat_container)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1)))
         );
 
-        setSize(new java.awt.Dimension(1100, 787));
+        setSize(new java.awt.Dimension(1109, 757));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -382,6 +424,21 @@ public class UserDashboard extends javax.swing.JFrame {
         new CreateGroupForm().setVisible(true);
     }//GEN-LAST:event_jLabel8MouseClicked
 
+    private void input_areaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_input_areaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_input_areaActionPerformed
+
+    private void jLabel7MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel7MouseClicked
+        handle_send_msg();
+    }//GEN-LAST:event_jLabel7MouseClicked
+
+    private void input_areaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_input_areaKeyReleased
+        // TODO add your handling code here:
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            handle_send_msg();
+        }
+    }//GEN-LAST:event_input_areaKeyReleased
+
     public static void main(String args[]) {
 
         try {
@@ -389,16 +446,24 @@ public class UserDashboard extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(UserDashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(UserDashboard.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(UserDashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(UserDashboard.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(UserDashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(UserDashboard.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(UserDashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(UserDashboard.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -408,10 +473,10 @@ public class UserDashboard extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel body;
+    private javax.swing.JScrollPane chat_area;
+    private javax.swing.JScrollPane chat_container;
+    private javax.swing.JTextField input_area;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -419,19 +484,13 @@ public class UserDashboard extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
+    private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private static javax.swing.JLabel lbNameSelected;
-    private javax.swing.JLabel lbStatus;
     private javax.swing.JLayeredPane menuList;
     private javax.swing.JPanel pnToolBar;
-    private javax.swing.JScrollPane sp;
     // End of variables declaration//GEN-END:variables
 }

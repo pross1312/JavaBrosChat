@@ -25,6 +25,7 @@ public class ClientA {
     static String cur_group_id;
     static ArrayList<GroupChatInfo> groups;
     static MessageClient msg_client;
+    static String username;
     static {
         try {
             Connection.init_ssl("/.ssl/root/ca.jks", "changeit");
@@ -40,51 +41,42 @@ public class ClientA {
     static void init(String token, String username) throws Exception {
         authen_token = token;
         notify = new NotifyClient(authen_token, "localhost", SERVER_PORT);
-        msg_client = new MessageClient(username);
+        msg_client = new MessageClient(username, token, "localhost", SERVER_PORT);
         notify.register(FriendLogin.class, "main", (noti) -> {
             var new_login = (FriendLogin)noti;
             System.out.printf("[%s] just logged in\n", new_login.friend);
         });
         notify.register(NewGroupMsg.class, "main", (notification) -> {
             var noti = (NewGroupMsg)notification;
-            System.out.printf("%d checkout\n", noti.count);
-            try {
-                api_c.async_invoke_api(x -> {
-                    if (x instanceof ResultOk okk) {
-                        var msgs = (ArrayList<ChatMessage>)okk.data();
-                        msgs.forEach(cipher_msg -> {
-                            var sender = cipher_msg.sender;
-                            var msg = msg_client.decrypt(sender, cipher_msg.cipher_msg);
-                            if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
-                            else System.out.printf("[%s] %s\n", sender, msg.get());
-                        });
-                    } else if (x instanceof ResultError err) {
-                        System.out.println(err.msg());
-                    }
-                }, "GroupChatService", "get_unread_msg", authen_token, noti.group_id);
-            } catch (IOException e) {
-                System.out.println(e);
-            }
+            api_c.async_invoke_api(result -> {
+                if (result instanceof ResultError err) {
+                    System.out.println(err.msg());
+                } else if (result instanceof ResultOk ok) {
+                    ArrayList<ChatMessage> msgs = (ArrayList<ChatMessage>)ok.data();
+                    msgs.forEach(x -> {
+                        System.out.printf("%s [%s] %s\n",
+                                x.sent_date.toLocaleString(),
+                                x.sender,
+                                msg_client.decrypt_group_msg(x.cipher_msg, x.target).orElse("NOPE"));
+                    });
+                }
+            }, "GroupChatService", "get_unread_msg", authen_token, noti.group_id);
         });
         notify.register(NewFriendMsg.class, "main", (notification) -> {
             var noti = (NewFriendMsg)notification;
-            try {
-                api_c.async_invoke_api(x -> {
-                    if (x instanceof ResultOk okk) {
-                        var msgs = (ArrayList<ChatMessage>)okk.data();
-                        msgs.forEach(cipher_msg -> {
-                            var sender = cipher_msg.sender;
-                            var msg = msg_client.decrypt(sender, cipher_msg.cipher_msg);
-                            if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
-                            else System.out.printf("[%s] %s\n", sender, msg.get());
-                        });
-                    } else if (x instanceof ResultError err) {
-                        System.out.println(err.msg());
-                    }
-                }, "FriendChatService", "get_unread_msg", authen_token, noti.sender);
-            } catch (IOException e) {
-                System.out.println(e);
-            }
+            api_c.async_invoke_api(result -> {
+                if (result instanceof ResultError err) {
+                    System.out.println(err.msg());
+                } else if (result instanceof ResultOk ok) {
+                    ArrayList<ChatMessage> msgs = (ArrayList<ChatMessage>)ok.data();
+                    msgs.forEach(x -> {
+                        System.out.printf("%s [%s] %s\n",
+                                x.sent_date.toLocaleString(),
+                                x.sender,
+                                msg_client.decrypt_usr_msg(x.cipher_msg, x.sender).orElse("NOPE"));
+                    });
+                }
+            }, "FriendChatService", "get_unread_msg", authen_token, noti.sender);
         });
     }
     public static void shell() throws Exception {
@@ -92,119 +84,174 @@ public class ClientA {
         while (true) {
             var line = scanner.nextLine().trim();
             var tokens = Arrays.stream(line.split(" ")).map(x -> x.trim()).toList();
-            if (tokens.get(0).compareTo("/logout") == 0) {
-                var result = api_c.invoke_api("AccountService", "logout", authen_token);
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-                notify.close();
-            } else if (tokens.get(0).equals("/register")) {
-                var result = api_c.invoke_api("AccountService", "register", tokens.get(1), tokens.get(2),
-                        new UserInfo(tokens.get(1), "tuong321", "1j2oi", "helloeverybody648@gmail.com", new java.util.Date(), UserInfo.Gender.Male));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-            } else if (tokens.get(0).compareTo("/login") == 0) {
-                var result = api_c.invoke_api("AccountService", "login",
-                        tokens.get(1), tokens.get(2));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                } else if (result instanceof ResultOk ok) {
-                    init(((Pair<String, AccountType>)ok.data()).a, tokens.get(1));
-                }
-            } else if (tokens.get(0).compareTo("/listfriend") == 0) {
-                var result = api_c.invoke_api("UserManagementService", "list_friends", authen_token);
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                } else if (result instanceof ResultOk ok) {
-                    var friends = (ArrayList<Pair<UserInfo, Boolean>>)ok.data();
-                    for (var x : friends) {
-                        System.out.printf("%s : %s\n", x.a.username, x.b);
+            switch (tokens.get(0)) {
+                case "/logout": {
+                    var result = api_c.invoke_api("AccountService", "logout", authen_token);
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
                     }
+                    notify.close();
+                    break;
                 }
-            } else if (tokens.get(0).compareTo("/friend") == 0) {
-                var result = api_c.invoke_api("UserManagementService", "add_friend", authen_token, tokens.get(1));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-            } else if (tokens.get(0).compareTo("/unfriend") == 0) {
-                var result = api_c.invoke_api("UserManagementService", "unfriend", authen_token, tokens.get(1));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-            } else if (tokens.get(0).compareTo("/create") == 0) {
-                var users = Arrays.stream(scanner.nextLine().split(" ")).map(x -> x.trim()).toList();
-                var result = api_c.invoke_api("GroupChatService", "create", authen_token,
-                                              tokens.get(1), new ArrayList<>(users));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                } else if (result instanceof ResultOk ok) {
-                }
-            } else if (tokens.get(0).compareTo("/use") == 0) {
-                cur_group_id = groups.get(Integer.parseInt(tokens.get(1))).id;
-            } else if (tokens.get(0).compareTo("/newmsg") == 0) {
-                var result = api_c.invoke_api("GroupChatService", "get_unread_msg", authen_token, cur_group_id);
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                } else if (result instanceof ResultOk ok) {
-                    var msgs = (ArrayList<ChatMessage>)ok.data();
-                    for (int i = 0; i < msgs.size(); i++) {
-                        var sender = msgs.get(i).sender;
-                        var msg = msg_client.decrypt(sender, msgs.get(i).cipher_msg);
-                        if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
-                        else System.out.printf("[%s] %s\n", sender, msg.get());
+                case "/register": {
+                    var result = api_c.invoke_api("AccountService", "register", tokens.get(1), tokens.get(2),
+                            new UserInfo(tokens.get(1), "tuong321", "1j2oi", "helloeverybody648@gmail.com", new java.util.Date(), UserInfo.Gender.Male));
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
                     }
+                    break;
                 }
-            } else if (tokens.get(0).compareTo("/delete") == 0) {
-                var result = api_c.invoke_api("GroupChatService", "remove_member", authen_token, cur_group_id, tokens.get(1));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-            } else if (tokens.get(0).compareTo("/sendfriend") == 0) {
-                System.out.print("MSG: ");
-                var text = scanner.nextLine();
-                if (!msg_client.send_msg(tokens.get(1), text)) {
-                    System.out.println("[ERROR] Could not send message to " + tokens.get(1));
-                }
-            } else if (tokens.get(0).compareTo("/send") == 0) {
-                System.out.print("MSG: ");
-                var text = scanner.nextLine();
-                if (!msg_client.send_group_msg(cur_group_id, text)) {
-                    System.out.println("[ERROR] Could not send message to group");
-                }
-            } else if (tokens.get(0).compareTo("/rename") == 0) {
-                var result = api_c.invoke_api("GroupChatService", "rename",
-                        authen_token, cur_group_id, tokens.get(1));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-            } else if (tokens.get(0).compareTo("/set_admin") == 0) {
-                var result = api_c.invoke_api("GroupChatService", "set_admin",
-                        authen_token, cur_group_id, tokens.get(1), Boolean.TRUE);
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-            } else if (tokens.get(0).compareTo("/add_member") == 0) {
-                var result = api_c.invoke_api("GroupChatService", "add_member", authen_token, cur_group_id, tokens.get(1));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-            } else if (tokens.get(0).compareTo("/recover") == 0) {
-                var result = api_c.invoke_api("AccountService",
-                        "recover_pass", tokens.get(1));
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                }
-            } else if (tokens.get(0).compareTo("/list") == 0) {
-                var result = api_c.invoke_api("GroupChatService", "list_groups", authen_token);
-                if (result instanceof ResultError err) {
-                    System.out.println(err.msg());
-                } else if (result instanceof ResultOk ok) {
-                    groups = (ArrayList<GroupChatInfo>)ok.data();
-                    for (int i = 0; i < groups.size(); i++) {
-                        System.out.printf("%3s: %s\n", i, groups.get(i).name);
+                case "/login": {
+                    username = tokens.get(1);
+                    var result = api_c.invoke_api("AccountService", "login",
+                            tokens.get(1), tokens.get(2));
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    } else if (result instanceof ResultOk ok) {
+                        init(((Pair<String, AccountType>)ok.data()).a, tokens.get(1));
                     }
+                    break;
                 }
+                case "/listfriend": {
+                    var result = api_c.invoke_api("UserManagementService", "list_friends", authen_token);
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    } else if (result instanceof ResultOk ok) {
+                        var friends = (ArrayList<Pair<UserInfo, Boolean>>)ok.data();
+                        for (var x : friends) {
+                            System.out.printf("%s : %s\n", x.a.username, x.b);
+                        }
+                    }
+                    break;
+                }
+                case "/friend": {
+                    msg_client.add_friend(tokens.get(1));
+                    break;
+                }
+                case "/unfriend": {
+                    var result = api_c.invoke_api("UserManagementService", "unfriend", authen_token, tokens.get(1));
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    }
+                    break;
+                }
+                case "/create": {
+                    var users = Arrays.stream(scanner.nextLine().split(" ")).map(x -> x.trim()).toList();
+                    var id = msg_client.create_group(tokens.get(1), new ArrayList<>(users));
+                    if (id.isPresent()) cur_group_id = id.get();
+                    break;
+                }
+                case "/use": {
+                    cur_group_id = groups.get(Integer.parseInt(tokens.get(1))).id;
+                    break;
+                }
+                // case "/newmsg": {
+                //     var result = api_c.invoke_api("GroupChatService", "get_unread_msg", authen_token, cur_group_id);
+                //     if (result instanceof ResultError err) {
+                //         System.out.println(err.msg());
+                //     } else if (result instanceof ResultOk ok) {
+                //         var msgs = (ArrayList<ChatMessage>)ok.data();
+                //         for (int i = 0; i < msgs.size(); i++) {
+                //             var sender = msgs.get(i).sender;
+                //             var msg = msg_client.decrypt_user_msg(sender, msgs.get(i).cipher_msg);
+                //             if (msg.isEmpty()) System.out.println("Can't decrypt message from " + sender);
+                //             else System.out.printf("[%s] %s\n", sender, msg.get());
+                //         }
+                //     }
+                //     break;
+                // }
+                case "/delete": {
+                    var result = api_c.invoke_api("GroupChatService", "remove_member", authen_token, cur_group_id, tokens.get(1));
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    }
+                    break;
+                }
+                case "/sendfriend": {
+                    System.out.print("MSG: ");
+                    var text = scanner.nextLine();
+                    if (!msg_client.send_friend(tokens.get(1), text)) {
+                        System.out.println("[ERROR] Could not send message to " + tokens.get(1));
+                    }
+                    break;
+                }
+                case "/send": {
+                    System.out.print("MSG: ");
+                    var text = scanner.nextLine();
+                    if (!msg_client.send_group(cur_group_id, text)) {
+                        System.out.println("[ERROR] Could not send message to group");
+                    }
+                    break;
+                }
+                case "/rename": {
+                    var result = api_c.invoke_api("GroupChatService", "rename",
+                            authen_token, cur_group_id, tokens.get(1));
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    }
+                    break;
+                }
+                case "/set_admin": {
+                    var result = api_c.invoke_api("GroupChatService", "set_admin",
+                            authen_token, cur_group_id, tokens.get(1), Boolean.TRUE);
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    }
+                    break;
+                }
+                case "/add_member": {
+                    if (!msg_client.add_usr_to_group(tokens.get(1), cur_group_id)) {
+                        System.out.println("[FAILED]");
+                    }
+                    break;
+                }
+                case "/recover": {
+                    var result = api_c.invoke_api("AccountService",
+                            "recover_pass", tokens.get(1));
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    }
+                    break;
+                }
+                case "/allgroup": {
+                    var api_res = api_c.invoke_api("GroupChatService", "get_all_msg", authen_token, cur_group_id);
+                    if (api_res instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    } else if (api_res instanceof ResultOk ok) {
+                        ArrayList<ChatMessage> msgs = (ArrayList<ChatMessage>)ok.data();
+                        msgs.forEach(x -> {
+                            System.out.printf("%s [%s] %s\n",
+                                    x.sent_date.toLocaleString(),
+                                    x.sender,
+                                    x.cipher_msg != null ?
+                                        msg_client.decrypt_group_msg(x.cipher_msg, x.target)
+                                                  .orElse("NOPE") :
+                                        "[DELETED]");
+                        });
+                    }
+                    break;
+                }
+                // case "/allfriend": {
+                //     msg_client.all_friend_msg(tokens.get(1)).forEach(msg -> {
+                //         var sender = msg.sender;
+                //         System.out.printf("[%s] %s\n", sender, msg.text);
+                //     });
+                //     break;
+                // }
+                case "/list": {
+                    var result = api_c.invoke_api("GroupChatService", "list_groups", authen_token);
+                    if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    } else if (result instanceof ResultOk ok) {
+                        groups = (ArrayList<GroupChatInfo>)ok.data();
+                        for (int i = 0; i < groups.size(); i++) {
+                            System.out.printf("%3s: %s\n", i, groups.get(i).name);
+                        }
+                    }
+                    break;
+                }
+                default:
+                    System.out.printf("Unknown command '%s'\n", tokens.get(0));
             }
         }
     }

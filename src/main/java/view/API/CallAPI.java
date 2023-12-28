@@ -1,5 +1,6 @@
 package view.API;
 
+import Utils.ChatMessage;
 import Utils.GroupChatMemberInfo;
 import Utils.LoginRecord;
 import Utils.Pair;
@@ -11,8 +12,10 @@ import Utils.UserInfo;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -31,32 +34,24 @@ public class CallAPI {
 
     public static ArrayList<GroupChatMemberInfo> list_group_members(String token, String group_id) {
         ArrayList<GroupChatMemberInfo> list_member = null;
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_group_members", token, group_id);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                list_member = (ArrayList<GroupChatMemberInfo>) ok.data();
-                return list_member;
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_group_members", token, group_id);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            list_member = (ArrayList<GroupChatMemberInfo>) ok.data();
+            return list_member;
         }
         return list_member;
     }
 
     public static ArrayList<Date> getLogInHistory(String token, String username) {
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "get_login_log", token, username);
-            if (rs instanceof ResultError err) {
-                System.out.println(err.msg());
-                return null;
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<Date> login_Records = (ArrayList< Date>) ok.data();
-                return login_Records;
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "get_login_log", token, username);
+        if (rs instanceof ResultError err) {
+            System.out.println(err.msg());
+            return null;
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<Date> login_Records = (ArrayList< Date>) ok.data();
+            return login_Records;
         }
         return null;
     }
@@ -78,33 +73,23 @@ public class CallAPI {
 
     public static void lockUser(String token, String username) {
         String msg = null;
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
-            if (rs instanceof ResultError err) {
-                msg = err.msg();
-            } else if (rs instanceof ResultOk ok) {
-                msg = "Lock User Successfully";
-            }
-
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
+        if (rs instanceof ResultError err) {
+            msg = err.msg();
+        } else if (rs instanceof ResultOk ok) {
+            msg = "Lock User Successfully";
         }
     }
 
     public static void unlockUser(String token, String username) {
         String msg = null;
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "unlock_user", token, username);
-            if (rs instanceof ResultError err) {
-                msg = err.msg();
-            } else if (rs instanceof ResultOk ok) {
-                msg = "Un Lock User Successfully";
-            }
-            JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
-
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "unlock_user", token, username);
+        if (rs instanceof ResultError err) {
+            msg = err.msg();
+        } else if (rs instanceof ResultOk ok) {
+            msg = "Un Lock User Successfully";
         }
+        JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public static ArrayList<Integer> getUserEachMonthinYear(int year, String token, String typeUser) {
@@ -122,62 +107,59 @@ public class CallAPI {
             LocalDate from = LocalDate.of(year, i, 1);
             LocalDate to = LocalDate.of(year, i, end_of_Month);
 
-            Date fromDateAsDate = java.sql.Date.valueOf(from);
-            Date toDateAsDate = java.sql.Date.valueOf(to);
-            try {
-                Result rs = Client.Client.api_c.invoke_api("AdminService", nameService, token, fromDateAsDate, toDateAsDate);
-                if (rs instanceof ResultError err) {
-                    JOptionPane.showMessageDialog(null, err.msg());
-                } else if (rs instanceof ResultOk ok) {
-                    ArrayList<RegistrationRecord> record_list = (ArrayList<RegistrationRecord>) ok.data();
-                    if (record_list == null) {
-                        JOptionPane.showMessageDialog(null, "Error while connecting to server");
-                        return null;
-                    }
-                    int amount_of_User = record_list.size();
-                    list_amount_users.add(amount_of_User);
+            Date fromDateAsDate = Date.from(from.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+            Date toDateAsDate = Date.from(to.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+            Result rs = Client.Client.api_c.invoke_api("AdminService", nameService, token, fromDateAsDate, toDateAsDate);
+            if (rs instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            } else if (rs instanceof ResultOk ok) {
+                ArrayList<RegistrationRecord> record_list = (ArrayList<RegistrationRecord>) ok.data();
+                if (record_list == null) {
+                    JOptionPane.showMessageDialog(null, "Error while connecting to server");
+                    return null;
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+                int amount_of_User = record_list.size();
+                list_amount_users.add(amount_of_User);
             }
         }
 
         return list_amount_users;
     }
+    
+    public static Optional<ArrayList<ChatMessage>> get_unread_friend(String token, String friend) {
+        var result = Client.Client.api_c.invoke_api("FriendChatService", "get_unread_msg", token, friend);
+        if (result instanceof ResultError err) {
+            System.out.println(err.msg());
+        } else if (result instanceof ResultOk ok) {
+            return Optional.of((ArrayList<ChatMessage>) ok.data());
+        }
+        return Optional.empty();
+    }
 
     public static ArrayList<LoginRecord> get_login_log(String token) {
         ArrayList<LoginRecord> login_records = null;
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "get_login_log", token);
-            if (rs instanceof ResultError err) {
-                String msg = err.msg();
-                JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
-            } else if (rs instanceof ResultOk ok) {
-                login_records = (ArrayList<LoginRecord>) ok.data();
-            }
-
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "get_login_log", token);
+        if (rs instanceof ResultError err) {
+            String msg = err.msg();
+            JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
+        } else if (rs instanceof ResultOk ok) {
+            login_records = (ArrayList<LoginRecord>) ok.data();
         }
         return login_records;
     }
 
     public static ArrayList<UserInfo> list_active_users(String token, Date from, Date to) {
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_active_users", token, from, to);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_active_users", token, from, to);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+            return null;
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<UserInfo> record_list = (ArrayList<UserInfo>) ok.data();
+            if (record_list == null) {
+                JOptionPane.showMessageDialog(null, "Error while connecting to server");
                 return null;
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<UserInfo> record_list = (ArrayList<UserInfo>) ok.data();
-                if (record_list == null) {
-                    JOptionPane.showMessageDialog(null, "Error while connecting to server");
-                    return null;
-                }
-                return record_list;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(AdminDashboard.class.getName()).log(Level.SEVERE, null, ex);
+            return record_list;
         }
         return null;
     }
@@ -185,18 +167,14 @@ public class CallAPI {
     public static ArrayList<Pair<UserInfo, Boolean>> get_list_users(String token) {
         String msg;
         ArrayList<Pair<UserInfo, Boolean>> user_list = null;
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
-            if (rs instanceof ResultError err) {
-                msg = err.msg();
-                return user_list;
-            } else if (rs instanceof ResultOk ok) {
-                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-                user_list = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
-                return user_list;
-            }
-        } catch (IOException e) {
-            System.out.println(e);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
+        if (rs instanceof ResultError err) {
+            msg = err.msg();
+            return user_list;
+        } else if (rs instanceof ResultOk ok) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            user_list = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
+            return user_list;
         }
         return user_list;
     }

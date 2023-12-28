@@ -9,6 +9,8 @@ import javax.swing.ImageIcon;
 
 import Client.ApiClient;
 import Client.Client;
+import Client.MessageClient;
+import Client.NotifyClient;
 import Utils.AccountType;
 import Utils.Pair;
 import Utils.ResultError;
@@ -396,32 +398,36 @@ public class Login extends javax.swing.JFrame {
         handleLogin();
         }//GEN-LAST:event_btnLoginMouseClicked
     private void handleLogin() {
-        try {
-            final String username = txtUsername.getText();
-            final String pwd = txtPassword.getText();
+        final String username = txtUsername.getText();
+        final String pwd = txtPassword.getText();
 
-            var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
-            if (result instanceof ResultError err) {
-                txtFlagAccount.setText(err.msg());
-                txtFlagAccount.show();
-                System.out.println(err.msg());
-            } else if (result instanceof ResultOk success) {
-                var data = (Pair<String, AccountType>) success.data();
-                Client.token = data.a;
-                System.out.println("Token: " + data.a);
-                System.out.print("Type: ");
-                System.out.println(data.b);
-                if (data.b == AccountType.Admin) {
-                    new Version2AdminDashBoard().setVisible(true); 
-//                    new AdminDashboard().setVisible(true);
-                    this.dispose();
-                } else if (data.b == AccountType.User) {
+        var result = Client.api_c.invoke_api("AccountService", "login", username, pwd);
+        if (result instanceof ResultError err) {
+            txtFlagAccount.setText(err.msg());
+            txtFlagAccount.show();
+            System.out.println(err.msg());
+        } else if (result instanceof ResultOk success) {
+            var data = (Pair<String, AccountType>) success.data();
+            Client.token = data.a;
+            System.out.println("Token: " + data.a);
+            System.out.print("Type: ");
+            System.out.println(data.b);
+            Client.username = username;
+            if (data.b == AccountType.Admin) {
+                new Version2AdminDashBoard().setVisible(true); 
+                //                    new AdminDashboard().setVisible(true);
+                this.dispose();
+            } else if (data.b == AccountType.User) {
+                try {
+                    Client.noti_c = new NotifyClient(data.a, Client.SV_ADDR, Client.SV_PORT);
+                    Client.msg_c = new MessageClient(username, data.a, Client.SV_ADDR, Client.SV_PORT);
                     new UserDashboard().setVisible(true);
-                    this.dispose();
+                } catch(IOException e) {
+                    txtFlagAccount.setText("Network error");
+                    txtFlagAccount.show();
                 }
+                this.dispose();
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     private void txtSignupMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSignupMouseClicked

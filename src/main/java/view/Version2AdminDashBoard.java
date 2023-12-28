@@ -1564,20 +1564,16 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
             int result = JOptionPane.showConfirmDialog((Component) null, "Are you sure?",
                     "alert", JOptionPane.OK_CANCEL_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                try {
 
-                    // Call delete
-                    Result rs = Client.Client.api_c.invoke_api("AdminService", "del_user",
-                            Client.Client.token, tblUser.getValueAt(index, 0));
-                    if (rs instanceof ResultError err) {
-                        msg = err.msg();
-                        System.out.println(err.msg());
-                    } else {
-                        msg = "Selected row deleted successfully";
-                        model.removeRow(tblUser.getSelectedRow());
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(Version2AdminDashBoard.class.getName()).log(Level.SEVERE, null, ex);
+                // Call delete
+                Result rs = Client.Client.api_c.invoke_api("AdminService", "del_user",
+                        Client.Client.token, tblUser.getValueAt(index, 0));
+                if (rs instanceof ResultError err) {
+                    msg = err.msg();
+                    System.out.println(err.msg());
+                } else {
+                    msg = "Selected row deleted successfully";
+                    model.removeRow(tblUser.getSelectedRow());
                 }
                 JOptionPane.showMessageDialog(null, msg);
             }
@@ -1594,22 +1590,18 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         modelGroup = (DefaultTableModel) tblGroup.getModel();
         modelGroup.setRowCount(0);
 
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_groups", token);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<GroupChatInfo> group_list = (ArrayList<GroupChatInfo>) ok.data();
-                if (group_list == null) {
-                    JOptionPane.showMessageDialog(null, "Error for connect to server");
-                    return;
-                }
-                for (var group : group_list) {
-                    addRowtoTable(new Object[]{group.id, group.name, group.created_date}, false, modelGroup);
-                }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_groups", token);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<GroupChatInfo> group_list = (ArrayList<GroupChatInfo>) ok.data();
+            if (group_list == null) {
+                JOptionPane.showMessageDialog(null, "Error for connect to server");
+                return;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Version2AdminDashBoard.class.getName()).log(Level.SEVERE, null, ex);
+            for (var group : group_list) {
+                addRowtoTable(new Object[]{group.id, group.name, group.created_date}, false, modelGroup);
+            }
         }
 
         initSorter(modelGroup, tblGroup);
@@ -1658,22 +1650,18 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         data.revalidate();
         modelSpam = (DefaultTableModel) tblSpam.getModel();
         modelSpam.setRowCount(0);
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_spam_reports", token);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<SpamReport> spam_list = (ArrayList<SpamReport>) ok.data();
-                if (spam_list == null) {
-                    JOptionPane.showMessageDialog(null, "Error while connecting to server");
-                    return;
-                }
-                for (var spam : spam_list) {
-                    addRowtoTable(new Object[]{spam.reporter, spam.target, spam.reason, spam.date}, false, modelSpam);
-                }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_spam_reports", token);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<SpamReport> spam_list = (ArrayList<SpamReport>) ok.data();
+            if (spam_list == null) {
+                JOptionPane.showMessageDialog(null, "Error while connecting to server");
+                return;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Version2AdminDashBoard.class.getName()).log(Level.SEVERE, null, ex);
+            for (var spam : spam_list) {
+                addRowtoTable(new Object[]{spam.reporter, spam.target, spam.reason, spam.date}, false, modelSpam);
+            }
         }
 
         initSorter(modelSpam, tblSpam);
@@ -1701,11 +1689,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         String token = Client.Client.token;
         Result rs = null;
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
-        try {
-            rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token, start, end);
-        } catch (IOException ex) {
-            Logger.getLogger(Version2AdminDashBoard.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token, start, end);
         if (rs instanceof ResultError err) {
             JOptionPane.showMessageDialog(null, err.msg());
         } else if (rs instanceof ResultOk ok) {
@@ -1853,7 +1837,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }
 
     private void jLabel29MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel29MouseClicked
-        new DateSelectionForm(this, 1);
+        new DateSelectionForm(this);
     }//GEN-LAST:event_jLabel29MouseClicked
 
     private void txtManageNewUser1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtManageNewUser1MouseClicked
@@ -1864,45 +1848,41 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         moreInfoModel.setRowCount(0);
         String msg = "";
 
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
-            if (rs instanceof ResultError err) {
-                msg = err.msg();
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<Pair<UserInfo, Boolean>> user_list = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
-                for (var item : user_list) {
-                    var user = item.a;
-                    int amount_friend = 0;
-                    int amount_matual_friend = 0;
-                    //GET First log in Time
-                    Date first_LogIn = CallAPI.getFirstLoginTime(Client.Client.token, user.username);
-                    if (first_LogIn == null) {
-                        System.out.println("Cant get first Login time");
-                    } else {
-                        // GET Getfriend, FOAF
-                        Result rsFriend = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", Client.Client.token, user.username);
-                        if (rsFriend instanceof ResultError err) {
-                            msg = err.msg();
-                        } else if (rsFriend instanceof ResultOk ok1) {
-                            ArrayList<UserInfo> friend_list = (ArrayList<UserInfo>) ok1.data();
-                            amount_friend = friend_list.size();
-                            for (var friend : friend_list) {
-                                Result rsFriendoFriend = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", Client.Client.token, friend.username);
-                                if (rsFriendoFriend instanceof ResultError err) {
-                                    msg = err.msg();
-                                } else if (rsFriendoFriend instanceof ResultOk ok2) {
-                                    ArrayList<UserInfo> friend_of_friend_list = (ArrayList<UserInfo>) ok2.data();
-                                    amount_matual_friend += friend_of_friend_list.size();
-                                }
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
+        if (rs instanceof ResultError err) {
+            msg = err.msg();
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<Pair<UserInfo, Boolean>> user_list = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
+            for (var item : user_list) {
+                var user = item.a;
+                int amount_friend = 0;
+                int amount_matual_friend = 0;
+                //GET First log in Time
+                Date first_LogIn = CallAPI.getFirstLoginTime(Client.Client.token, user.username);
+                if (first_LogIn == null) {
+                    System.out.println("Cant get first Login time");
+                } else {
+                    // GET Getfriend, FOAF
+                    Result rsFriend = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", Client.Client.token, user.username);
+                    if (rsFriend instanceof ResultError err) {
+                        msg = err.msg();
+                    } else if (rsFriend instanceof ResultOk ok1) {
+                        ArrayList<UserInfo> friend_list = (ArrayList<UserInfo>) ok1.data();
+                        amount_friend = friend_list.size();
+                        for (var friend : friend_list) {
+                            Result rsFriendoFriend = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", Client.Client.token, friend.username);
+                            if (rsFriendoFriend instanceof ResultError err) {
+                                msg = err.msg();
+                            } else if (rsFriendoFriend instanceof ResultOk ok2) {
+                                ArrayList<UserInfo> friend_of_friend_list = (ArrayList<UserInfo>) ok2.data();
+                                amount_matual_friend += friend_of_friend_list.size();
                             }
                         }
-
-                        moreInfoModel.addRow(new Object[]{user.username, user.fullname, amount_friend, amount_matual_friend, first_LogIn.toString()});
                     }
+
+                    moreInfoModel.addRow(new Object[]{user.username, user.fullname, amount_friend, amount_matual_friend, first_LogIn.toString()});
                 }
             }
-        } catch (IOException e) {
-            System.out.println(e);
         }
         if (msg != "") {
             JOptionPane.showMessageDialog(null, msg);
@@ -1927,29 +1907,25 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
 
         String username = (String) model.getValueAt(index, 0);
         Result rs = null;
-        try {
+        if ("LOCK".equals(functional)) {
+            rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
+        } else if ("UNLOCK".equals(functional)) {
+            rs = Client.Client.api_c.invoke_api("AdminService", "unlock_user", token, username);
+        }
+
+        if (rs instanceof ResultError err) {
+            msg = err.msg();
+            JOptionPane.showMessageDialog(null, msg, "ERROR", JOptionPane.ERROR_MESSAGE);
+        } else if (rs instanceof ResultOk ok) {
             if ("LOCK".equals(functional)) {
-                rs = Client.Client.api_c.invoke_api("AdminService", "lock_user", token, username);
+                msg = "Lock user successfully";
+                tblUser.setValueAt(true, index, 6);
             } else if ("UNLOCK".equals(functional)) {
-                rs = Client.Client.api_c.invoke_api("AdminService", "unlock_user", token, username);
+                msg = "Un Lock user successfully";
+                tblUser.setValueAt(false, index, 6);
             }
 
-            if (rs instanceof ResultError err) {
-                msg = err.msg();
-                JOptionPane.showMessageDialog(null, msg, "ERROR", JOptionPane.ERROR_MESSAGE);
-            } else if (rs instanceof ResultOk ok) {
-                if ("LOCK".equals(functional)) {
-                    msg = "Lock user successfully";
-                    tblUser.setValueAt(true, index, 6);
-                } else if ("UNLOCK".equals(functional)) {
-                    msg = "Un Lock user successfully";
-                    tblUser.setValueAt(false, index, 6);
-                }
-
-                JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(Version2AdminDashBoard.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, msg, "INFO", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_btnLockUserMouseClicked
 
@@ -1961,24 +1937,20 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         // List friend of user 
         final String token = Client.Client.token;
         final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
-        try {
-            Result rs = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", token, username);
-            if (rs instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, "Can't not show list friends of this user " + err.msg());
-            } else if (rs instanceof ResultOk ok) {
-                ArrayList<UserInfo> user_list = (ArrayList<UserInfo>) ok.data();
-                if (user_list == null) {
-                    JOptionPane.showMessageDialog(null, "User does'nt have friends");
-                    return;
-                }
-                if (user_list.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "This user doesn't have friends", "INFOMATION", JOptionPane.INFORMATION_MESSAGE);
-                    return;
-                }
-                new DisplayTable(user_list, new String[]{"User name", "Name", "Address", "Date of Birth", "Gender", "Email"}).setVisible(true);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", token, username);
+        if (rs instanceof ResultError err) {
+            JOptionPane.showMessageDialog(null, "Can't not show list friends of this user " + err.msg());
+        } else if (rs instanceof ResultOk ok) {
+            ArrayList<UserInfo> user_list = (ArrayList<UserInfo>) ok.data();
+            if (user_list == null) {
+                JOptionPane.showMessageDialog(null, "User does'nt have friends");
+                return;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(Version2AdminDashBoard.class.getName()).log(Level.SEVERE, null, ex);
+            if (user_list.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "This user doesn't have friends", "INFOMATION", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            new DisplayTable(user_list, new String[]{"User name", "Name", "Address", "Date of Birth", "Gender", "Email"}).setVisible(true);
         }
     }//GEN-LAST:event_btnListFriendMouseClicked
 
@@ -2003,18 +1975,14 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
             public void actionPerformed(ActionEvent e) {
                 String newPassword = new String(newPasswordField.getPassword());
                 String msg = "";
-                try {
-                    Result rs = Client.Client.api_c.invoke_api("AdminService", "change_user_pass", token, username, newPassword);
-                    if (rs instanceof ResultError err) {
-                        msg = err.msg();
-                    } else if (rs instanceof ResultOk ok) {
-                        msg = "Password updated to: " + newPassword;
-                    }
-                    JOptionPane.showMessageDialog(null, msg);
-                    newPwdFrame.dispose();
-                } catch (IOException ex) {
-                    Logger.getLogger(Version2AdminDashBoard.class.getName()).log(Level.SEVERE, null, ex);
+                Result rs = Client.Client.api_c.invoke_api("AdminService", "change_user_pass", token, username, newPassword);
+                if (rs instanceof ResultError err) {
+                    msg = err.msg();
+                } else if (rs instanceof ResultOk ok) {
+                    msg = "Password updated to: " + newPassword;
                 }
+                JOptionPane.showMessageDialog(null, msg);
+                newPwdFrame.dispose();
             }
         });
         newPwdFrame.add(updateButton);
@@ -2166,7 +2134,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }//GEN-LAST:event_cbFilterActiveUserActionPerformed
 
     private void jButton3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton3MouseClicked
-        new DateSelectionForm(this, 1);
+        new DateSelectionForm(this);
     }//GEN-LAST:event_jButton3MouseClicked
 
     /**

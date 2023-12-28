@@ -115,17 +115,14 @@ create table GroupChatMessage(
 	id int,
 	group_id GROUP_ID_TYPE,
 	sender USERNAME_TYPE,
-	receiver USERNAME_TYPE,
 	sent_date datetime not null,
 	cipher_msg varbinary(MAX) not null,
-	media_id varchar(50),
-	primary key(id, group_id, sender, receiver)
+	primary key(id, group_id, sender)
 )
 go
 alter table GroupChatMessage
 add constraint FK_GCMSG_GROUPCHAT foreign key(group_id) references GroupChat(id),
-	constraint FK_GCMSG_USER foreign key(sender) references UserInfo(username),
-	constraint FK_GCMSG_USER2 foreign key(receiver) references UserInfo(username)
+	constraint FK_GCMSG_USER foreign key(sender) references UserInfo(username)
 	
 go
 create table FriendChat(
@@ -134,7 +131,6 @@ create table FriendChat(
 	friend USERNAME_TYPE,
 	sent_date datetime not null,
 	msg varbinary(MAX) not null,
-	media_id varchar(50),
 	primary key(id, sender, friend)
 )
 go
@@ -159,19 +155,38 @@ add constraint VALID CHECK(target <> reporter),
 
 go
 
-create table KeyBundle(
-	address USERNAME_TYPE not null,
-	regis_id int not null,
-	dev_id int not null,
-	signed_key_id int not null,
-	signed_key_pub varbinary(512) not null,
-	signed_key_sig varbinary(512) not null,
-	identity_pub varbinary(512) not null,
-	primary key(address, dev_id)
+create table UserIdentity(
+    username USERNAME_TYPE,
+	public_key varbinary(2048) not null,
+	primary key(username)
 )
 go
-alter table KeyBundle
-add constraint FK_KB_USER foreign key(address) references UserInfo(username)
+alter table UserIdentity
+add constraint FK_ID_USER foreign key(username) references UserInfo(username)
+go
+
+create table UserChatSecret(
+    username USERNAME_TYPE,
+    target USERNAME_TYPE,
+    aes_params varbinary(300) not null,
+    primary key(username, target)
+)
+go
+alter table UserChatSecret
+add constraint FK_UCS_USER1 foreign key(username) references UserInfo(username),
+    constraint FK_UCS_USER2 foreign key(target) references UserInfo(username)
+go
+
+create table GroupChatSecret(
+    username USERNAME_TYPE,
+    target GROUP_ID_TYPE,
+    aes_params varbinary(300) not null,
+    primary key(username, target)
+)
+go
+alter table GroupChatSecret
+add constraint FK_GCS_USER foreign key(username) references UserInfo(username),
+    constraint FK_UCS_GROUP foreign key(target) references GroupChat(id)
 go
 
 CREATE FUNCTION list_friends_info(@usr USERNAME_TYPE)
@@ -185,10 +200,8 @@ go
 CREATE PROCEDURE add_msg_to_group
 	@group_id GROUP_ID_TYPE,
 	@sender USERNAME_TYPE,
-	@receiver USERNAME_TYPE,
 	@sent_date datetime,
-	@cipher_msg varbinary(MAX),
-	@media_id varchar(50)
+	@cipher_msg varbinary(MAX)
 AS
 	declare @id int
 	select @id = max(id) from GroupChatMessage where group_id = @group_id
@@ -197,7 +210,7 @@ AS
 		set @id = 0;
 	end
 	set @id = @id + 1
-   	insert into GroupChatMessage VALUES(@id, @group_id, @sender, @receiver, @sent_date, @cipher_msg, @media_id)
+   	insert into GroupChatMessage VALUES(@id, @group_id, @sender, @sent_date, @cipher_msg)
    	update GroupChatMember set last_read_msg = last_read_msg + 1 where group_id = @group_id and username = @sender
 GO
 CREATE PROCEDURE add_member_to_group 
@@ -216,6 +229,15 @@ RETURN
 	from GroupChat gc JOIN GroupChatMember gcm on gc.id = gcm.group_id
 	where gcm.username = @usr
 go
+CREATE FUNCTION get_all_group_msg(@username USERNAME_TYPE, @group_id GROUP_ID_TYPE) 
+RETURNS TABLE AS
+RETURN
+	select gcmsg.*
+	from GroupChatMessage gcmsg
+	join GroupChatMember gcm on gcm.group_id = gcmsg.group_id and
+		  gcm.username = @username and gcm.group_id = @group_id
+	where gcmsg.id >= gcm.start_history_msg
+go
 CREATE FUNCTION get_unread_group_msg(@username USERNAME_TYPE, @group_id GROUP_ID_TYPE) 
 RETURNS TABLE AS
 RETURN
@@ -223,7 +245,7 @@ RETURN
 	from GroupChatMessage gcmsg
 	join GroupChatMember gcm on gcm.group_id = gcmsg.group_id and
 		  gcm.username = @username and gcm.group_id = @group_id
-	where gcmsg.id > gcm.last_read_msg and gcmsg.receiver = @username
+	where gcmsg.id > gcm.last_read_msg
 go
 CREATE PROCEDURE update_group_chat_last_read
 	@username USERNAME_TYPE,
@@ -260,12 +282,20 @@ RETURN
 	join UserFriend uf on uf.username = @username and uf.friend = @friend
 	where fc.sender = @friend and fc.friend = @username and fc.id > uf.last_read_msg
 go
+CREATE FUNCTION get_all_friend_msg(@username USERNAME_TYPE, @friend USERNAME_TYPE) 
+RETURNS TABLE AS
+RETURN
+	select fc.*
+	from FriendChat fc
+	join UserFriend uf on uf.username = @username and uf.friend = @friend
+	where ((fc.sender = @username and fc.friend = @friend) or
+              (fc.friend = @username and fc.sender = @friend)) and fc.id >= uf.start_history_msg
+go
 CREATE PROCEDURE add_msg_to_friend
 	@sender USERNAME_TYPE,
 	@friend USERNAME_TYPE,
 	@sent_date datetime,
-	@cipher_msg varbinary(MAX),
-	@media_id varchar(50)
+	@cipher_msg varbinary(MAX)
 AS
 	declare @id int
 	select @id = max(id) from FriendChat
@@ -275,8 +305,14 @@ AS
 		set @id = 0;
 	end
 	set @id = @id + 1
-   	insert into FriendChat VALUES(@id, @sender, @friend, @sent_date, @cipher_msg, @media_id)
+   	insert into FriendChat VALUES(@id, @sender, @friend, @sent_date, @cipher_msg)
    	update UserFriend set last_read_msg = last_read_msg + 1 where username = @sender and friend = @friend
 GO
-
-	
+CREATE PROCEDURE update_identity
+	@username USERNAME_TYPE,
+	@public_key varbinary(300)
+AS BEGIN
+    if not exists(select * from UserIdentity where username = @username) begin
+        insert into UserIdentity(username, public_key) values(@username, @public_key)
+    end
+END

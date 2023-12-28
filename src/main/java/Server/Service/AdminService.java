@@ -2,6 +2,7 @@ package Server.Service;
 
 import Utils.*;
 import Server.DB.*;
+import Server.DB.SecretDb.SecretType;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -63,7 +64,9 @@ public class AdminService extends Service {
         if (UserInfoDb.query(username) == null)
             throw new Error("Username does not exist to be deleted");
         Server.Main.db.set_auto_commit(false);
-        KeyBundleDb.remove(username);
+        IdentityDb.remove(username);
+        SecretDb.remove_all(username, SecretType.GROUP);
+        SecretDb.remove_all(username, SecretType.USER);
         GroupChatMessageDb.remove_all(username);
         GroupChatMemberDb.remove_all(username);
         UserFriendDb.remove_all(username);
