@@ -44,6 +44,7 @@ public class UserManagementService extends Service {
                 Server.Main.db.commit();
                 Server.Main.db.set_auto_commit(true);
                 Server.Main.server.notify(friend, new NewFriend(username)); // notify friend that they just made a new friend
+                Server.Main.server.notify(username, new NewFriend(friend)); // notify friend that they just made a new friend
                 return true;
             }
         } else throw new Error("Can't execute add_friend api, token not found");
