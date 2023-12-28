@@ -230,8 +230,9 @@ public class MessageClient {
                     throw new RuntimeException(e); // must never happen
                 }
             }
+            return added;
         }
-        return true;
+        return false;
     }
 
     public Optional<String> decrypt_usr_msg(byte[] cipher_msg, String friend) {
@@ -343,7 +344,8 @@ public class MessageClient {
     }
 
     public boolean send_msg(String target, String text, ChatType type) {
-        var op_session = get_group_session(target);
+        var op_session = type == ChatType.GROUP ?
+                get_group_session(target) : get_user_session(target);
         if (op_session.isEmpty()) {
             return false;
         }

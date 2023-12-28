@@ -169,7 +169,7 @@ class AccountService {
 class UserManagementService {
 -   void get_info(String token);
 -   void add_friend(String token, String target);
--   ArrayList<FriendRequest> get_all_friend_requests(String token);
+-   ArrayList<FriendRequest> get_friend_requests(String token);
 -   void unfriend(String token, String friend_username);
 -   ArrayList<Pair<UserInfo, Boolean>> list_friends(String token); // send back info and active or not
 -   ArrayList<UserInfo> find_users(String token, String pattern);

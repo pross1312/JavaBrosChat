@@ -88,11 +88,19 @@ public class UserManagementService extends Service {
         throw new Error("Can't execute list_friends api, token not found");
     }
 
-    ArrayList<UserInfo> find_users(String token, String pattern) throws SQLException {
+    ArrayList<Pair<UserInfo, P2PStatus>> find_users(String token, String pattern) throws SQLException {
         var acc = Server.Main.accounts.get(token);
         if(acc == null)
             throw new Error("Can't execute find_users api, token not found");
-        var result = UserInfoDb.searchUsers(pattern);
+        var users = UserInfoDb.searchUsers(pattern);
+        var result = new ArrayList<Pair<UserInfo, P2PStatus>>(users.size());
+        for (var usr: users) {
+            if (UserFriendDb.is_friend(acc.a, usr.username))
+                result.add(new Pair<>(usr, P2PStatus.FRIEND));
+            else if (FriendRequestDb.query(acc.a, usr.username) != null)
+                result.add(new Pair<>(usr, P2PStatus.REQUESTING));
+            else result.add(new Pair<>(usr, P2PStatus.STRANGER));
+        }
         result.trimToSize();
         return result;
     }

@@ -1,17 +1,36 @@
 package view.Component;
 
+import Utils.P2PStatus;
+import Utils.ResultError;
+import Utils.ResultOk;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
 import javax.swing.BorderFactory;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
-public class ItemFriend extends javax.swing.JPanel {
+public class ItemPeople extends javax.swing.JPanel {
 
-    public ItemFriend(String name) {
+    private String name;
+    private P2PStatus status;
+
+    public ItemPeople(String name, P2PStatus status) {
+        this.name = name;
+        this.status = status;
         initComponents();
         txtName.setText(name);
+        if (status == P2PStatus.FRIEND) {
+            lbAdd.setEnabled(false);
+            lbAdd.setText("Friend");
+        } else if (status == P2PStatus.REQUESTING) {
+            lbAdd.setEnabled(false);
+            lbAdd.setText("Pending..");
+        } else {
+            lbAdd.setText("Add friend");
+        }
         init();
     }
 
@@ -44,6 +63,9 @@ public class ItemFriend extends javax.swing.JPanel {
         lbAdd.setText("Add Friend");
         lbAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         lbAdd.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lbAddMouseClicked(evt);
+            }
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 lbAddMouseEntered(evt);
             }
@@ -77,13 +99,28 @@ public class ItemFriend extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void lbAddMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbAddMouseEntered
-       
-        
+
+
     }//GEN-LAST:event_lbAddMouseEntered
 
     private void lbAddMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbAddMouseExited
-        
+
     }//GEN-LAST:event_lbAddMouseExited
+
+    private void lbAddMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbAddMouseClicked
+        // TODO add your handling code here:
+        if (this.status == P2PStatus.STRANGER) {
+            if (Client.Client.msg_c.add_friend(this.name)) {
+                this.status = P2PStatus.FRIEND;
+                lbAdd.setText("Friend");
+                lbAdd.setForeground(Color.GREEN);
+            } else {
+                this.status = P2PStatus.REQUESTING;
+                lbAdd.setText("Pending..");
+            }
+            lbAdd.setEnabled(false);
+        }
+    }//GEN-LAST:event_lbAddMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

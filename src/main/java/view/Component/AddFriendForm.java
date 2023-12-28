@@ -1,6 +1,14 @@
 package view.Component;
 
+import Utils.P2PStatus;
+import Utils.Pair;
+import Utils.ResultError;
+import Utils.ResultOk;
+import Utils.UserInfo;
+import java.util.ArrayList;
+import java.util.function.Consumer;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import net.miginfocom.swing.MigLayout;
 
 public class AddFriendForm extends javax.swing.JFrame {
@@ -17,10 +25,6 @@ public class AddFriendForm extends javax.swing.JFrame {
     private void init() {
         jScrollPane1.getVerticalScrollBar().setUI(new ModernScrollPane());
         listFriend.setLayout(new MigLayout());
-        
-        for (int i = 0; i < 50; ++i) {
-            listFriend.add(new ItemFriend("People"+ i), "wrap"); 
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -28,7 +32,7 @@ public class AddFriendForm extends javax.swing.JFrame {
     private void initComponents() {
 
         jButton1 = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
+        input = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -45,14 +49,14 @@ public class AddFriendForm extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(281, 73, 142, 39));
+        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(281, 73, 110, 39));
 
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        input.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                inputActionPerformed(evt);
             }
         });
-        getContentPane().add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(12, 73, 226, 39));
+        getContentPane().add(input, new org.netbeans.lib.awtextra.AbsoluteConstraints(12, 73, 226, 39));
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel1.setText("Add Friend");
@@ -85,11 +89,29 @@ public class AddFriendForm extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        var pattern = input.getText().trim();
+        if (!pattern.isBlank()) {
+            listFriend.removeAll();
+            var res = Client.Client.api_c.invoke_api("UserManagementService", "find_users",
+                    Client.Client.token, pattern);
+            if (res instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            } else if (res instanceof ResultOk ok) {
+                var usrs = (ArrayList<Pair<UserInfo, P2PStatus>>) ok.data();
+                for (var usr : usrs) {
+                    var info = usr.a;
+                    var status = usr.b;
+                    listFriend.add(new ItemPeople(info.username, status), "wrap");
+                }
+                listFriend.validate();
+            }
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void inputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }//GEN-LAST:event_inputActionPerformed
 
     public static void main(String args[]) {
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -123,11 +145,11 @@ public class AddFriendForm extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField input;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JLayeredPane listFriend;
     // End of variables declaration//GEN-END:variables
 }
