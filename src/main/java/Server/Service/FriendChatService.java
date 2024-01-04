@@ -11,7 +11,7 @@ public class FriendChatService extends Service {
         var acc = Server.Main.accounts.get(token);
         if (acc == null) throw new Error("Can't execute send_msg api, token not found");
         var username = acc.a;
-        if (BlockUserDb.checkBlocked(username, friend)) {
+        if (BlockUserDb.checkBlocked(friend, username)) {
             throw new Error("You are blocked by " + friend);
         }
         if (!UserFriendDb.is_friend(username, friend))

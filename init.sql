@@ -192,12 +192,12 @@ go
 create table BlockUser(
     username USERNAME_TYPE,
     target USERNAME_TYPE,
-	primary key(username)
+	primary key(username, target)
 )
 go
 alter table BlockUser
 add constraint FK_USERNAME_USER foreign key(username) references UserInfo(username),
-    constraint FK_TARGET_USER foreign key(username) references UserInfo(username)
+    constraint FK_TARGET_USER foreign key(target) references UserInfo(username)
 go
 
 CREATE FUNCTION list_friends_info(@usr USERNAME_TYPE)
@@ -213,7 +213,7 @@ CREATE PROCEDURE add_msg_to_group
 	@sender USERNAME_TYPE,
 	@sent_date datetime,
 	@cipher_msg varbinary(MAX)
-AS
+AS BEGIN
 	declare @id int
 	select @id = max(id) from GroupChatMessage where group_id = @group_id
 	if @id is null
@@ -223,6 +223,7 @@ AS
 	set @id = @id + 1
    	insert into GroupChatMessage VALUES(@id, @group_id, @sender, @sent_date, @cipher_msg)
    	update GroupChatMember set last_read_msg = last_read_msg + 1 where group_id = @group_id and username = @sender
+END
 GO
 CREATE PROCEDURE add_member_to_group 
     @g_id GROUP_ID_TYPE,   
@@ -307,7 +308,7 @@ CREATE PROCEDURE add_msg_to_friend
 	@friend USERNAME_TYPE,
 	@sent_date datetime,
 	@cipher_msg varbinary(MAX)
-AS
+AS BEGIN
 	declare @id int
 	select @id = max(id) from FriendChat
 	where (sender = @sender and friend = @friend) or (sender = @friend and friend = @sender)
@@ -318,6 +319,7 @@ AS
 	set @id = @id + 1
    	insert into FriendChat VALUES(@id, @sender, @friend, @sent_date, @cipher_msg)
    	update UserFriend set last_read_msg = last_read_msg + 1 where username = @sender and friend = @friend
+END
 GO
 CREATE PROCEDURE update_identity
 	@username USERNAME_TYPE,
@@ -327,7 +329,9 @@ AS BEGIN
         insert into UserIdentity(username, public_key) values(@username, @public_key)
     end
 END
+go
 CREATE PROCEDURE searchUser @username nvarchar(100)
-AS
-SELECT * FROM UserInfo WHERE username like '%' + @username + '%'
-GO
+AS BEGIN
+    SELECT * FROM UserInfo WHERE username like '%' + @username + '%'
+END
+go

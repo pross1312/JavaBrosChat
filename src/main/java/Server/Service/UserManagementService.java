@@ -121,8 +121,23 @@ public class UserManagementService extends Service {
         if(acc == null)
             throw new Error("Can't execute block_user api, token not found");
         var username = acc.a;
+        if (BlockUserDb.checkBlocked(username, target_username)) {
+            throw new Error("Target is already blocked");
+        }
         if (!BlockUserDb.add(username, target_username)) {
             throw new RuntimeException("Can't execute block_user api");
+        }
+    }
+    void unblock(String token, String target_username) throws SQLException{
+        var acc = Server.Main.accounts.get(token);
+        if(acc == null)
+            throw new Error("Can't execute block_user api, token not found");
+        var username = acc.a;
+        if (!BlockUserDb.checkBlocked(username, target_username)) {
+            throw new Error("Target is not blocked");
+        }
+        if (!BlockUserDb.delete(username, target_username)) {
+            throw new RuntimeException("Can't execute unblock api");
         }
     }
 }
