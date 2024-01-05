@@ -81,7 +81,7 @@ public class UserDashboard extends javax.swing.JFrame {
                 api_c.invoke_api("AccountService", "logout", token);
             }
         });
-        menuList.setLayout(new MigLayout());
+        menuList.setLayout(new BoxLayout(menuList, BoxLayout.Y_AXIS));
         jScrollPane1.getVerticalScrollBar().setUI(new ModernScrollPane());
         init_chat_sessions();
     }
@@ -90,7 +90,7 @@ public class UserDashboard extends javax.swing.JFrame {
         noti_c.register(NewFriend.class, "UD:MENU_LIST", x -> {
             var noti = (NewFriend) x;
             var session = new ChatSession(noti.friend, noti.friend, session_click, true, ChatType.USER);
-            menuList.add(session, "wrap");
+            menuList.add(session, "span");
             chats.add(session);
             view.Utils.swing_repaint(menuList);
         });
@@ -145,7 +145,7 @@ public class UserDashboard extends javax.swing.JFrame {
 
     public void add_group(GroupChatInfo info) {
         var session = new ChatSession(info.name, info.id, session_click, true, ChatType.GROUP);
-        menuList.add(session, "wrap");
+        menuList.add(session, "span");
         chats.add(session);
         view.Utils.swing_repaint(menuList);
     }
@@ -160,7 +160,7 @@ public class UserDashboard extends javax.swing.JFrame {
                 chat_sessions = new ArrayList<>(friends.stream().map(x -> {
                     var chat_item = new ChatSession(x.a.username, x.a.username, session_click,
                             x.b, ChatType.USER);
-                    menuList.add(chat_item, "wrap");
+                    menuList.add(chat_item, "span");
                     return chat_item;
                 }).toList());
             }
@@ -171,7 +171,7 @@ public class UserDashboard extends javax.swing.JFrame {
                 var groups = (ArrayList<GroupChatInfo>) ok.data();
                 chat_sessions.addAll(groups.stream().map(x -> {
                     var chat_item = new ChatSession(x.name, x.id, session_click, true, ChatType.GROUP);
-                    menuList.add(chat_item, "wrap");
+                    menuList.add(chat_item, "span");
                     return chat_item;
                 }).toList());
                 chats = chat_sessions;

@@ -32,15 +32,6 @@ public class ItemPeople extends javax.swing.JPanel {
         } else {
             lbAdd.setText("Add friend");
         }
-        init();
-    }
-
-    private void init() {
-        lbAdd.setVerticalAlignment(SwingConstants.NORTH);
-
-        lbAdd.setBorder(new CompoundBorder( // sets two borders
-                BorderFactory.createMatteBorder(1, 1, 1, 1, new Color(25, 118, 211)), // outer border
-                BorderFactory.createEmptyBorder(5, 5, 5, 5))); // inner invisible border as the margin
     }
 
     @SuppressWarnings("unchecked")
@@ -52,8 +43,9 @@ public class ItemPeople extends javax.swing.JPanel {
         lbAdd = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
-        setMaximumSize(new java.awt.Dimension(32767, 48));
-        setMinimumSize(new java.awt.Dimension(308, 48));
+        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        setMaximumSize(new java.awt.Dimension(32767, 62));
+        setMinimumSize(new java.awt.Dimension(308, 62));
         setName(""); // NOI18N
 
         txtName.setBackground(new java.awt.Color(255, 255, 255));
@@ -66,6 +58,7 @@ public class ItemPeople extends javax.swing.JPanel {
         lbAdd.setForeground(new java.awt.Color(25, 118, 211));
         lbAdd.setText("Add Friend");
         lbAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lbAdd.setIconTextGap(0);
         lbAdd.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lbAddMouseClicked(evt);
@@ -83,20 +76,22 @@ public class ItemPeople extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jLabel2)
+                .addContainerGap()
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 92, Short.MAX_VALUE)
+                .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 90, Short.MAX_VALUE)
                 .addComponent(lbAdd)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lbAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lbAdd, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

@@ -42,7 +42,7 @@ public class ChatItem extends JComponent {
         setLayout(new MigLayout("insets 5" + rightToLeft, "[0]0[]", "[top]"));
         JTextPane text = new JTextPane();
         text.setEditorKit(new AutoWrapText());
-        text.setFont(new Font(text.getFont().getName(), Font.BOLD, 16));
+        text.setFont(new Font(text.getFont().getName(), Font.BOLD, 18));
         text.setText(this.msg);
         text.setBackground(new Color(0, 0, 0, 0));
         text.setForeground(new Color(255, 255, 255));
