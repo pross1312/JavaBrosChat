@@ -5,23 +5,33 @@ import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import view.UserDashboard;
 
 public class ChatSession extends javax.swing.JPanel {
-    public String name;
-    BiConsumer<String, ChatType> on_click;
+    public String id;
     public ChatType type;
+    public Consumer<ChatSession> on_click;
     private static final Color active_c = new Color(0, 204, 51);
     private static final Color inactive_c = new Color(48, 48, 48);
-    public ChatSession(String label, String name, boolean is_active,
-            BiConsumer<String, ChatType> on_click, ChatType type) {
+    public ChatSession(String label, String id, Consumer<ChatSession> on_click,
+            boolean is_active, ChatType type) {
         initComponents();
-        this.name = name; 
-        this.on_click = on_click;
+        this.id = id; 
         this.type = type;
         txtName.setText(label);
         set_active(is_active);
+        this.on_click = on_click;
         init();
+    }
+    
+    public void rename(String name) {
+        this.txtName.setText(name);
+        this.txtName.repaint();
+    }
+    
+    public String get_name() {
+        return this.txtName.getText();
     }
     
     public void set_active(boolean is_active) {
@@ -52,6 +62,8 @@ public class ChatSession extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
+        setMaximumSize(new java.awt.Dimension(32767, 48));
+        setMinimumSize(new java.awt.Dimension(200, 48));
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 formMouseClicked(evt);
@@ -71,9 +83,9 @@ public class ChatSession extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jLabel2)
-                .addGap(45, 45, 45)
-                .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -84,7 +96,7 @@ public class ChatSession extends javax.swing.JPanel {
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
         //TODO send username to User Dash Board 
-        this.on_click.accept(this.name, this.type);
+        this.on_click.accept(this);
     }//GEN-LAST:event_formMouseClicked
 
 

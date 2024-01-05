@@ -1,6 +1,7 @@
 package view.Component;
 
 import Utils.P2PStatus;
+import Utils.Result;
 import Utils.ResultError;
 import Utils.ResultOk;
 import java.awt.Color;
@@ -112,13 +113,18 @@ public class ItemPeople extends javax.swing.JPanel {
     private void lbAddMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbAddMouseClicked
         // TODO add your handling code here:
         if (this.status == P2PStatus.STRANGER) {
-            if (Client.Client.msg_c.add_friend(this.name)) {
-                this.status = P2PStatus.FRIEND;
-                lbAdd.setText("Friend");
-                lbAdd.setForeground(Color.GREEN);
-            } else {
-                this.status = P2PStatus.REQUESTING;
-                lbAdd.setText("Pending..");
+            Result res = Client.Client.msg_c.add_friend(this.name);
+            if (res instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            } else if (res instanceof ResultOk ok) {
+                if ((boolean)ok.data()) {
+                    this.status = P2PStatus.FRIEND;
+                    lbAdd.setText("Friend");
+                    lbAdd.setForeground(Color.GREEN);
+                } else {
+                    this.status = P2PStatus.REQUESTING;
+                    lbAdd.setText("Pending..");
+                }
             }
             lbAdd.setEnabled(false);
         }

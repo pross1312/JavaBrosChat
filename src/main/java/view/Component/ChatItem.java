@@ -56,6 +56,10 @@ public class ChatItem extends javax.swing.JPanel {
         }
 
     }
+    
+    public String get_msg() {
+        return msg_area.getText();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -73,8 +77,8 @@ public class ChatItem extends javax.swing.JPanel {
         date_label = new javax.swing.JLabel();
         name_label = new javax.swing.JLabel();
         jpanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        msg_area = new javax.swing.JTextArea();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        msg_area = new javax.swing.JTextPane();
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -101,7 +105,6 @@ public class ChatItem extends javax.swing.JPanel {
         setBackground(new java.awt.Color(245, 245, 245));
         setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
         setForeground(new java.awt.Color(255, 255, 255));
-        setMaximumSize(new java.awt.Dimension(857, 32767));
         setMinimumSize(new java.awt.Dimension(857, 82));
 
         jPanel5.setMinimumSize(new java.awt.Dimension(404, 65));
@@ -125,7 +128,7 @@ public class ChatItem extends javax.swing.JPanel {
             .addGroup(info_panelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(name_label)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 250, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 251, Short.MAX_VALUE)
                 .addComponent(date_label)
                 .addContainerGap())
         );
@@ -140,30 +143,23 @@ public class ChatItem extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setEnabled(false);
-
         msg_area.setEditable(false);
-        msg_area.setColumns(20);
-        msg_area.setFont(new java.awt.Font("SansSerif.plain", 0, 24)); // NOI18N
-        msg_area.setLineWrap(true);
-        msg_area.setRows(5);
-        msg_area.setText("WJQEOIWJQOIJOqowejqiwoe");
-        msg_area.setAutoscrolls(false);
-        msg_area.setDisabledTextColor(new java.awt.Color(0, 0, 0));
-        msg_area.setFocusable(false);
-        jScrollPane1.setViewportView(msg_area);
+        msg_area.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
+        msg_area.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        msg_area.setMaximumSize(new java.awt.Dimension(600, 2147483647));
+        jScrollPane2.setViewportView(msg_area);
 
         javax.swing.GroupLayout jpanel1Layout = new javax.swing.GroupLayout(jpanel1);
         jpanel1.setLayout(jpanel1Layout);
         jpanel1Layout.setHorizontalGroup(
             jpanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jpanel1Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane2))
         );
         jpanel1Layout.setVerticalGroup(
             jpanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
@@ -172,7 +168,7 @@ public class ChatItem extends javax.swing.JPanel {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(info_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+                .addComponent(info_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
                 .addContainerGap())
             .addComponent(jpanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -189,15 +185,15 @@ public class ChatItem extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(443, Short.MAX_VALUE)
+                .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(5, 5, 5))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(8, 8, 8)
-                .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(5, 5, 5))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -209,9 +205,9 @@ public class ChatItem extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel jpanel1;
-    private javax.swing.JTextArea msg_area;
+    private javax.swing.JTextPane msg_area;
     private javax.swing.JLabel name_label;
     // End of variables declaration//GEN-END:variables
 }

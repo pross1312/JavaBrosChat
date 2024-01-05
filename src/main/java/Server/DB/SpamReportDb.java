@@ -11,13 +11,11 @@ import Utils.SpamReport;
 
 public class SpamReportDb {
     private static Database db = Server.Main.db;
-    private static PreparedStatement insert_sm, query_all_sm, query_sm_from_to, query_username;
+    private static PreparedStatement insert_sm, query_sm_from_to;
     static {
         try {
             insert_sm = db.conn.prepareStatement("INSERT INTO SpamReport(reporter, target, reason, date) VALUES(?, ?, ?, ?);");
-            query_all_sm = db.conn.prepareStatement("SELECT * FROM SpamReport");
             query_sm_from_to = db.conn.prepareStatement("SELECT * FROM SpamReport WHERE date >= ? AND date <= ?");
-            query_username = db.conn.prepareStatement("SELECT * FROM SpamReport WHERE target = ?");
         } catch (Exception e) {
             // TODO: properly handle exception
             e.printStackTrace();
@@ -40,13 +38,15 @@ public class SpamReportDb {
     }
     public static ArrayList<SpamReport> list_all_spam_reports() throws SQLException{
         ArrayList<SpamReport> arr = new ArrayList<>();
-        var result = query_all_sm.executeQuery();
-        if(result == null)
-            throw new RuntimeException("Result set of query operation can't be null");
-        while(result.next()){
-            arr.add(parse_row(result));
+        try (var st = db.conn.createStatement()) {
+            var result = st.executeQuery("SELECT * FROM SpamReport");
+            if (result == null) {
+                throw new RuntimeException("Result set of query operation can't be null");
+            }
+            while (result.next()) {
+                arr.add(parse_row(result));
+            }
         }
-        result.close();
         return arr;
     }
     public static ArrayList<SpamReport> list_spam_from_to(Date from, Date to) throws SQLException {
@@ -64,14 +64,24 @@ public class SpamReportDb {
     }
     public static ArrayList<SpamReport> list_spam_username(String username) throws SQLException {
         ArrayList<SpamReport> arr = new ArrayList<>();
-        query_username.setString(1, username);
-        var result = query_username.executeQuery();
-        if(result == null)
-            throw new RuntimeException("Result set of query operation can't be null");
-        while(result.next()){
-            arr.add(parse_row(result));
+        try (var st = db.conn.createStatement()) {
+            var result = st.executeQuery(String.format(
+                    "SELECT * FROM SpamReport WHERE target = '%s'", username));
+            if (result == null) {
+                throw new RuntimeException("Result set of query operation can't be null");
+            }
+            while (result.next()) {
+                arr.add(parse_row(result));
+            }
+            result.close();
         }
-        result.close();
         return arr;
+    }
+    public static boolean remove_all(String username) throws SQLException {
+        try (var st = db.conn.createStatement()) {
+            return st.executeUpdate(String.format(
+                    "DELETE FROM SpamReport WHERE reporter = '%s' OR target = '%s'",
+                    username, username)) >= 1;
+        }
     }
 }

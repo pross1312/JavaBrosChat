@@ -13,7 +13,7 @@ public class Database {
         props.setProperty("encrypt", "true");
         props.setProperty("trustServerCertificate", "true");
         props.setProperty("user", "sa");
-        props.setProperty("password", "123");
+        props.setProperty("password", "gnout1312@");
         props.setProperty("database", "Java");
         props.setProperty("loginTimeout", "5");
     }

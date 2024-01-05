@@ -11,18 +11,29 @@ import javax.swing.AbstractButton;
  *
  * @author dvtuong
  */
-public class AddGroupItem extends javax.swing.JPanel {
+public class ToggleItem extends javax.swing.JPanel {
 
     /**
      * Creates new form AddGroupItem
      */
     public BiConsumer<String, Boolean> on_click;
-    public String username;
-    public AddGroupItem(String name, BiConsumer<String, Boolean> on_click) {
+    public String username, on_txt, off_txt;
+    public ToggleItem(String name, boolean on, String on_txt, String off_txt, BiConsumer<String, Boolean> on_click) {
         initComponents();
         this.on_click = on_click;
         this.username = name;
+        this.on_txt = on_txt;
+        this.off_txt = off_txt;
         this.name_label.setText(name);
+        this.btn.setSelected(on);
+        if (on) this.btn.setText(on_txt);
+        else this.btn.setText(off_txt);
+    }
+    public void change_state(boolean on) {
+        btn.setSelected(on);
+        this.on_click.accept(this.username, on);
+        if (on) this.btn.setText(on_txt);
+        else this.btn.setText(off_txt);
     }
 
     /**
@@ -38,9 +49,13 @@ public class AddGroupItem extends javax.swing.JPanel {
         btn = new javax.swing.JToggleButton();
         name_label = new javax.swing.JLabel();
 
+        setMaximumSize(new java.awt.Dimension(32767, 48));
+        setMinimumSize(new java.awt.Dimension(150, 48));
+
         icon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-person-48.png"))); // NOI18N
 
         btn.setText("Add");
+        btn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnActionPerformed(evt);
@@ -73,8 +88,10 @@ public class AddGroupItem extends javax.swing.JPanel {
     private void btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActionPerformed
         // TODO add your handling code here:
         AbstractButton abstractButton = (AbstractButton) evt.getSource();
-        boolean selected = abstractButton.getModel().isSelected();
-        this.on_click.accept(this.username, selected);
+        boolean on = abstractButton.getModel().isSelected();
+        this.on_click.accept(this.username, on);
+        if (on) this.btn.setText(on_txt);
+        else this.btn.setText(off_txt);
     }//GEN-LAST:event_btnActionPerformed
 
 

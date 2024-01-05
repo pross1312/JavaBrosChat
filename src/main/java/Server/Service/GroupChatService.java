@@ -44,7 +44,6 @@ public class GroupChatService extends Service {
         GroupChatMemberDb.add(new GroupChatMemberInfo(group_id, username, date, true));
         Main.db.commit();
         Main.db.set_auto_commit(true);
-        users_list.add(username);
         users_list.forEach(member -> {
             Main.server.notify(member, new NewGroup(group));
         });
@@ -144,6 +143,9 @@ public class GroupChatService extends Service {
         if (!GroupChatMemberDb.check_in_group(username, group_id))
             throw new Error(String.format("Can't rename '%s' is not in group", username));
         GroupChatDb.rename(group_id, new_name);
+        GroupChatMemberDb.list_members(group_id).forEach(x -> {
+            Server.Main.server.notify(x, new GroupRename(new_name, group_id));
+        });
     }
     ArrayList<String> list_members(String token, String group_id) throws SQLException {
         var acc = Server.Main.accounts.get(token);

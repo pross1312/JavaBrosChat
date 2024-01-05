@@ -8,8 +8,15 @@ import java.util.Base64;
 import java.util.Date;
 
 import Server.DB.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class AccountService extends Service {
+    ConcurrentHashMap<Integer, Pair<String, ScheduledFuture>> codes = new ConcurrentHashMap<>();
+
     Pair<String, AccountType> login(String username, String pass) throws SQLException { // return a token from Account
         var account = AccountDb.query(username);
         if (account == null) throw new Error("Invalid username or password");
@@ -67,26 +74,40 @@ public class AccountService extends Service {
             throw new Error(String.format("Username '%s' existed", username));
         }
     }
-
+    void change_pass(Integer code, String pass) throws SQLException {
+        var data = codes.get(code);
+        if (data == null) {
+            throw new Error("Invalid code");
+        }
+        var username = data.a;
+        if (!AccountDb.change_pass(username, Helper.hash_password(pass + username))) {
+            throw new Error("Can't change user password");
+        }
+        codes.remove(code);
+        data.b.cancel(false);
+    }
     void recover_pass(String username) throws SQLException {
         var user = UserInfoDb.query(username);
         if (user == null) {
             throw new Error("Username not existsed");
         }
-        byte[] rand_arr = new byte[16];
-        for (int i = 0; i < rand_arr.length; i++) {
-            rand_arr[i] = (byte)(Math.random()*('Z' - 'A') + 'A');
-        }
-        var new_pass = new String(rand_arr, StandardCharsets.UTF_8);
-        if (!AccountDb.change_pass(username, Helper.hash_password(new_pass + username))) {
-            throw new Error("Can't change user password");
-        }
+        Integer code = -1;
+        do {
+            code = (int)(Math.random() * 100000000);
+        } while(codes.containsKey(code));
         var result = Server.Main.mailer.send(user.email,
                 "Recover password",
-                "New password:" + new_pass);
+                String.format("Code: %d\nThis code will expire after 10mins.\nPlease don't show it to anybody",
+                        code.intValue()));
         if (!result) {
-            throw new Error(String.format("Can't send mail to '%s'", user.email));
+            throw new Error("Can't send mail to user " + username);
         }
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        final Integer _code = code;
+        ScheduledFuture future = scheduler.schedule(() -> {
+            codes.remove(_code);
+        }, 10, TimeUnit.MINUTES);
+        codes.put(code, new Pair<>(username, future));
     }
 }
 

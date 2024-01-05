@@ -1,6 +1,7 @@
 package view.Component;
 
 import Utils.GroupChatInfo;
+import Utils.Result;
 import Utils.ResultError;
 import Utils.ResultOk;
 import Utils.UserInfo;
@@ -16,8 +17,15 @@ import net.miginfocom.swing.MigLayout;
 public class CreateGroupForm extends javax.swing.JFrame {
 
     private ArrayList<String> members;
+    private final BiConsumer<String, Boolean> on_click = (name, on) -> {
+        if (!on) {
+            members.add(name);
+        } else {
+            members.remove(name);
+        }
+    };
 
-    public CreateGroupForm(List<UserInfo> friends) {
+    public CreateGroupForm(List<String> friends) {
         members = new ArrayList<>();
         initComponents();
         this.setResizable(false);
@@ -26,21 +34,20 @@ public class CreateGroupForm extends javax.swing.JFrame {
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
-    private void init(List<UserInfo> friends) {
+    public CreateGroupForm(List<String> other_friends, String init_friend) {
+        this(other_friends);
+        var self = new ToggleItem(init_friend, false, "Add", "Remove", on_click);
+        listFriend.add(self, "wrap");
+        members.add(init_friend);
+    }
+
+    private void init(List<String> friends) {
         jScrollPane1.getVerticalScrollBar().setUI(new ModernScrollPane());
         listFriend.setLayout(new MigLayout());
-        BiConsumer<String, Boolean> on_click = (name, selected) -> {
-            if (selected) {
-                members.add(name);
-            } else {
-                members.remove(name);
-            }
-        };
         for (var user : friends) {
-            var self = new AddGroupItem(user.username, on_click);
+            var self = new ToggleItem(user, true, "Add", "Remove", on_click);
             listFriend.add(self, "wrap");
         }
-
     }
 
     @SuppressWarnings("unchecked")
@@ -152,8 +159,9 @@ public class CreateGroupForm extends javax.swing.JFrame {
         // TODO add your handling code here:
         var g_name = group_name.getText().trim();
         if (!g_name.isBlank()) {
-            if (Client.Client.msg_c.create_group(g_name, members).isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Can't create group");
+            Result res = Client.Client.msg_c.create_group(g_name, members);
+            if (res instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
             } else {
                 this.dispose();
             }

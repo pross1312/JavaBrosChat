@@ -64,6 +64,10 @@ public class AdminService extends Service {
         if (UserInfoDb.query(username) == null)
             throw new Error("Username does not exist to be deleted");
         Server.Main.db.set_auto_commit(false);
+
+        FriendRequestDb.remove_all(username);
+        SpamReportDb.remove_all(username);
+        BlockUserDb.remove_all(username);
         IdentityDb.remove(username);
         SecretDb.remove_all(username, SecretType.GROUP);
         SecretDb.remove_all(username, SecretType.USER);
@@ -72,6 +76,7 @@ public class AdminService extends Service {
         UserFriendDb.remove_all(username);
         LoginRecordDb.delete(username);
         RegistrationRecordDb.delete(username);
+
         Server.Main.db.commit();
         Server.Main.db.set_auto_commit(true);
         UserInfoDb.delete(username);

@@ -8,47 +8,45 @@ import Utils.FriendRequest;
 import Utils.P2PStatus;
 import Utils.ResultError;
 import Utils.ResultOk;
+import java.awt.Component;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import view.Component.ItemPeople;
+import view.Component.ModernScrollPane;
 
 /**
  *
  * @author dvtuong
  */
-public class ListFriendRequest extends javax.swing.JFrame {
+public class ListItem extends javax.swing.JFrame {
 
     /**
      * Creates new form ListFriendRequest
      */
-    private static ListFriendRequest instance;
+    private static ListItem instance;
 
-    public static ListFriendRequest get_instance() {
+    public static ListItem get_instance(List<Component> items, String label) {
         if (instance == null) {
-            instance = new ListFriendRequest();
+            instance = new ListItem();
         }
+        instance.set_data(items, label);
+        instance.setLocationRelativeTo(null);
+
         return instance;
     }
 
-    private ListFriendRequest() {
+    private void set_data(List<Component> items, String label) {
+        items.forEach(x -> {
+            instance.body.add(x);
+        });
+        jlabel1.setText(label);
+        this.repaint();
+    }
+
+    private ListItem() {
         initComponents();
-        var result = Client.Client.api_c.invoke_api("UserManagementService", "get_friend_requests",
-                Client.Client.token);
-        if (result instanceof ResultError err) {
-            JOptionPane.showMessageDialog(null, err.msg());
-        } else if (result instanceof ResultOk ok) {
-            var requests = (ArrayList<FriendRequest>) ok.data();
-            if (!requests.isEmpty()) {
-                requests.forEach(x -> {
-                    System.out.println(x.initiator);
-                    body.add(new ItemPeople(x.initiator, P2PStatus.STRANGER));
-                });
-                scroll_pane.setViewportView(body);
-                scroll_pane.repaint();
-            }
-        } else {
-            throw new RuntimeException("Unexpected");
-        }
+        scroll_pane.getVerticalScrollBar().setUI(new ModernScrollPane());
     }
 
     /**
@@ -60,16 +58,16 @@ public class ListFriendRequest extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        jlabel1 = new javax.swing.JLabel();
         scroll_pane = new javax.swing.JScrollPane();
         body = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setBackground(new java.awt.Color(255, 255, 255));
-        jLabel1.setFont(new java.awt.Font("SansSerif.plain", 1, 20)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Friend requests");
+        jlabel1.setBackground(new java.awt.Color(255, 255, 255));
+        jlabel1.setFont(new java.awt.Font("SansSerif.plain", 1, 20)); // NOI18N
+        jlabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jlabel1.setText("Friend requests");
 
         scroll_pane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll_pane.setMinimumSize(new java.awt.Dimension(377, 252));
@@ -84,17 +82,17 @@ public class ListFriendRequest extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(scroll_pane, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
+                    .addComponent(jlabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(scroll_pane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jlabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scroll_pane, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(scroll_pane, javax.swing.GroupLayout.PREFERRED_SIZE, 369, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -117,27 +115,28 @@ public class ListFriendRequest extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ListFriendRequest.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ListItem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ListFriendRequest.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ListItem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ListFriendRequest.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ListItem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ListFriendRequest.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ListItem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ListFriendRequest().setVisible(true);
+                new ListItem().setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel body;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jlabel1;
     private javax.swing.JScrollPane scroll_pane;
     // End of variables declaration//GEN-END:variables
 }

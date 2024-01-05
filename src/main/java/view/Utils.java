@@ -7,6 +7,8 @@ import Utils.Result;
 import Utils.ResultError;
 import Utils.ResultOk;
 import Utils.UserInfo;
+
+import java.awt.Component;
 import java.awt.Font;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -18,6 +20,8 @@ import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+
 import view.API.CallAPI;
 import static view.Version2AdminDashBoard.addRowtoTable;
 import static view.Version2AdminDashBoard.model;
@@ -36,5 +40,10 @@ public class Utils {
         table.setDefaultEditor(Object.class, null);
     }
 
-   
+    public static void swing_repaint(Component comp) {
+        SwingUtilities.invokeLater(() -> {
+            comp.validate();
+            comp.repaint();
+        });
+    }
 }

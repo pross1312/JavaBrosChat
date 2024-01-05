@@ -25,6 +25,12 @@ public class BlockUserDb {
         st.close();
         return result;
     }
+    public static boolean remove_all(String username) throws SQLException {
+        var st = db.conn.createStatement();
+        return st.executeUpdate(String.format(
+                    "DELETE FROM BlockUser WHERE username = '%s' OR target = '%s'",
+                    username, username)) >= 1;
+    }
     public static boolean checkBlocked(String username, String target) throws SQLException {
         var st = db.conn.createStatement();
         var result = st.executeQuery(String.format(

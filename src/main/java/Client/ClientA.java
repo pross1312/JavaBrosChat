@@ -137,8 +137,12 @@ public class ClientA {
                 }
                 case "/create": {
                     var users = Arrays.stream(scanner.nextLine().split(" ")).map(x -> x.trim()).toList();
-                    var id = msg_client.create_group(tokens.get(1), new ArrayList<>(users));
-                    if (id.isPresent()) cur_group_id = id.get();
+                    var res = msg_client.create_group(tokens.get(1), new ArrayList<>(users));
+                    if (res instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    } else if (res instanceof ResultOk ok) {
+                        cur_group_id = (String)ok.data();
+                    }
                     break;
                 }
                 case "/use": {
@@ -170,16 +174,18 @@ public class ClientA {
                 case "/sendfriend": {
                     System.out.print("MSG: ");
                     var text = scanner.nextLine();
-                    if (!msg_client.send_friend(tokens.get(1), text)) {
-                        System.out.println("[ERROR] Could not send message to " + tokens.get(1));
+                    String res = msg_client.send_friend(tokens.get(1), text);
+                    if (res != null) {
+                        System.out.println("[ERROR] " + res);
                     }
                     break;
                 }
                 case "/send": {
                     System.out.print("MSG: ");
                     var text = scanner.nextLine();
-                    if (!msg_client.send_group(cur_group_id, text)) {
-                        System.out.println("[ERROR] Could not send message to group");
+                    String res = msg_client.send_group(cur_group_id, text);
+                    if (res != null) {
+                        System.out.println("[ERROR] " + res);
                     }
                     break;
                 }
@@ -200,8 +206,9 @@ public class ClientA {
                     break;
                 }
                 case "/add_member": {
-                    if (!msg_client.add_usr_to_group(tokens.get(1), cur_group_id)) {
-                        System.out.println("[FAILED]");
+                    String res = msg_client.add_usr_to_group(tokens.get(1), cur_group_id);
+                    if (res != null) {
+                        System.out.println(res);
                     }
                     break;
                 }
@@ -209,6 +216,14 @@ public class ClientA {
                     var result = api_c.invoke_api("AccountService",
                             "recover_pass", tokens.get(1));
                     if (result instanceof ResultError err) {
+                        System.out.println(err.msg());
+                    }
+                    break;
+                }
+                case "/report": {
+                    var api_res = api_c.invoke_api("UserManagementService", "report_spam",
+                            authen_token, tokens.get(1), tokens.stream().skip(2).reduce("", (acc, x) -> acc + x));
+                    if (api_res instanceof ResultError err) {
                         System.out.println(err.msg());
                     }
                     break;

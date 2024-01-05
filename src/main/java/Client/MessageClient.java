@@ -27,6 +27,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import Utils.AESParam;
+import Utils.Result;
 import Utils.ResultError;
 import Utils.ResultOk;
 
@@ -191,23 +192,21 @@ public class MessageClient {
         } else throw new RuntimeException("Corrupted file");
     }
 
-    public boolean send_friend(String friend, String text) {
+    public String send_friend(String friend, String text) {
         var op_session = get_user_session(friend);
-        if (op_session.isEmpty()) return false;
+        if (op_session.isEmpty()) return "Can't find friend identity";
         var data = op_session.get().encrypt(text.getBytes());
         var api_result = api_c.invoke_api("FriendChatService", "send_msg", token, data, friend);
         if (api_result instanceof ResultError err) {
-            System.out.println(err.msg());
-            return false;
+            return err.msg();
         }
-        return true;
+        return null;
     }
 
-    public synchronized boolean add_friend(String friend) {
+    public synchronized Result add_friend(String friend) {
         var api_result = api_c.invoke_api("UserManagementService", "add_friend", token, friend);
         if (api_result instanceof ResultError err) {
-            System.out.println(err.msg());
-            return false;
+            return err;
         } else if (api_result instanceof ResultOk ok) {
             var added = (boolean)ok.data();
             if (added) {
@@ -215,13 +214,13 @@ public class MessageClient {
                     var aes_params = AESCipher.generate_param();
                     var data = obj_to_byte(aes_params).get();
                     var op_public = get_identity(friend);
-                    if (op_public.isEmpty()) return false;
+                    if (op_public.isEmpty()) return Result.error("Can't find friend identity");
                     api_result = api_c.invoke_api("E2EService", "add_user_secret",
                             token, friend,
                             encrypt(data, identity.getPublic()), // my key to chat with friend
                             encrypt(data, op_public.get())); // friend key to chat with me
                     if (api_result instanceof ResultError err) {
-                        System.out.println(err.msg());
+                        return err;
                     } else if (api_result instanceof ResultOk) {
                         chat_sessions.put(username, new ChatSession(aes_params));
                         chat_sessions.put(friend, new ChatSession(aes_params));
@@ -229,10 +228,10 @@ public class MessageClient {
                 } catch(Exception e) {
                     throw new RuntimeException(e); // must never happen
                 }
+                return Result.ok(true);
             }
-            return added;
-        }
-        return false;
+            return Result.ok(false);
+        } else throw new RuntimeException("Unexpected");
     }
 
     public Optional<String> decrypt_usr_msg(byte[] cipher_msg, String friend) {
@@ -244,37 +243,29 @@ public class MessageClient {
         return Optional.of(new String(result.get(), StandardCharsets.UTF_8));
     }
 
-    public synchronized Optional<String> create_group(String name, ArrayList<String> usrs) {
+    public synchronized Result create_group(String name, ArrayList<String> usrs) {
         var aes_params = AESCipher.generate_param();
         byte[] group_secret = obj_to_byte(aes_params).get();
         var api_res = api_c.invoke_api("GroupChatService", "create", token, name, usrs);
         if (api_res instanceof ResultError err) {
-            System.out.println(err.msg());
+            return err;
         } else if (api_res instanceof ResultOk ok) {
             var g_id = (String)ok.data();
             if (usrs.indexOf(username) == -1) usrs.add(username); // add to make things easier
-            usrs.stream().map(member -> {
+            usrs.stream().forEach(member -> {
                 var op_pub_key = get_identity(member);
                 if (op_pub_key.isPresent()) {
                     var data = encrypt(group_secret, op_pub_key.get());
-                    return api_c.async_invoke_api(res -> {
+                    api_c.async_invoke_api(res -> {
                         if (res instanceof ResultError err) {
                             System.out.println(err.msg());
                         }
                     }, "E2EService", "add_group_secret", token, member, g_id, data);
                 }
-                return null;
-            }).forEach(x -> {
-                try {
-                    if (x != null) x.join();
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
             });
             chat_sessions.put(g_id, new ChatSession(aes_params));
-            return Optional.of(g_id);
-        }
-        return Optional.empty();
+            return Result.ok(g_id);
+        } else throw new RuntimeException("Unexpected");
     }
 
     public synchronized Optional<ChatSession> get_group_session(String g_id) {
@@ -294,36 +285,33 @@ public class MessageClient {
         return Optional.of(result);
     }
 
-    public boolean add_usr_to_group(String username, String g_id) {
+    public String add_usr_to_group(String username, String g_id) {
         var op_session = get_group_session(g_id);
         var pub_key = get_identity(username);
         if (op_session.isPresent() && pub_key.isPresent()) {
             var data = obj_to_byte(op_session.get().get_param()).get();
             var api_res = api_c.invoke_api("GroupChatService", "add_member", token, g_id, username);
             if (api_res instanceof ResultError err) {
-                System.out.println(err.msg());
-                return false;
+                return err.msg();
             }
             api_res = api_c.invoke_api("E2EService", "add_group_secret",
                     token, username, g_id, encrypt(data, pub_key.get()));
             if (api_res instanceof ResultError err) {
-                System.out.println(err.msg());
-                return false;
+                return err.msg();
             }
         }
-        return true;
+        return null;
     }
 
-    public boolean send_group(String g_id, String text) {
+    public String send_group(String g_id, String text) {
         var op_session = get_group_session(g_id);
-        if (op_session.isEmpty()) return false;
+        if (op_session.isEmpty()) return "Can't get group secret";
         var data = op_session.get().encrypt(text.getBytes());
         var api_result = api_c.invoke_api("GroupChatService", "send_msg", token, data, g_id);
         if (api_result instanceof ResultError err) {
-            System.out.println(err.msg());
-            return false;
+            return err.msg();
         }
-        return true;
+        return null;
     }
 
     public Optional<String> decrypt_group_msg(byte[] cipher_msg, String g_id) {
@@ -343,19 +331,18 @@ public class MessageClient {
         }
     }
 
-    public boolean send_msg(String target, String text, ChatType type) {
+    public String send_msg(String target, String text, ChatType type) {
         var op_session = type == ChatType.GROUP ?
                 get_group_session(target) : get_user_session(target);
         if (op_session.isEmpty()) {
-            return false;
+            return "Can't get session secret";
         }
         var data = op_session.get().encrypt(text.getBytes());
         var api_result = api_c.invoke_api(
                 type == ChatType.GROUP ? "GroupChatService" : "FriendChatService", "send_msg", token, data, target);
         if (api_result instanceof ResultError err) {
-            System.out.println(err.msg());
-            return false;
+            return err.msg();
         }
-        return true;
+        return null;
     }
 }

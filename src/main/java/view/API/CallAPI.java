@@ -126,24 +126,22 @@ public class CallAPI {
         return list_amount_users;
     }
     
-    public static Optional<ArrayList<ChatMessage>> get_unread_friend(String token, String friend) {
+    public static Result get_unread_friend(String token, String friend) {
         var result = Client.Client.api_c.invoke_api("FriendChatService", "get_unread_msg", token, friend);
         if (result instanceof ResultError err) {
-            System.out.println(err.msg());
+            return err;
         } else if (result instanceof ResultOk ok) {
-            return Optional.of((ArrayList<ChatMessage>) ok.data());
-        }
-        return Optional.empty();
+            return Result.ok((ArrayList<ChatMessage>) ok.data());
+        } else throw new RuntimeException("Unexpected");
     }
 
-    public static Optional<ArrayList<ChatMessage>> get_unread_group(String token, String g_id) {
+    public static Result get_unread_group(String token, String g_id) {
         var result = Client.Client.api_c.invoke_api("GroupChatService", "get_unread_msg", token, g_id);
         if (result instanceof ResultError err) {
-            System.out.println(err.msg());
+            return err;
         } else if (result instanceof ResultOk ok) {
-            return Optional.of((ArrayList<ChatMessage>) ok.data());
-        }
-        return Optional.empty();
+            return Result.ok((ArrayList<ChatMessage>) ok.data());
+        } else throw new RuntimeException("Unexpected");
     }
 
     public static ArrayList<LoginRecord> get_login_log(String token) {
