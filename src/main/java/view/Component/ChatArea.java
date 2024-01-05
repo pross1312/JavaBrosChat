@@ -14,6 +14,7 @@ import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javax.swing.JOptionPane;
@@ -21,6 +22,7 @@ import javax.swing.JScrollBar;
 import view.API.CallAPI;
 import view.ListItem;
 import java.util.List;
+import javax.swing.BoxLayout;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
@@ -42,7 +44,11 @@ public class ChatArea extends javax.swing.JPanel {
     private String username;
     private List<ChatItem> messages;
     private String previous_pattern = "";
-
+    
+    public static void remove_instance() {
+        instance = null;
+    }
+    
     public static ChatArea update_and_get(ChatSession session) {
         if (instance == null) instance = new ChatArea();
         if (instance.session == null || !instance.session.id.equals(session.id)) {
@@ -73,7 +79,8 @@ public class ChatArea extends javax.swing.JPanel {
         username = Client.username;
         session = null;
         initComponents();
-        chat_box.setLayout(new MigLayout());
+        chat_box.setLayout(new MigLayout("wrap,fillx"));
+//        chat_box.setLayout(new BoxLayout(chat_box, BoxLayout.Y_AXIS));
         chat_container.getVerticalScrollBar().setUI(new ModernScrollPane());
     }
 
@@ -87,11 +94,10 @@ public class ChatArea extends javax.swing.JPanel {
             } else if (res instanceof ResultOk ok) {
                 var data = (ArrayList<ChatMessage>) ok.data();
                 data.forEach(msg -> {
-                    var text = msg_c.decrypt_msg(msg.cipher_msg, session.id, session.type);
-                    chat_box.add(new ChatItem(
-                            msg.sender.equals(username) ? null : msg.sender, msg.sent_date,
-                            text.orElse("[Message is not available]"),
-                            !msg.sender.equals(username)), "wrap");
+                    add_chat(
+                            msg_c.decrypt_msg(msg.cipher_msg, session.id, session.type)
+                                    .orElse("[Message is not available]"),
+                            msg.sender, msg.sent_date);
                 });
                 scroll_and_repaint();
             }
@@ -113,7 +119,7 @@ public class ChatArea extends javax.swing.JPanel {
         if (err != null) {
             JOptionPane.showMessageDialog(null, err);
         } else if (chat_box != null) {
-            chat_box.add(new ChatItem(null, new Date(), msg, false), "wrap");
+            add_chat(msg, username, new Date());
             input_area.setText("");
             scroll_and_repaint();
         }
@@ -134,9 +140,19 @@ public class ChatArea extends javax.swing.JPanel {
         }
         return false;
     }
+    
+    private void add_chat(String msg, String sender, Date date) {
+        boolean is_left = !sender.equals(username);
+        var chat = new ChatItem(is_left, msg, date, is_left ? sender : "you");
+        messages.add(chat);
+        chat_box.add(chat,
+                is_left ? "width ::80%" : "al right,width ::80%");
+    }
 
     private void fetch_all_msg() {
         chat_box.removeAll();
+        if (messages != null) messages.clear();
+        else messages = new LinkedList<>();
         var api_res = api_c.invoke_api(
                 session.type == ChatType.USER ? "FriendChatService" : "GroupChatService",
                 "get_all_msg", token, session.id);
@@ -144,15 +160,12 @@ public class ChatArea extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(null, err.msg());
         } else if (api_res instanceof ResultOk ok) {
             var msgs = (ArrayList<ChatMessage>) ok.data();
-            messages = msgs.stream().map(msg -> {
-                Optional<String> text = msg_c.decrypt_msg(msg.cipher_msg, session.id, session.type);
-                var chat_item = new ChatItem(
-                        msg.sender.equals(username) ? null : msg.sender, msg.sent_date,
-                        text.orElse("[Message is not available]"),
-                        !msg.sender.equals(username));
-                chat_box.add(chat_item, "wrap");
-                return chat_item;
-            }).toList();
+            msgs.forEach(msg -> {
+                add_chat(
+                        msg_c.decrypt_msg(msg.cipher_msg, session.id, session.type)
+                                .orElse("[Message is not available]"),
+                        msg.sender, msg.sent_date);
+            });
         }
         scroll_and_repaint();
     }
@@ -186,6 +199,7 @@ public class ChatArea extends javax.swing.JPanel {
         session_label.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
         session_label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-group-50.png"))); // NOI18N
         session_label.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        session_label.setMinimumSize(new java.awt.Dimension(0, 0));
         session_label.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 session_labelMouseClicked(evt);
@@ -194,6 +208,7 @@ public class ChatArea extends javax.swing.JPanel {
 
         jLabel9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-delete-chat-50.png"))); // NOI18N
         jLabel9.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel9.setMinimumSize(new java.awt.Dimension(0, 0));
         jLabel9.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jLabel9MouseClicked(evt);
@@ -202,6 +217,7 @@ public class ChatArea extends javax.swing.JPanel {
 
         jLabel11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-ban-64.png"))); // NOI18N
         jLabel11.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel11.setMinimumSize(new java.awt.Dimension(0, 0));
         jLabel11.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jLabel11MouseClicked(evt);
@@ -210,6 +226,7 @@ public class ChatArea extends javax.swing.JPanel {
 
         jLabel12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-create-32.png"))); // NOI18N
         jLabel12.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel12.setMinimumSize(new java.awt.Dimension(0, 0));
         jLabel12.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jLabel12MouseClicked(evt);
@@ -217,6 +234,7 @@ public class ChatArea extends javax.swing.JPanel {
         });
 
         search_input.setFont(new java.awt.Font("sansserif", 0, 16)); // NOI18N
+        search_input.setMinimumSize(new java.awt.Dimension(0, 0));
         search_input.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 search_inputActionPerformed(evt);
@@ -229,6 +247,7 @@ public class ChatArea extends javax.swing.JPanel {
         });
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-spam-50.png"))); // NOI18N
+        jLabel1.setMinimumSize(new java.awt.Dimension(0, 0));
         jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jLabel1MouseClicked(evt);
@@ -240,37 +259,34 @@ public class ChatArea extends javax.swing.JPanel {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(session_label, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(session_label, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 216, Short.MAX_VALUE)
                 .addComponent(search_input, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel12)
+                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel9)
+                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel11)
+                .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(session_label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(search_input)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(5, 5, 5)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(search_input, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(session_label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
                     .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        chat_container.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         chat_container.setToolTipText("");
         chat_container.setHorizontalScrollBar(null);
 
@@ -343,16 +359,16 @@ public class ChatArea extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(chat_container, javax.swing.GroupLayout.DEFAULT_SIZE, 832, Short.MAX_VALUE))
+                    .addComponent(chat_container, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chat_container, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
+                .addComponent(chat_container, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -482,11 +498,11 @@ public class ChatArea extends javax.swing.JPanel {
             previous_pattern = pattern;
             chat_box.removeAll();
             if (pattern.isEmpty()) {
-                messages.forEach(x -> chat_box.add(x, "wrap"));
+                messages.forEach(x -> chat_box.add(x, x.is_left ? "width ::80%" : "al right,width ::80%"));
             } else {
                 messages.stream().filter(x -> {
-                    return containsIgnoreCase(x.get_msg(), pattern);
-                }).forEach(x -> chat_box.add(x, "wrap"));
+                    return containsIgnoreCase(x.msg, pattern);
+                }).forEach(x -> chat_box.add(x, x.is_left ? "width ::80%" : "al right,width ::80%"));
             }
             scroll_and_repaint();
         }

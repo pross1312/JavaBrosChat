@@ -34,7 +34,6 @@ import view.API.CallAPI;
 import view.Component.AddFriendForm;
 import view.Component.ChatArea;
 import view.Component.ToggleItem;
-import view.Component.ChatItem;
 import view.Component.CreateGroupForm;
 import view.Component.ChatSession;
 import view.Component.ItemPeople;
@@ -474,7 +473,10 @@ public class UserDashboard extends javax.swing.JFrame {
         if (res instanceof ResultError err) {
             JOptionPane.showMessageDialog(null, err.msg());
         } else if (res instanceof ResultOk) {
-            this.dispose();
+            SwingUtilities.invokeLater(() -> {
+                this.dispose();
+            });
+            ChatArea.remove_instance();
             new Login().setVisible(true);
         } else
             throw new RuntimeException("Unexpected");
