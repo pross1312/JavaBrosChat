@@ -16,7 +16,8 @@ public class FriendChatService extends Service {
         }
         if (!UserFriendDb.is_friend(username, friend))
             throw new Error(String.format("'%s' is not your friend", friend));
-        Server.Main.server.notify(friend, new NewFriendMsg(username, 1));
+        Server.Main.server.notify(friend, new NewFriendMsg(username,
+                FriendChatDb.get_count_unread(friend, username)));
         FriendChatDb.add(username, cipher_msg, new Date(), friend);
     }
     ArrayList<ChatMessage> get_all_msg(String token, String friend) throws SQLException {

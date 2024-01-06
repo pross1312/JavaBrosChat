@@ -112,6 +112,7 @@ public class GroupChatService extends Service {
         GroupChatMemberDb.list_members(group_id).forEach((member) -> {
             Main.server.notify(member, new DelGroupMember(group_id, target_username));
         });
+        Main.server.notify(target_username, new DelGroupMember(group_id, target_username));
     }
     void add_member(String token, String group_id, String target_username) throws SQLException {
         var acc = Server.Main.accounts.get(token);
@@ -125,6 +126,7 @@ public class GroupChatService extends Service {
             Main.server.notify(member, new NewGroupMember(group_id, target_username));
         });
         GroupChatMemberDb.add(new GroupChatMemberInfo(group_id, target_username, new Date(), false));
+        Main.server.notify(target_username, new NewGroup(GroupChatDb.query(group_id)));
     }
     void set_admin(String token, String group_id, String target_username, Boolean is_admin) throws SQLException {
         var acc = Server.Main.accounts.get(token);

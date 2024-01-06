@@ -38,11 +38,7 @@ public class ChatArea extends javax.swing.JPanel {
      */
     static private ChatArea instance = null;
     public ChatSession session;
-    private ApiClient api_c;
-    private MessageClient msg_c;
-    private NotifyClient noti_c;
-    private String token;
-    private String username;
+    private Client client;
     private LinkedList<ChatItem> messages;
     private String previous_pattern = "";
     
@@ -71,7 +67,7 @@ public class ChatArea extends javax.swing.JPanel {
             instance.search_input.setText("");
             if (session.type == ChatType.USER) {
                 instance.block_btn.setVisible(true);
-                instance.api_c.async_invoke_api(res -> {
+                instance.client.api_c.async_invoke_api(res -> {
                     if (res instanceof ResultError err) {
                         JOptionPane.showMessageDialog(null, err.msg());
                     } else if (res instanceof ResultOk ok) {
@@ -83,7 +79,7 @@ public class ChatArea extends javax.swing.JPanel {
                             instance.block_btn.setSelected(false);
                         }
                     }
-                }, "UserManagementService", "check_blocked", instance.token, instance.session.id);
+                }, "UserManagementService", "check_blocked", instance.client.token, instance.session.id);
             } else {
                 instance.block_btn.setVisible(false);
             }
@@ -94,11 +90,7 @@ public class ChatArea extends javax.swing.JPanel {
     }
 
     private ChatArea() {
-        api_c = Client.api_c;
-        msg_c = Client.msg_c;
-        noti_c = Client.noti_c;
-        token = Client.token;
-        username = Client.username;
+        client = Client.get_instance();
         session = null;
         messages = new LinkedList<>();
         initComponents();
@@ -109,36 +101,36 @@ public class ChatArea extends javax.swing.JPanel {
     }
 
     private void register_notification() {
-        noti_c.register(NewFriendMsg.class,
+        client.noti_c.register(NewFriendMsg.class,
                 "UD:CHAT_AREA", x -> {
             if (session.type != ChatType.USER) return;
             var noti = (NewFriendMsg)x;
-            Result res = CallAPI.get_unread_friend(token, noti.sender);
+            Result res = CallAPI.get_unread_friend(client.token, noti.sender);
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk ok) {
                 var data = (ArrayList<ChatMessage>) ok.data();
                 data.forEach(msg -> {
                     add_chat(
-                            msg_c.decrypt_usr_msg(msg.cipher_msg, session.id)
+                            client.msg_c.decrypt_usr_msg(msg.cipher_msg, session.id)
                                     .orElse("[Message is not available]"),
                             msg.sender, msg.sent_date);
                 });
                 scroll_and_repaint();
             }
         });
-        noti_c.register(NewGroupMsg.class,
+        client.noti_c.register(NewGroupMsg.class,
                 "UD:CHAT_AREA", x -> {
             if (session.type != ChatType.GROUP) return;
             var noti = (NewGroupMsg)x;
-            Result res = CallAPI.get_unread_group(token, noti.group_id);
+            Result res = CallAPI.get_unread_group(client.token, noti.group_id);
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk ok) {
                 var data = (ArrayList<ChatMessage>) ok.data();
                 data.forEach(msg -> {
                     add_chat(
-                            msg_c.decrypt_group_msg(msg.cipher_msg, session.id)
+                            client.msg_c.decrypt_group_msg(msg.cipher_msg, session.id)
                                     .orElse("[Message is not available]"),
                             msg.sender, msg.sent_date);
                 });
@@ -158,11 +150,11 @@ public class ChatArea extends javax.swing.JPanel {
 
     private void send_msg() {
         String msg = input_area.getText();
-        String err = msg_c.send_msg(session.id, msg, session.type);
+        String err = client.msg_c.send_msg(session.id, msg, session.type);
         if (err != null) {
             JOptionPane.showMessageDialog(null, err);
         } else if (chat_box != null) {
-            add_chat(msg, username, new Date());
+            add_chat(msg, client.username, new Date());
             input_area.setText("");
             scroll_and_repaint();
         }
@@ -185,7 +177,7 @@ public class ChatArea extends javax.swing.JPanel {
     }
     
     private void add_chat(String msg, String sender, Date date) {
-        boolean is_left = !sender.equals(username);
+        boolean is_left = !sender.equals(client.username);
         var chat = new ChatItem(is_left, msg, date, is_left ? sender : "you");
         messages.add(chat);
         chat_box.add(chat,
@@ -196,15 +188,15 @@ public class ChatArea extends javax.swing.JPanel {
         chat_box.removeAll();
         if (messages != null) messages.clear();
         else messages = new LinkedList<>();
-        var api_res = api_c.invoke_api(session.type == ChatType.USER ? "FriendChatService" : "GroupChatService",
-                "get_all_msg", token, session.id);
+        var api_res = client.api_c.invoke_api(session.type == ChatType.USER ? "FriendChatService" : "GroupChatService",
+                "get_all_msg", client.token, session.id);
         if (api_res instanceof ResultError err) {
             JOptionPane.showMessageDialog(null, err.msg());
         } else if (api_res instanceof ResultOk ok) {
             var msgs = (ArrayList<ChatMessage>) ok.data();
             msgs.forEach(msg -> {
                 add_chat(
-                        msg_c.decrypt_msg(msg.cipher_msg, session.id, session.type)
+                        client.msg_c.decrypt_msg(msg.cipher_msg, session.id, session.type)
                                 .orElse("[Message is not available]"),
                         msg.sender, msg.sent_date);
             });
@@ -419,22 +411,22 @@ public class ChatArea extends javax.swing.JPanel {
         // TODO add your handling code here:
         if (session.type == ChatType.GROUP) {
             String new_name = JOptionPane.showInputDialog("New name").trim();
-            api_c.async_invoke_api(res -> {
+            client.api_c.async_invoke_api(res -> {
                 if (res instanceof ResultError err ) {
                     JOptionPane.showMessageDialog(null, err.msg());
                 } else if (res instanceof ResultOk) {
                     session_label.setText(new_name);
                 } else throw new RuntimeException("Unexpected");
             }, "GroupChatService", "rename",
-            token, session.id, new_name);
+            client.token, session.id, new_name);
         }
     }//GEN-LAST:event_session_labelMouseClicked
 
     private void jLabel9MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel9MouseClicked
         // TODO add your handling code here:
-        var res = api_c.invoke_api(
+        var res = client.api_c.invoke_api(
             session.type == ChatType.USER ? "FriendChatService" : "GroupChatService",
-            "clear_history", token, session.id
+            "clear_history", client.token, session.id
         );
         if (res instanceof ResultError err) {
             JOptionPane.showMessageDialog(null, err.msg());
@@ -446,26 +438,26 @@ public class ChatArea extends javax.swing.JPanel {
     private void jLabel12MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel12MouseClicked
         // TODO add your handling code here:
         if (session.type == ChatType.GROUP) {
-            api_c.async_invoke_api(res -> {
+            client.api_c.async_invoke_api(res -> {
                 if (res instanceof ResultError err) {
                     JOptionPane.showMessageDialog(null, err.msg());
                 } else if (res instanceof ResultOk ok) {
                     var friends = (ArrayList<Pair<UserInfo, Boolean>>) ok.data();
-                    res = api_c.invoke_api("GroupChatService", "list_members",
-                        token, session.id);
+                    res = client.api_c.invoke_api("GroupChatService", "list_members",
+                        client.token, session.id);
                     if (res instanceof ResultError err) {
                         JOptionPane.showMessageDialog(null, err.msg());
                     } else if (res instanceof ResultOk okk) {
                         var members = (ArrayList<String>) okk.data();
                         BiConsumer<String, Boolean> on_click = (usr, on) -> {
                             if (on) {
-                                String err = msg_c.add_usr_to_group(usr, session.id);
+                                String err = client.msg_c.add_usr_to_group(usr, session.id);
                                 if (err != null) {
                                     JOptionPane.showMessageDialog(null, err);
                                 }
                             } else {
-                                var rs = api_c.invoke_api("GroupChatService", "remove_member",
-                                    token, session.id, usr);
+                                var rs = client.api_c.invoke_api("GroupChatService", "remove_member",
+                                    client.token, session.id, usr);
                                 if (rs instanceof ResultError err) {
                                     JOptionPane.showMessageDialog(null, err.msg());
                                 }
@@ -480,9 +472,9 @@ public class ChatArea extends javax.swing.JPanel {
                 } else {
                     throw new RuntimeException("Unexpected");
                 }
-            }, "UserManagementService", "list_friends", token);
+            }, "UserManagementService", "list_friends", client.token);
         } else if (session.type == ChatType.USER) {
-            api_c.async_invoke_api(res -> {
+            client.api_c.async_invoke_api(res -> {
                 if (res instanceof ResultError err) {
                     JOptionPane.showMessageDialog(null, err.msg());
                 } else if (res instanceof ResultOk ok) {
@@ -494,7 +486,7 @@ public class ChatArea extends javax.swing.JPanel {
                 } else {
                     throw new RuntimeException("Unexpected");
                 }
-            }, "UserManagementService", "list_friends", token);
+            }, "UserManagementService", "list_friends", client.token);
         } else throw new RuntimeException("Unexpected");
     }//GEN-LAST:event_jLabel12MouseClicked
 
@@ -542,7 +534,7 @@ public class ChatArea extends javax.swing.JPanel {
         if (session.type == ChatType.USER) {
             String reason = JOptionPane.showInputDialog("Reason").trim();
             if (!reason.isEmpty()) {
-                api_c.async_invoke_api(res -> {
+                client.api_c.async_invoke_api(res -> {
                     if (res instanceof ResultError err) {
                         JOptionPane.showMessageDialog(null, err.msg());
                     } else if (res instanceof ResultOk) {
@@ -550,7 +542,7 @@ public class ChatArea extends javax.swing.JPanel {
                         throw new RuntimeException("Unexpected");
                     }
                 }, "UserManagementService", "report_spam",
-                        token, session.id, reason);
+                        client.token, session.id, reason);
             }
         }
     }//GEN-LAST:event_jLabel1MouseClicked
@@ -560,8 +552,8 @@ public class ChatArea extends javax.swing.JPanel {
         if (session.type == ChatType.USER) {
             AbstractButton abstractButton = (AbstractButton) evt.getSource();
             boolean was_blocked = !abstractButton.getModel().isSelected();
-            var res = api_c.invoke_api("UserManagementService", was_blocked ? "unblock" : "block_user",
-                token, session.id);
+            var res = client.api_c.invoke_api("UserManagementService", was_blocked ? "unblock" : "block_user",
+                client.token, session.id);
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk) {

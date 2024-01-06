@@ -6,6 +6,7 @@ package view;
 
 import java.io.IOException;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 import Client.ApiClient;
 import Client.Client;
@@ -409,24 +410,17 @@ public class Login extends javax.swing.JFrame {
             System.out.println(err.msg());
         } else if (result instanceof ResultOk success) {
             var data = (Pair<String, AccountType>) success.data();
-            Client.token = data.a;
-            System.out.println("Token: " + data.a);
-            System.out.print("Type: ");
-            System.out.println(data.b);
-            Client.username = username;
+            try {
+                Client.new_instance(data.a, username, data.b);
+            } catch(IOException e) {
+                JOptionPane.showMessageDialog(null, "Network error");
+            }
             if (data.b == AccountType.Admin) {
                 new Version2AdminDashBoard().setVisible(true); 
                 //                    new AdminDashboard().setVisible(true);
                 this.dispose();
             } else if (data.b == AccountType.User) {
-                try {
-                    Client.noti_c = new NotifyClient(data.a, Client.SV_ADDR, Client.SV_PORT);
-                    Client.msg_c = new MessageClient(username, data.a, Client.SV_ADDR, Client.SV_PORT);
-                    new UserDashboard().setVisible(true);
-                } catch(IOException e) {
-                    txtFlagAccount.setText("Network error");
-                    txtFlagAccount.show();
-                }
+                new UserDashboard().setVisible(true); 
                 this.dispose();
             }
         }

@@ -64,4 +64,13 @@ public class GroupChatDb {
                                     new_name, group_id));
         st.close();
     }
+    public static GroupChatInfo query(String group_id) throws SQLException {
+        Statement st = db.conn.createStatement();
+        var result = st.executeQuery(String.format("SELECT * FROM GroupChat WHERE id = '%s'",
+                                    group_id));
+        result.next();
+        var info = parse_group_info(result);
+        st.close();
+        return info;
+    }
 }

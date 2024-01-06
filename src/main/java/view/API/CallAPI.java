@@ -175,7 +175,7 @@ public class CallAPI {
     public static ArrayList<Pair<UserInfo, Boolean>> get_list_users(String token) {
         String msg;
         ArrayList<Pair<UserInfo, Boolean>> user_list = null;
-        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.get_instance().token);
         if (rs instanceof ResultError err) {
             msg = err.msg();
             return user_list;

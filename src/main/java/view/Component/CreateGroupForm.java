@@ -137,7 +137,7 @@ public class CreateGroupForm extends javax.swing.JFrame {
         // TODO add your handling code here:
         var g_name = group_name.getText().trim();
         if (!g_name.isBlank()) {
-            Result res = Client.Client.msg_c.create_group(g_name, members);
+            Result res = Client.Client.get_instance().msg_c.create_group(g_name, members);
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else {

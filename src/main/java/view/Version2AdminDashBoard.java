@@ -57,7 +57,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     public static DefaultTableModel modelHistoryLogin;
     public static DefaultTableModel modelActiveUser;
     public static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-    public static String token = Client.Client.token; 
+    public static String token = Client.Client.get_instance().token; 
     public Version2AdminDashBoard() {
         //TODO Get list of user from db and display in table. 
         initComponents();
@@ -87,7 +87,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
             var user = item.a;
             var lock = item.b;
             // Get first log in Time 
-            Date first_login = CallAPI.getFirstLoginTime(Client.Client.token, user.username);
+            Date first_login = CallAPI.getFirstLoginTime(Client.Client.get_instance().token, user.username);
 
             String formattedDate = sdf.format(user.birthdate);
             String formattedDate_firstLogin = null;
@@ -1567,7 +1567,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
 
                 // Call delete
                 Result rs = Client.Client.api_c.invoke_api("AdminService", "del_user",
-                        Client.Client.token, tblUser.getValueAt(index, 0));
+                        Client.Client.get_instance().token, tblUser.getValueAt(index, 0));
                 if (rs instanceof ResultError err) {
                     msg = err.msg();
                     System.out.println(err.msg());
@@ -1583,7 +1583,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }//GEN-LAST:event_btnDeleteUserActionPerformed
 
     private void txtMangeGroupMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtMangeGroupMouseClicked
-        String token = Client.Client.token;
+        String token = Client.Client.get_instance().token;
         data.removeAll();
         data.repaint();
         data.revalidate();
@@ -1644,7 +1644,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }//GEN-LAST:event_cbFilterSpamActionPerformed
 
     private void txtSpamListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtSpamListMouseClicked
-        String token = Client.Client.token;
+        String token = Client.Client.get_instance().token;
         data.removeAll();
         data.repaint();
         data.revalidate();
@@ -1686,7 +1686,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         data.revalidate();
         modelNewUser = (DefaultTableModel) tblNewUser.getModel();
         modelNewUser.setRowCount(0);
-        String token = Client.Client.token;
+        String token = Client.Client.get_instance().token;
         Result rs = null;
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
         rs = Client.Client.api_c.invoke_api("AdminService", "list_registers", token, start, end);
@@ -1772,7 +1772,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
             return;
 
         }
-        String token = Client.Client.token;
+        String token = Client.Client.get_instance().token;
         String criteria = (String) cbStatiscal.getSelectedItem();
         ArrayList<Integer> data = new ArrayList<>();
         if (criteria.equals("New User Graph")) {
@@ -1813,7 +1813,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         data.revalidate();
         modelActiveUser = (DefaultTableModel) tblActiveUser.getModel();
         modelActiveUser.setRowCount(0);
-        String token = Client.Client.token;
+        String token = Client.Client.get_instance().token;
         Result rs = null;
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -1848,7 +1848,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         moreInfoModel.setRowCount(0);
         String msg = "";
 
-        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.token);
+        Result rs = Client.Client.api_c.invoke_api("AdminService", "list_users", Client.Client.get_instance().token);
         if (rs instanceof ResultError err) {
             msg = err.msg();
         } else if (rs instanceof ResultOk ok) {
@@ -1858,19 +1858,19 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
                 int amount_friend = 0;
                 int amount_matual_friend = 0;
                 //GET First log in Time
-                Date first_LogIn = CallAPI.getFirstLoginTime(Client.Client.token, user.username);
+                Date first_LogIn = CallAPI.getFirstLoginTime(Client.Client.get_instance().token, user.username);
                 if (first_LogIn == null) {
                     System.out.println("Cant get first Login time");
                 } else {
                     // GET Getfriend, FOAF
-                    Result rsFriend = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", Client.Client.token, user.username);
+                    Result rsFriend = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", Client.Client.get_instance().token, user.username);
                     if (rsFriend instanceof ResultError err) {
                         msg = err.msg();
                     } else if (rsFriend instanceof ResultOk ok1) {
                         ArrayList<UserInfo> friend_list = (ArrayList<UserInfo>) ok1.data();
                         amount_friend = friend_list.size();
                         for (var friend : friend_list) {
-                            Result rsFriendoFriend = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", Client.Client.token, friend.username);
+                            Result rsFriendoFriend = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", Client.Client.get_instance().token, friend.username);
                             if (rsFriendoFriend instanceof ResultError err) {
                                 msg = err.msg();
                             } else if (rsFriendoFriend instanceof ResultOk ok2) {
@@ -1935,7 +1935,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
 
     private void btnListFriendMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnListFriendMouseClicked
         // List friend of user 
-        final String token = Client.Client.token;
+        final String token = Client.Client.get_instance().token;
         final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
         Result rs = Client.Client.api_c.invoke_api("AdminService", "list_user_friends", token, username);
         if (rs instanceof ResultError err) {
@@ -1955,7 +1955,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }//GEN-LAST:event_btnListFriendMouseClicked
 
     private void btnUpdateUserPwd1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnUpdateUserPwd1MouseClicked
-        final String token = Client.Client.token;
+        final String token = Client.Client.get_instance().token;
         final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
 
         JFrame newPwdFrame = new JFrame();
@@ -1999,7 +1999,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
 
     private void btnSeeLogHistoryMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnSeeLogHistoryMouseClicked
         // See Log history
-        final String token = Client.Client.token;
+        final String token = Client.Client.get_instance().token;
         final String username = (String) tblUser.getValueAt(tblUser.getSelectedRow(), 0);
 
         ArrayList<Date> login_Records = CallAPI.getLogInHistory(token, username);
@@ -2027,7 +2027,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }//GEN-LAST:event_closeBtn2MouseClicked
 
     private void btnListAdminGroupMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnListAdminGroupMouseClicked
-        final String token = Client.Client.token;
+        final String token = Client.Client.get_instance().token;
         int index = tblGroup.getSelectedRow();
         if (index == -1) {
             JOptionPane.showConfirmDialog(null, "You must select Group before this action", "WARNING", JOptionPane.WARNING_MESSAGE);
@@ -2045,7 +2045,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }//GEN-LAST:event_btnListAdminGroupMouseClicked
 
     private void btnListMemberMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnListMemberMouseClicked
-        final String token = Client.Client.token;
+        final String token = Client.Client.get_instance().token;
         int index = tblGroup.getSelectedRow();
         if (index == -1) {
             JOptionPane.showConfirmDialog(null, "You must select Group before this action", "WARNING", JOptionPane.WARNING_MESSAGE);
@@ -2065,7 +2065,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }//GEN-LAST:event_cbCompareNumberActionPerformed
 
     private void btnListFriend2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnListFriend2MouseClicked
-        final String token = Client.Client.token;
+        final String token = Client.Client.get_instance().token;
         int index = tblSpam.getSelectedRow();
         if (index == -1) {
             JOptionPane.showMessageDialog(null, "You must select user before lock");
@@ -2090,7 +2090,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         data.repaint();
         data.revalidate();
         modelHistoryLogin = (DefaultTableModel) tblHistoryLogin.getModel();
-        ArrayList<LoginRecord> login_list = CallAPI.get_login_log(Client.Client.token);
+        ArrayList<LoginRecord> login_list = CallAPI.get_login_log(Client.Client.get_instance().token);
         for (var login : login_list) {
             addRowtoTable(new Object[]{login.username, login.ts}, false, modelHistoryLogin);
         }

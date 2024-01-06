@@ -108,7 +108,7 @@ public class ItemPeople extends javax.swing.JPanel {
     private void lbAddMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbAddMouseClicked
         // TODO add your handling code here:
         if (this.status == P2PStatus.STRANGER) {
-            Result res = Client.Client.msg_c.add_friend(this.name);
+            Result res = Client.Client.get_instance().msg_c.add_friend(this.name);
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk ok) {

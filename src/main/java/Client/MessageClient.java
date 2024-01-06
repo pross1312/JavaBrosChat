@@ -222,7 +222,6 @@ public class MessageClient {
                     if (api_result instanceof ResultError err) {
                         return err;
                     } else if (api_result instanceof ResultOk) {
-                        chat_sessions.put(username, new ChatSession(aes_params));
                         chat_sessions.put(friend, new ChatSession(aes_params));
                     }
                 } catch(Exception e) {

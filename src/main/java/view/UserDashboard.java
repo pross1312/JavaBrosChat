@@ -42,12 +42,8 @@ import view.Component.ModernScrollPane;
 public class UserDashboard extends javax.swing.JFrame {
 
     private static String userNameSelected;
-    private ApiClient api_c;
-    private MessageClient msg_c;
-    private NotifyClient noti_c;
-    private String token;
+    private Client.Client client;
     private List<ChatSession> chats;
-    private String username;
     private String current_target = null;
     private ChatType current_type = null;
     private Consumer<ChatSession> session_click;
@@ -55,13 +51,10 @@ public class UserDashboard extends javax.swing.JFrame {
     private boolean first = true;
 
     public UserDashboard() {
-        api_c = Client.Client.api_c;
-        msg_c = Client.Client.msg_c;
-        noti_c = Client.Client.noti_c;
-        token = Client.Client.token;
-        username = Client.Client.username;
-        this.setTitle("Java Bro Chat - " +  username);
+        this.client = Client.Client.get_instance();
+        this.setTitle("Java Bro Chat - " +  client.username);
         this.session_click = (session) -> {
+            session.set_new_msg_count(0);
             var new_chat = ChatArea.update_and_get(session);
             if (first) {
                 content.removeAll();
@@ -75,12 +68,20 @@ public class UserDashboard extends javax.swing.JFrame {
         init();
         
     }
+    
+    private void back_to_default_screen() {
+        ChatArea.remove_instance();
+        this.content.removeAll();
+        this.content.add(this.jLabel7);
+        view.Utils.swing_repaint(this.content);
+        this.first = true;
+    }
 
     private void init() {
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                api_c.invoke_api("AccountService", "logout", token);
+                client.api_c.invoke_api("AccountService", "logout", client.token);
             }
         });
         menuList.setLayout(new BoxLayout(menuList, BoxLayout.Y_AXIS));
@@ -89,14 +90,57 @@ public class UserDashboard extends javax.swing.JFrame {
     }
 
     public void register_menu_notification_event() {
-        noti_c.register(NewFriend.class, "UD:MENU_LIST", x -> {
+        client.noti_c.register(NewFriend.class, "UD:MENU_LIST", x -> {
             var noti = (NewFriend) x;
             var session = new ChatSession(noti.friend, noti.friend, session_click, true, ChatType.USER);
-            menuList.add(session, "span");
+            menuList.add(session);
             chats.add(session);
             view.Utils.swing_repaint(menuList);
         });
-        noti_c.register(GroupRename.class, "UD:MENU_LIST", x -> {
+        client.noti_c.register(NewFriendMsg.class, "UD:MENU_LIST", x -> {
+            var noti = (NewFriendMsg) x;
+            var chat_inst = ChatArea.get_instance();
+            if (chat_inst != null && noti.sender.equals(chat_inst.session.id)) return;
+            for (var session : chats) {
+                if (session.id.equals(noti.sender)) {
+                    session.set_new_msg_count(noti.count);
+                    break;
+                }
+            }
+        });
+        client.noti_c.register(NewGroupMsg.class, "UD:MENU_LIST", x -> {
+            var noti = (NewGroupMsg) x;
+            var chat_inst = ChatArea.get_instance();
+            if (chat_inst != null && noti.group_id.equals(chat_inst.session.id)) return;
+            for (var session : chats) {
+                if (session.id.equals(noti.group_id)) {
+                    session.set_new_msg_count(noti.count);
+                    break;
+                }
+            }
+        });
+        client.noti_c.register(Unfriend.class, "UD:MENU_LIST", x -> {
+            var noti = (Unfriend) x;
+            String friend = noti.user_1.equals(client.username) ? noti.user_2 :
+                    noti.user_2.equals(client.username) ? noti.user_1 : null;
+            if (friend == null) return;
+            for (var session : chats) {
+                if (session.id.equals(friend)) {
+                    var chat_inst = ChatArea.get_instance();
+                    if (chat_inst != null && session.id.equals(chat_inst.session.id)) {
+                        back_to_default_screen();
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        menuList.remove(session);
+                        menuList.validate();
+                        menuList.repaint();
+                    });
+                    chats.remove(session);
+                    break;
+                }
+            }
+        });
+        client.noti_c.register(GroupRename.class, "UD:MENU_LIST", x -> {
             var noti = (GroupRename) x;
             for (ChatSession session : chats) {
                 if (session.id.equals(noti.id)) {
@@ -105,19 +149,19 @@ public class UserDashboard extends javax.swing.JFrame {
                 }
             }
         });
-        noti_c.register(NewGroup.class, "UD:MENU_LIST", x -> {
+        client.noti_c.register(NewGroup.class, "UD:MENU_LIST", x -> {
             var noti = (NewGroup) x;
             System.out.println("ONCE");
             add_group(noti.info);
         });
-        noti_c.register(NewFriendRequest.class, "UD:WINDOW", x -> {
+        client.noti_c.register(NewFriendRequest.class, "UD:WINDOW", x -> {
             var noti = (NewFriendRequest) x;
             int n = JOptionPane.showConfirmDialog(
                     this, "Accept friend request from " + noti.initiator + "?",
                     "Friend Request",
                     JOptionPane.YES_NO_OPTION);
             if (n == JOptionPane.YES_OPTION) {
-                Result res = msg_c.add_friend(noti.initiator);
+                Result res = client.msg_c.add_friend(noti.initiator);
                 if (res instanceof ResultError err) {
                     JOptionPane.showMessageDialog(null, err.msg());
                 }
@@ -125,7 +169,7 @@ public class UserDashboard extends javax.swing.JFrame {
             } else {
             }
         });
-        noti_c.register(FriendLogin.class, "UD:MENU_LIST", x -> {
+        client.noti_c.register(FriendLogin.class, "UD:MENU_LIST", x -> {
             var noti = (FriendLogin) x;
             for (var session : chats) {
                 if (session.id.equals(noti.friend)) {
@@ -134,7 +178,7 @@ public class UserDashboard extends javax.swing.JFrame {
                 }
             }
         });
-        noti_c.register(FriendLogout.class, "UD:MENU_LIST", x -> {
+        client.noti_c.register(FriendLogout.class, "UD:MENU_LIST", x -> {
             var noti = (FriendLogout) x;
             for (var session : chats) {
                 if (session.id.equals(noti.friend)) {
@@ -143,17 +187,36 @@ public class UserDashboard extends javax.swing.JFrame {
                 }
             }
         });
+        client.noti_c.register(DelGroupMember.class, "UD:MENU_LIST", x -> {
+            var noti = (DelGroupMember) x;
+            if (!noti.member.equals(client.username)) return;
+            for (var session : chats) {
+                if (session.id.equals(noti.group_id)) {
+                    var chat_inst = ChatArea.get_instance();
+                    if (chat_inst != null && session.id.equals(chat_inst.session.id)) {
+                        back_to_default_screen();
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        menuList.remove(session);
+                        menuList.validate();
+                        menuList.repaint();
+                    });
+                    chats.remove(session);
+                    break;
+                }
+            }
+        });
     }
 
     public void add_group(GroupChatInfo info) {
         var session = new ChatSession(info.name, info.id, session_click, true, ChatType.GROUP);
-        menuList.add(session, "span");
+        menuList.add(session);
         chats.add(session);
         view.Utils.swing_repaint(menuList);
     }
 
     public void init_chat_sessions() {
-        api_c.async_invoke_api(api_res -> {
+        client.api_c.async_invoke_api(api_res -> {
             List<ChatSession> chat_sessions = null;
             if (api_res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
@@ -162,24 +225,24 @@ public class UserDashboard extends javax.swing.JFrame {
                 chat_sessions = new ArrayList<>(friends.stream().map(x -> {
                     var chat_item = new ChatSession(x.a.username, x.a.username, session_click,
                             x.b, ChatType.USER);
-                    menuList.add(chat_item, "span");
+                    menuList.add(chat_item);
                     return chat_item;
                 }).toList());
             }
-            var res = api_c.invoke_api("GroupChatService", "list_groups", token);
+            var res = client.api_c.invoke_api("GroupChatService", "list_groups", client.token);
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk ok) {
                 var groups = (ArrayList<GroupChatInfo>) ok.data();
                 chat_sessions.addAll(groups.stream().map(x -> {
                     var chat_item = new ChatSession(x.name, x.id, session_click, true, ChatType.GROUP);
-                    menuList.add(chat_item, "span");
+                    menuList.add(chat_item);
                     return chat_item;
                 }).toList());
                 chats = chat_sessions;
             }
             view.Utils.swing_repaint(menuList);
-        }, "UserManagementService", "list_friends", token);
+        }, "UserManagementService", "list_friends", client.token);
         register_menu_notification_event();
     }
 
@@ -440,7 +503,7 @@ public class UserDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_jLabel6MouseClicked
 
     private void jLabel8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel8MouseClicked
-        api_c.async_invoke_api(res -> {
+        client.api_c.async_invoke_api(res -> {
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk ok) {
@@ -449,13 +512,13 @@ public class UserDashboard extends javax.swing.JFrame {
             } else {
                 throw new RuntimeException("Unexpected");
             }
-        }, "UserManagementService", "list_friends", token);
+        }, "UserManagementService", "list_friends", client.token);
     }//GEN-LAST:event_jLabel8MouseClicked
 
     private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
         // TODO add your handling code here:
         var result = Client.Client.api_c.invoke_api("UserManagementService", "get_friend_requests",
-                Client.Client.token);
+                client.token);
         if (result instanceof ResultError err) {
             JOptionPane.showMessageDialog(null, err.msg());
         } else if (result instanceof ResultOk ok) {
@@ -471,7 +534,7 @@ public class UserDashboard extends javax.swing.JFrame {
 
     private void jLabel10MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel10MouseClicked
         // TODO add your handling code here:
-        var res = api_c.invoke_api("AccountService", "logout", token);
+        var res = client.api_c.invoke_api("AccountService", "logout", client.token);
         if (res instanceof ResultError err) {
             JOptionPane.showMessageDialog(null, err.msg());
         } else if (res instanceof ResultOk) {

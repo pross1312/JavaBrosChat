@@ -26,12 +26,14 @@ public class ChatSession extends javax.swing.JPanel {
         txtName.setText(label);
         set_active(is_active);
         this.on_click = on_click;
+        this.new_msg_count.setText("0");
+        this.new_msg_count.setVisible(false);
         init();
     }
     
     public void rename(String name) {
         this.txtName.setText(name);
-        this.txtName.repaint();
+        view.Utils.swing_repaint(this.txtName);
     }
     
     public String get_name() {
@@ -40,7 +42,16 @@ public class ChatSession extends javax.swing.JPanel {
     
     public void set_active(boolean is_active) {
         txtName.setForeground(is_active ? active_c : inactive_c);
-        txtName.repaint();
+        view.Utils.swing_repaint(this.txtName);
+    }
+    
+    public void set_new_msg_count(int count) {
+        if (count > 0) {
+            this.new_msg_count.setText(Integer.toString(count));
+            this.new_msg_count.setVisible(true);
+        } else {
+            this.new_msg_count.setVisible(false);
+        }
     }
     
     private void init() {
@@ -68,6 +79,7 @@ public class ChatSession extends javax.swing.JPanel {
         txtName = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         unfriend_btn = new javax.swing.JButton();
+        new_msg_count = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
@@ -95,22 +107,28 @@ public class ChatSession extends javax.swing.JPanel {
             }
         });
 
+        new_msg_count.setForeground(new java.awt.Color(255, 51, 51));
+        new_msg_count.setText("0");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(new_msg_count)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(unfriend_btn))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(unfriend_btn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)
+            .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(new_msg_count, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -126,24 +144,15 @@ public class ChatSession extends javax.swing.JPanel {
                 if (res instanceof ResultError err) {
                     JOptionPane.showMessageDialog(null, err.msg());
                 } else if (res instanceof ResultOk) {
-                    var chat_inst = ChatArea.get_instance();
-                    if (chat_inst != null && chat_inst.session.id.equals(this.id)) {
-                        // TODO: remove instance, show default
-                    }
-                    var parent = this.getParent();
-                    SwingUtilities.invokeLater(() -> {
-                        parent.remove(this);
-                        parent.validate();
-                        parent.repaint();
-                    });
                 } else throw new RuntimeException("Unexpected");
-            }, "UserManagementService", "unfriend", Client.Client.token, this.id);
+            }, "UserManagementService", "unfriend", Client.Client.get_instance().token, this.id);
         }
     }//GEN-LAST:event_unfriend_btnActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel new_msg_count;
     private javax.swing.JLabel txtName;
     private javax.swing.JButton unfriend_btn;
     // End of variables declaration//GEN-END:variables

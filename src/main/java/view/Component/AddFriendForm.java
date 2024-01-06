@@ -115,7 +115,7 @@ public class AddFriendForm extends javax.swing.JFrame {
         if (!pattern.isBlank()) {
             listFriend.removeAll();
             var res = Client.Client.api_c.invoke_api("UserManagementService", "find_users",
-                    Client.Client.token, pattern);
+                    Client.Client.get_instance().token, pattern);
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk ok) {

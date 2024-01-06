@@ -13,6 +13,7 @@ import Server.DB.SecretDb.SecretType;
 import Utils.*;
 import Utils.Notify.NewFriend;
 import Utils.Notify.NewFriendRequest;
+import Utils.Notify.Unfriend;
 
 public class UserManagementService extends Service {
     UserInfo get_info(String token) throws SQLException {
@@ -75,6 +76,9 @@ public class UserManagementService extends Service {
             SecretDb.remove(friend, username, SecretType.USER);
             Server.Main.db.commit();
             Server.Main.db.set_auto_commit(true);
+            var noti = new Unfriend(username, friend);
+            Server.Main.server.notify(username, noti);
+            Server.Main.server.notify(friend, noti);
         } else throw new Error("Can't execute unfriend api, token not found");
     }
 

@@ -211,7 +211,7 @@ public class AddUserForm extends javax.swing.JFrame {
             cbGender.getSelectedItem().toString(),
             txtEmail.getText(), this.lock};
         // Get access Token
-        final String accessToken = Client.Client.token;
+        final String accessToken = Client.Client.get_instance().token;
         // Add Funtional 
         if (btnActionForm.getText().equalsIgnoreCase("add")) {
             Result rs = Client.Client.api_c.invoke_api("AdminService", "add_user",

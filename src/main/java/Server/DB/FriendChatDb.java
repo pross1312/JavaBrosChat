@@ -56,7 +56,7 @@ public class FriendChatDb {
         var result = get_count_unread_sm.executeQuery();
         if (result == null) throw new RuntimeException("Result set of query operation can't be null");
         if (!result.next()) throw new RuntimeException("Select count can't return no rows");
-        return result.getInt("count");
+        return result.getInt("count") + 1; // NOTE: for some reason the result is count - 1
     }
     public static ArrayList<ChatMessage> get_unread_msg(String username, String friend) throws SQLException {
         get_unread_sm.setString(1, username);
