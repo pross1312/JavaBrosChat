@@ -65,13 +65,16 @@ public class UserManagementService extends Service {
         var acc = Server.Main.accounts.get(token);
         if (acc != null) {
             String username = acc.a;
-            UserFriendDb.remove(username, friend);
+            if (!UserFriendDb.is_friend(username, friend))
+                throw new Error("You are not friend with " + friend);
             Server.Main.db.set_auto_commit(false);
+            UserFriendDb.remove(username, friend);
+            BlockUserDb.delete(username, friend);
+            BlockUserDb.delete(friend, username);
             SecretDb.remove(username, friend, SecretType.USER);
             SecretDb.remove(friend, username, SecretType.USER);
             Server.Main.db.commit();
             Server.Main.db.set_auto_commit(true);
-
         } else throw new Error("Can't execute unfriend api, token not found");
     }
 
@@ -139,5 +142,12 @@ public class UserManagementService extends Service {
         if (!BlockUserDb.delete(username, target_username)) {
             throw new RuntimeException("Can't execute unblock api");
         }
+    }
+    boolean check_blocked(String token, String user) throws SQLException{
+        var acc = Server.Main.accounts.get(token);
+        if(acc == null)
+            throw new Error("Can't execute block_user api, token not found");
+        var username = acc.a;
+        return BlockUserDb.checkBlocked(username, user);
     }
 }

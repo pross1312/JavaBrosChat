@@ -463,7 +463,7 @@ public class UserDashboard extends javax.swing.JFrame {
             var items = requests.stream().map(x -> {
                 return (Component) new ItemPeople(x.initiator, P2PStatus.STRANGER);
             }).toList();
-            ListItem.get_instance(items, "List friend requests").setVisible(true);
+            new ListItem(items, "List friend requests").setVisible(true);
         } else {
             throw new RuntimeException("Unexpected");
         }

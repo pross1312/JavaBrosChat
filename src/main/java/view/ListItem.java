@@ -24,29 +24,14 @@ public class ListItem extends javax.swing.JFrame {
     /**
      * Creates new form ListFriendRequest
      */
-    private static ListItem instance;
 
-    public static ListItem get_instance(List<Component> items, String label) {
-        if (instance == null) {
-            instance = new ListItem();
-        }
-        instance.set_data(items, label);
-        instance.setLocationRelativeTo(null);
-
-        return instance;
-    }
-
-    private void set_data(List<Component> items, String label) {
-        items.forEach(x -> {
-            instance.body.add(x);
-        });
-        jlabel1.setText(label);
-        this.repaint();
-    }
-
-    private ListItem() {
+    public ListItem(List<Component> items, String label) {
         initComponents();
         scroll_pane.getVerticalScrollBar().setUI(new ModernScrollPane());
+        items.forEach(x -> {
+            body.add(x);
+        });
+        jlabel1.setText(label);
     }
 
     /**
@@ -130,7 +115,7 @@ public class ListItem extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ListItem().setVisible(true);
+                new ListItem(null, null).setVisible(true);
             }
         });
     }

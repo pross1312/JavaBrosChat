@@ -22,6 +22,7 @@ import javax.swing.JScrollBar;
 import view.API.CallAPI;
 import view.ListItem;
 import java.util.List;
+import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
@@ -36,17 +37,21 @@ public class ChatArea extends javax.swing.JPanel {
      * Creates new form ChatArea
      */
     static private ChatArea instance = null;
-    private ChatSession session;
+    public ChatSession session;
     private ApiClient api_c;
     private MessageClient msg_c;
     private NotifyClient noti_c;
     private String token;
     private String username;
-    private List<ChatItem> messages;
+    private LinkedList<ChatItem> messages;
     private String previous_pattern = "";
     
     public static void remove_instance() {
         instance = null;
+    }
+    
+    public static ChatArea get_instance() {
+        return instance;
     }
     
     public static ChatArea update_and_get(ChatSession session) {
@@ -62,10 +67,27 @@ public class ChatArea extends javax.swing.JPanel {
                         session.type == ChatType.GROUP ? java.awt.Cursor.HAND_CURSOR : java.awt.Cursor.DEFAULT_CURSOR));
             }
             instance.previous_pattern = "";
-            instance.search_input.setText("");
             instance.session = session;
+            instance.search_input.setText("");
+            if (session.type == ChatType.USER) {
+                instance.block_btn.setVisible(true);
+                instance.api_c.async_invoke_api(res -> {
+                    if (res instanceof ResultError err) {
+                        JOptionPane.showMessageDialog(null, err.msg());
+                    } else if (res instanceof ResultOk ok) {
+                        if ((boolean)ok.data()) {
+                            instance.block_btn.setText("Unblock");
+                            instance.block_btn.setSelected(true);
+                        } else {
+                            instance.block_btn.setText("Block");
+                            instance.block_btn.setSelected(false);
+                        }
+                    }
+                }, "UserManagementService", "check_blocked", instance.token, instance.session.id);
+            } else {
+                instance.block_btn.setVisible(false);
+            }
             instance.fetch_all_msg();
-            instance.register_notification();
             instance.session_label.setText(session.get_name());
         }
         return instance;
@@ -78,24 +100,45 @@ public class ChatArea extends javax.swing.JPanel {
         token = Client.token;
         username = Client.username;
         session = null;
+        messages = new LinkedList<>();
         initComponents();
+        register_notification();
         chat_box.setLayout(new MigLayout("wrap,fillx"));
 //        chat_box.setLayout(new BoxLayout(chat_box, BoxLayout.Y_AXIS));
         chat_container.getVerticalScrollBar().setUI(new ModernScrollPane());
     }
 
     private void register_notification() {
-        noti_c.register(session.type == ChatType.USER ? NewFriendMsg.class : NewGroupMsg.class,
-                "UD:CHAT_BOX", x -> {
+        noti_c.register(NewFriendMsg.class,
+                "UD:CHAT_AREA", x -> {
             if (session.type != ChatType.USER) return;
-            Result res = CallAPI.get_unread_friend(token, session.id);
+            var noti = (NewFriendMsg)x;
+            Result res = CallAPI.get_unread_friend(token, noti.sender);
             if (res instanceof ResultError err) {
                 JOptionPane.showMessageDialog(null, err.msg());
             } else if (res instanceof ResultOk ok) {
                 var data = (ArrayList<ChatMessage>) ok.data();
                 data.forEach(msg -> {
                     add_chat(
-                            msg_c.decrypt_msg(msg.cipher_msg, session.id, session.type)
+                            msg_c.decrypt_usr_msg(msg.cipher_msg, session.id)
+                                    .orElse("[Message is not available]"),
+                            msg.sender, msg.sent_date);
+                });
+                scroll_and_repaint();
+            }
+        });
+        noti_c.register(NewGroupMsg.class,
+                "UD:CHAT_AREA", x -> {
+            if (session.type != ChatType.GROUP) return;
+            var noti = (NewGroupMsg)x;
+            Result res = CallAPI.get_unread_group(token, noti.group_id);
+            if (res instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            } else if (res instanceof ResultOk ok) {
+                var data = (ArrayList<ChatMessage>) ok.data();
+                data.forEach(msg -> {
+                    add_chat(
+                            msg_c.decrypt_group_msg(msg.cipher_msg, session.id)
                                     .orElse("[Message is not available]"),
                             msg.sender, msg.sent_date);
                 });
@@ -153,8 +196,7 @@ public class ChatArea extends javax.swing.JPanel {
         chat_box.removeAll();
         if (messages != null) messages.clear();
         else messages = new LinkedList<>();
-        var api_res = api_c.invoke_api(
-                session.type == ChatType.USER ? "FriendChatService" : "GroupChatService",
+        var api_res = api_c.invoke_api(session.type == ChatType.USER ? "FriendChatService" : "GroupChatService",
                 "get_all_msg", token, session.id);
         if (api_res instanceof ResultError err) {
             JOptionPane.showMessageDialog(null, err.msg());
@@ -166,8 +208,8 @@ public class ChatArea extends javax.swing.JPanel {
                                 .orElse("[Message is not available]"),
                         msg.sender, msg.sent_date);
             });
+            scroll_and_repaint();
         }
-        scroll_and_repaint();
     }
 
     /**
@@ -182,10 +224,10 @@ public class ChatArea extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         session_label = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         search_input = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        block_btn = new javax.swing.JToggleButton();
         chat_container = new javax.swing.JScrollPane();
         chat_box = new javax.swing.JLayeredPane();
         jPanel2 = new javax.swing.JPanel();
@@ -215,16 +257,7 @@ public class ChatArea extends javax.swing.JPanel {
             }
         });
 
-        jLabel11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-ban-64.png"))); // NOI18N
-        jLabel11.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jLabel11.setMinimumSize(new java.awt.Dimension(0, 0));
-        jLabel11.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel11MouseClicked(evt);
-            }
-        });
-
-        jLabel12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-create-32.png"))); // NOI18N
+        jLabel12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-add-group-64.png"))); // NOI18N
         jLabel12.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jLabel12.setMinimumSize(new java.awt.Dimension(0, 0));
         jLabel12.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -254,6 +287,13 @@ public class ChatArea extends javax.swing.JPanel {
             }
         });
 
+        block_btn.setText("block");
+        block_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                block_btnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -261,29 +301,29 @@ public class ChatArea extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(session_label, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 216, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 139, Short.MAX_VALUE)
                 .addComponent(search_input, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(block_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(search_input, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(session_label, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(search_input, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(session_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(block_btn, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -368,7 +408,7 @@ public class ChatArea extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chat_container, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                .addComponent(chat_container, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -403,17 +443,6 @@ public class ChatArea extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jLabel9MouseClicked
 
-    private void jLabel11MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel11MouseClicked
-        // TODO add your handling code here:
-        if (session.type == ChatType.USER) {
-            var res = api_c.invoke_api("UserManagementService", "block_user",
-                token, session.id);
-            if (res instanceof ResultError err) {
-                JOptionPane.showMessageDialog(null, err.msg());
-            }
-        }
-    }//GEN-LAST:event_jLabel11MouseClicked
-
     private void jLabel12MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel12MouseClicked
         // TODO add your handling code here:
         if (session.type == ChatType.GROUP) {
@@ -442,7 +471,7 @@ public class ChatArea extends javax.swing.JPanel {
                                 }
                             }
                         };
-                        ListItem.get_instance(friends.stream().map(x -> {
+                        new ListItem(friends.stream().map(x -> {
                             return (Component) new ToggleItem(x.a.username,
                                 members.contains(x.a.username), "Remove", "Add", on_click
                             );
@@ -526,13 +555,30 @@ public class ChatArea extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_jLabel1MouseClicked
 
+    private void block_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_block_btnActionPerformed
+        // TODO add your handling code here:
+        if (session.type == ChatType.USER) {
+            AbstractButton abstractButton = (AbstractButton) evt.getSource();
+            boolean was_blocked = !abstractButton.getModel().isSelected();
+            var res = api_c.invoke_api("UserManagementService", was_blocked ? "unblock" : "block_user",
+                token, session.id);
+            if (res instanceof ResultError err) {
+                JOptionPane.showMessageDialog(null, err.msg());
+            } else if (res instanceof ResultOk) {
+                JOptionPane.showMessageDialog(null,
+                        session.id + " has been " + (was_blocked ? "unblocked!" : "blocked!"));
+                block_btn.setText(was_blocked ? "Block" : "Unblock");
+            }
+        }
+    }//GEN-LAST:event_block_btnActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton block_btn;
     private javax.swing.JLayeredPane chat_box;
     private javax.swing.JScrollPane chat_container;
     private javax.swing.JTextField input_area;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;

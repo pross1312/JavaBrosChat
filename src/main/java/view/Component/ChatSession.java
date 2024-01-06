@@ -1,11 +1,15 @@
 package view.Component;
 
 import Client.MessageClient.ChatType;
+import Utils.ResultError;
+import Utils.ResultOk;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import view.UserDashboard;
 
 public class ChatSession extends javax.swing.JPanel {
@@ -52,6 +56,9 @@ public class ChatSession extends javax.swing.JPanel {
                 setBackground(original_bg);
             }
         });
+        if (this.type == ChatType.GROUP) {
+            this.unfriend_btn.setVisible(false);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -60,6 +67,7 @@ public class ChatSession extends javax.swing.JPanel {
 
         txtName = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        unfriend_btn = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
@@ -80,25 +88,29 @@ public class ChatSession extends javax.swing.JPanel {
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/icons8-person-48.png"))); // NOI18N
 
+        unfriend_btn.setText("Unfriend");
+        unfriend_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                unfriend_btnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
+                .addComponent(unfriend_btn))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+            .addComponent(txtName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(unfriend_btn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -107,9 +119,32 @@ public class ChatSession extends javax.swing.JPanel {
         this.on_click.accept(this);
     }//GEN-LAST:event_formMouseClicked
 
+    private void unfriend_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unfriend_btnActionPerformed
+        // TODO add your handling code here:
+        if (this.type == ChatType.USER) {
+            Client.Client.api_c.async_invoke_api(res -> {
+                if (res instanceof ResultError err) {
+                    JOptionPane.showMessageDialog(null, err.msg());
+                } else if (res instanceof ResultOk) {
+                    var chat_inst = ChatArea.get_instance();
+                    if (chat_inst != null && chat_inst.session.id.equals(this.id)) {
+                        // TODO: remove instance, show default
+                    }
+                    var parent = this.getParent();
+                    SwingUtilities.invokeLater(() -> {
+                        parent.remove(this);
+                        parent.validate();
+                        parent.repaint();
+                    });
+                } else throw new RuntimeException("Unexpected");
+            }, "UserManagementService", "unfriend", Client.Client.token, this.id);
+        }
+    }//GEN-LAST:event_unfriend_btnActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel txtName;
+    private javax.swing.JButton unfriend_btn;
     // End of variables declaration//GEN-END:variables
 }
