@@ -2036,11 +2036,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
         final String group_id = (String) tblGroup.getValueAt(tblGroup.getSelectedRow(), 0);
 
         ArrayList<GroupChatMemberInfo> list_log = CallAPI.list_group_members(token, group_id);
-        for (int i = 0; i < list_log.size(); ++i) {
-            if (list_log.get(i).is_admin == false) {
-                list_log.remove(i);
-            }
-        }
+        list_log.removeIf(x -> !x.is_admin);
         new DisplayTable(list_log, new String[]{"Group ID", "Username", "Joined Date"}, 1).setVisible(true);
     }//GEN-LAST:event_btnListAdminGroupMouseClicked
 
