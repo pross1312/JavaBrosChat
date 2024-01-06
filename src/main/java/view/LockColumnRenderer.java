@@ -13,7 +13,12 @@ public class LockColumnRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        boolean isLocked = (boolean) value;
+        boolean isLocked = false;
+        if (value instanceof String) {
+            isLocked = Boolean.parseBoolean((String)value);
+        } else if (value instanceof Boolean) {
+            isLocked = (boolean) value;
+        } else throw new RuntimeException("Unexpected " + value.getClass().getName());
 
         if (isLocked) {
             setBackground(Color.YELLOW);

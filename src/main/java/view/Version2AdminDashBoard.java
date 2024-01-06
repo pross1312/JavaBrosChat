@@ -2145,7 +2145,7 @@ public class Version2AdminDashBoard extends javax.swing.JFrame implements DateSe
     }
 
     public static void updateRow(Object[] newDataRow, int rowIndex) {
-        for (int i = 0; i < model.getColumnCount(); ++i) {
+        for (int i = 0; i < newDataRow.length; ++i) {
             model.setValueAt(newDataRow[i], rowIndex, i);
         }
     }
