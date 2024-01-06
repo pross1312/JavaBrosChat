@@ -60,6 +60,7 @@ public class UserDashboard extends javax.swing.JFrame {
         noti_c = Client.Client.noti_c;
         token = Client.Client.token;
         username = Client.Client.username;
+        this.setTitle("Java Bro Chat - " +  username);
         this.session_click = (session) -> {
             var new_chat = ChatArea.update_and_get(session);
             if (first) {
@@ -72,6 +73,7 @@ public class UserDashboard extends javax.swing.JFrame {
         };
         initComponents();
         init();
+        
     }
 
     private void init() {
