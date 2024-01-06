@@ -25,7 +25,7 @@ public class Main {
              db = new Database();
              server = new Server("localhost", 13123);
              accounts = new ConcurrentHashMap<String, Pair<String, AccountType>>();
-             mailer = new Mailer("JavaBros", "javabros29", "sski acfi ikhv zeqm");
+             mailer = new Mailer("JavaBros", "javabros29", "javh svvl aejc sixh");
              System.out.println("[INFO] Server initialized successfully");
         } catch (Exception e) {
             e.printStackTrace();
